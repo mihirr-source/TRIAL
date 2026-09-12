@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Temp artifacts
+temp_*
+ai_shield_*
+*.log
+
+# Model weights (auto-downloaded on first run)
+backend/nsfw/weights/
+
+# Tooling
+.freebuff/
+.DS_Store
