@@ -1,6 +1,6 @@
 """Seed catalogue of Indian Standards (BIS) for the recommendation engine MVP.
 
-DATA STATUS: This is a curated, hand-built DEMO SEED of 24 well-known standards,
+DATA STATUS: This is a curated, hand-built DEMO SEED of 40 well-known standards,
 hand-written in September 2026. It is NOT a live mirror of the BIS catalogue.
 Every entry carries `last_reviewed`, and the app surfaces a visible "seed data"
 disclaimer. See README (Upgrade Path) for swapping in a live/licensed BIS feed.
@@ -30,6 +30,7 @@ SYNC_HEALTH = {
 
 SECTORS = {
     "construction": "Construction & Civil Works",
+    "cement": "Cement",
     "electronics": "Electrical & Electronics",
     "appliances": "Consumer Appliances & Energy",
     "water": "Water Supply & Sanitation",
@@ -795,6 +796,475 @@ STANDARDS = [
                         "certification — ISI mark required.",
             }
         ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    # -------------------------------------------------------------------------- CEMENT
+    {
+        "code": "IS 269",
+        "title": "Ordinary Portland Cement, 33 Grade — Specification",
+        "version": "2015 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Cement",
+        "summary": (
+            "Ordinary Portland Cement, 33 grade. When specifying OPC, always state the "
+            "grade explicitly (33/43/53) — 'OPC' alone leaves acceptance criteria open."
+        ),
+        "aliases": {
+            "en": ["ordinary portland cement", "opc 33", "33 grade cement", "opc cement 33"],
+            "hi": ["सीमेंट", "ओपीसी सीमेंट"],
+            "ta": ["சிமெண்ட்"],
+        },
+        "allied": [
+            {"code": "IS 4031", "relation": "method — physical tests of cement"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Cement is under long-standing mandatory BIS certification — "
+                        "ISI mark required. Verify the current QCO schedule for the grade.",
+            }
+        ],
+        "examples": [
+            {
+                "bad": "'OPC shall be used' (no grade, no standard)",
+                "good": "OPC 43 per IS 8112 (or the grade actually intended), with test methods per IS 4031",
+                "note": "Grade-less cement clauses make compressive-strength acceptance unenforceable.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 8112",
+        "title": "Ordinary Portland Cement, 43 Grade — Specification",
+        "version": "2013 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Cement",
+        "summary": (
+            "Ordinary Portland Cement, 43 grade — the workhorse grade for general "
+            "construction. Verify the current consolidated edition before citation."
+        ),
+        "aliases": {
+            "en": ["opc 43", "43 grade cement", "ordinary portland cement 43"],
+            "hi": ["ओपीसी 43"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 4031", "relation": "method — physical tests of cement"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Cement is under long-standing mandatory BIS certification — ISI mark required.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 12269",
+        "title": "Ordinary Portland Cement, 53 Grade — Specification",
+        "version": "2013 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Cement",
+        "summary": (
+            "Ordinary Portland Cement, 53 grade — specified where higher early "
+            "strength is required (precast, prestressed work). Verify edition."
+        ),
+        "aliases": {
+            "en": ["opc 53", "53 grade cement", "ordinary portland cement 53"],
+            "hi": ["ओपीसी 53"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 4031", "relation": "method — physical tests of cement"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Cement is under long-standing mandatory BIS certification — ISI mark required.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1489 (Part 1)",
+        "title": "Portland Pozzolana Cement — Specification (Part 1: Fly Ash Based)",
+        "version": "2015 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Cement",
+        "summary": (
+            "Portland Pozzolana Cement (fly-ash based). Distinct from OPC — cement "
+            "type affects strength-gain schedule and acceptance tests, so BOQ items "
+            "must name the type and the standard separately."
+        ),
+        "aliases": {
+            "en": ["ppc", "ppc cement", "portland pozzolana cement", "fly ash cement"],
+            "hi": ["पीपीसी सीमेंट"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 4031", "relation": "method — physical tests of cement"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Cement is under long-standing mandatory BIS certification — ISI mark required.",
+            }
+        ],
+        "examples": [
+            {
+                "bad": "'PPC and OPC used interchangeably in the BOQ'",
+                "good": "State cement type per item: OPC 43/53 per IS 8112/IS 12269; PPC per IS 1489 (Part 1)",
+                "note": "Interchangeable cement clauses blur strength and durability obligations.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 455",
+        "title": "Portland Slag Cement — Specification",
+        "version": "2015 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Cement",
+        "summary": (
+            "Portland Slag Cement — used in marine and aggressive-environment "
+            "concreting. Verify the current consolidated edition before citation."
+        ),
+        "aliases": {
+            "en": ["slag cement", "portland slag cement", "psc cement"],
+            "hi": ["स्लैग सीमेंट"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 4031", "relation": "method — physical tests of cement"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Cement is under long-standing mandatory BIS certification — ISI mark required.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 4031",
+        "title": "Methods of Physical Tests for Hydraulic Cement (Parts 1–15)",
+        "version": "Part-wise editions — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "cement",
+        "category": "Test methods",
+        "summary": (
+            "Multi-part test-method code for cement (fineness, setting time, "
+            "soundness, compressive strength, etc.). Tenders that specify cement "
+            "without IS 4031 leave acceptance testing undefined — cite the parts "
+            "your acceptance schedule relies on."
+        ),
+        "aliases": {
+            "en": ["cement test methods", "testing of cement", "cement laboratory tests",
+                   "cement strength test"],
+            "hi": ["सीमेंट परीक्षण"],
+            "ta": [],
+        },
+        "allied": [],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    # ---------------------------------------------------- STEEL, FOUNDATIONS, ROADS
+    {
+        "code": "IS 800",
+        "title": "General Construction in Steel — Code of Practice",
+        "version": "2007 (3rd revision)",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Structural steel design",
+        "summary": (
+            "The limit-state code of practice for structural steel design. Any steel "
+            "structure tender should pair it with the material standard (IS 2062) "
+            "and relevant welding codes."
+        ),
+        "aliases": {
+            "en": ["steel structure", "steel design", "structural steelwork",
+                   "steel construction", "steel building", "limit state design steel"],
+            "hi": ["स्टील संरचना", "इस्पात डिज़ाइन"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 2062", "relation": "material — structural steel"},
+            {"code": "IS 875", "relation": "loading — design loads"},
+            {"code": "IS 1893", "relation": "loading — earthquake loads"},
+        ],
+        "certifications": [],
+        "examples": [
+            {
+                "bad": "IS 800:1984",
+                "good": "IS 800:2007",
+                "note": "The 1984 (working-stress) edition still appears in legacy schedules; "
+                        "the 2007 limit-state edition replaced it.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2911",
+        "title": "Design and Construction of Pile Foundations — Code of Practice (Parts 1–4)",
+        "version": "Part-wise editions — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Foundations",
+        "summary": (
+            "Multi-part code covering driven, bored and under-reamed pile foundations. "
+            "Cite the part matching the pile type; concrete in piles also falls under "
+            "IS 456 general practice."
+        ),
+        "aliases": {
+            "en": ["pile foundation", "piling", "bored piles", "driven piles",
+                   "under reamed piles", "pile caps"],
+            "hi": ["पाइल फाउंडेशन", "स्तंभ नींव"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 456", "relation": "usage — concrete works"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 73",
+        "title": "Paving Bitumen — Specification",
+        "version": "2013 (viscosity grading, VG grades)",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Road works",
+        "summary": (
+            "Paving bitumen for road works. The 2013 edition replaced penetration "
+            "grading (80/100, 60/70) with viscosity grading (VG-10/20/30/40) — legacy "
+            "penetration-grade citations reference the withdrawn scheme."
+        ),
+        "aliases": {
+            "en": ["bitumen", "paving bitumen", "vg 30", "vg 10", "road bitumen",
+                   "asphalt binder"],
+            "hi": ["बिटुमेन", "डामर"],
+            "ta": ["தார்"],
+        },
+        "allied": [],
+        "certifications": [],
+        "examples": [
+            {
+                "bad": "Bitumen grade 80/100 (penetration) per IS 73:1992",
+                "good": "Paving bitumen VG-30 (as appropriate) per IS 73:2013",
+                "note": "Penetration grading was withdrawn by the 2013 revision — "
+                        "viscosity grades (VG-10/20/30/40) apply.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    # --------------------------------------------------------- WIRING & SWITCHGEAR
+    {
+        "code": "IS 7098 (Part 1)",
+        "title": "Cross-Linked Polyethylene (XLPE) Insulated Cables — Specification (Part 1)",
+        "version": "Part-wise editions — verify the part for your voltage rating",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Cables & conductors",
+        "summary": (
+            "XLPE insulated power cables — commonly specified where higher operating "
+            "temperature than PVC (IS 1554) is needed. Verify the part covering the "
+            "voltage rating in your tender."
+        ),
+        "aliases": {
+            "en": ["xlpe cables", "xlpe", "cross linked polyethylene cables",
+                   "ht cables", "medium voltage cables"],
+            "hi": ["एक्सएलपीई केबल"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1554 (Part 1)", "relation": "related — PVC insulated cables"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 732",
+        "title": "Code of Practice for Electrical Wiring Installations",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Installations",
+        "summary": (
+            "Code of practice governing how electrical wiring installations are "
+            "designed and executed — pairs naturally with the cable standards "
+            "(IS 694, IS 1554) in building-services tenders."
+        ),
+        "aliases": {
+            "en": ["wiring installation", "electrical installation code", "wiring code",
+                   "house wiring practice", "installation practice electrical"],
+            "hi": ["वायरिंग संहिता"],
+            "ta": ["மின் வயரிங் முறை"],
+        },
+        "allied": [
+            {"code": "IS 694", "relation": "material — internal wiring cables"},
+            {"code": "IS 1554 (Part 1)", "relation": "material — heavy-duty cables"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 8828",
+        "title": "Miniature Circuit-Breakers (MCB) for Household and Similar Installations",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Electrical accessories",
+        "summary": (
+            "Miniature circuit-breakers for overcurrent protection in household and "
+            "similar installations. Verify the current edition and certification "
+            "applicability before tendering."
+        ),
+        "aliases": {
+            "en": ["mcb", "mcbs", "circuit breaker", "miniature circuit breaker",
+                   "distribution board breaker"],
+            "hi": ["सर्किट ब्रेकर", "एमसीबी"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1293", "relation": "related — plugs & socket-outlets"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    # -------------------------------------------------------------------- TOYS, PPE
+    {
+        "code": "IS 9873 (Part 1)",
+        "title": "Safety of Toys — Part 1: Safety Aspects (Mechanical and Physical)",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "safety",
+        "category": "Toys",
+        "summary": (
+            "Safety requirements for toys (mechanical and physical aspects). Toys "
+            "have been notified under mandatory BIS certification via Quality Control "
+            "Order — ISI mark applies."
+        ),
+        "aliases": {
+            "en": ["toys", "children toys", "kids toys", "play items", "toy safety"],
+            "hi": ["खिलौने", "खिलौना"],
+            "ta": ["பொம்மைகள்"],
+        },
+        "allied": [],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — QCO",
+                "authority": "BIS",
+                "note": "Toys are covered under a mandatory certification Quality Control "
+                        "Order — verify the current scheme requirements and exemptions.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 5983",
+        "title": "Eye Protectors for Industrial Use — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "safety",
+        "category": "Personal protective equipment",
+        "summary": (
+            "Industrial eye protection (goggles, face shields). Confirm current QCO "
+            "applicability for the specific protector type before tendering."
+        ),
+        "aliases": {
+            "en": ["safety goggles", "eye protection", "industrial goggles",
+                   "safety glasses", "protective eyewear"],
+            "hi": ["सुरक्षा चश्मा", "आंखों की सुरक्षा"],
+            "ta": ["கண் பாதுகாப்பு"],
+        },
+        "allied": [
+            {"code": "IS 2925", "relation": "related — industrial safety helmets"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    # --------------------------------------------------------------- HOUSEHOLD PPE
+    {
+        "code": "IS 302 (Part 1)",
+        "title": "Household and Similar Electrical Appliances — Safety (Part 1: General Requirements)",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "appliances",
+        "category": "Appliance safety",
+        "summary": (
+            "General safety requirements for household electrical appliances; "
+            "part-two sections cover specific appliance families — verify the "
+            "section matching your product, and check for energy-labelling "
+            "obligations separately."
+        ),
+        "aliases": {
+            "en": ["household appliances", "electrical appliance safety", "home appliances"],
+            "hi": ["घरेलू उपकरण"],
+            "ta": [],
+        },
+        "allied": [],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2082",
+        "title": "Electric Storage Water Heaters (Geysers) — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "appliances",
+        "category": "Water heating",
+        "summary": (
+            "Electric storage water heaters for domestic and institutional use. "
+            "Verify the current edition and any labelling obligations before tendering."
+        ),
+        "aliases": {
+            "en": ["geyser", "geysers", "water heater", "hot water unit",
+                   "storage water heater"],
+            "hi": ["गीज़र", "पानी गर्म करने का उपकरण"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 302 (Part 1)", "relation": "safety — household appliance general safety"},
+        ],
+        "certifications": [],
         "examples": [],
         "last_reviewed": "2026-09-29",
     },

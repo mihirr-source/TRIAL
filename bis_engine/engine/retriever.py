@@ -22,7 +22,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from bis_engine.data.catalog import SECTORS, STANDARDS, get_by_code
 from bis_engine.engine.normalize import normalize_text
 
-_CODE_RE = re.compile(r"\bis\s*\d{3,5}(?:\s*\(?\s*part\s*\d+\s*\)?)?", re.IGNORECASE)
+_CODE_RE = re.compile(r"\bis\s*\d{2,5}(?:\s*\(?\s*part\s*\d+\s*\)?)?", re.IGNORECASE)
 
 
 def _build_enriched_document(std: dict) -> str:

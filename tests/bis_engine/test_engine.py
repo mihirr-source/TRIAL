@@ -24,12 +24,18 @@ def analyzer(retriever):
 # --------------------------------------------------------------------- data
 def test_catalogue_loads_with_required_fields():
     standards = all_standards()
-    assert len(standards) >= 20
+    assert len(standards) >= 40
     required = {"code", "title", "version", "amendments", "status", "sector",
                 "aliases", "allied", "certifications", "examples", "last_reviewed"}
     for std in standards:
         missing = required - set(std)
         assert not missing, f"{std.get('code')} missing {missing}"
+        # Guard against tuple/None slips from hand-edited entries:
+        for field in ("title", "summary", "version", "category"):
+            assert isinstance(std.get(field), str), f"{std['code']}.{field} must be a string"
+        assert std["sector"] in {"construction", "cement", "electronics", "appliances",
+                                 "water", "food", "safety"}
+        assert isinstance(std["allied"], list) and isinstance(std["certifications"], list)
 
 
 def test_get_by_code_loose_matching():
@@ -189,3 +195,37 @@ def test_analyzer_detects_language_label(analyzer):
     report = analyzer.analyze("पेयजल हेतु प्लास्टिक के पाइप की आपूर्ति कीजिए।")
     assert report["meta"]["detected_language"] == "hi"
     assert "Devanagari" in report["meta"]["detected_language_label"]
+
+
+# --------------------------------------------------- expansion coverage (v0.2)
+def test_cement_flow_includes_test_methods(analyzer):
+    """Cement mentions must surface IS 4031 as a missing allied test-method code."""
+    report = analyzer.analyze("Supply of OPC 43 grade cement in bags for all concrete works.")
+    codes = [p["code"] for p in report["primaries"]]
+    assert "IS 8112" in codes
+    missing = [a["code"] for a in report["allied_missing"]]
+    assert "IS 4031" in missing
+
+
+def test_bitumen_penetration_grade_flagged(analyzer):
+    """Legacy penetration-grade bitumen citations must be flagged."""
+    report = analyzer.analyze(
+        "Paving bitumen for the BT road works shall conform to IS 73:1992, grade 80/100.")
+    codes = [p["code"] for p in report["primaries"]]
+    assert "IS 73" in codes
+    assert any(f["code"] == "IS 73" and "penetration" in f.get("reason", "").lower()
+               for f in report["obsolete_flags"])
+
+
+def test_geyser_colloquialism_maps_to_water_heater(retriever):
+    res = retriever.search("geysers for staff quarters")
+    assert res["primary"]["standard"]["code"] == "IS 2082"
+
+
+def test_wiring_flow_bundles_materials_and_practice(analyzer):
+    report = analyzer.analyze(
+        "Complete internal wiring of the office building with PVC insulated cables.")
+    codes = {p["code"] for p in report["primaries"]}
+    assert codes & {"IS 694", "IS 732"}
+    missing = [a["code"] for a in report["allied_missing"]]
+    assert "IS 1554 (Part 1)" in missing or "IS 732" in missing

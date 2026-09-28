@@ -25,7 +25,7 @@ PRIMARY_THRESHOLD = 0.30
 # Maximum primary standards reported per document (keeps reports actionable).
 MAX_PRIMARY = 6
 
-_CODE_RE = re.compile(r"\bis\s*\d{3,5}(?:\s*\(?\s*part\s*\d+\s*\)?)?", re.IGNORECASE)
+_CODE_RE = re.compile(r"\bis\s*\d{2,5}(?:\s*\(?\s*part\s*\d+\s*\)?)?", re.IGNORECASE)
 _YEAR_RE = re.compile(r"(1[89]\d{2}|20[0-4]\d)")
 
 
