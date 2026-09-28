@@ -6,7 +6,7 @@ standards, latest versions/amendments and mandatory certification alerts that
 tender specifications routinely miss. Ships with a FastAPI JSON API **and** a
 complete demo website.
 
-> **Data status:** runs on a curated **seed catalogue** (41 standards, 290+
+> **Data status:** runs on a curated **seed catalogue** (40 standards, 360+
 > multilingual aliases) hand-built for the demo. It is *not* a live mirror of
 > the BIS catalogue. Every recommendation must be verified against the official
 > BIS catalogue before being cited in a tender. See *Upgrade path* below.
