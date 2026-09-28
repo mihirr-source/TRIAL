@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tender Analyzer — BIS Standards Assistant</title>
+  <meta name="description" content="Paste a product description or tender specification and get a red/amber/green report: relevant standards, missing allied standards, mandatory certifications and outdated code references.">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="/">Home</a>
+        <a href="/standards">Explore Standards</a>
+        <a href="/analyzer">Tender Analyzer</a>
+        <a href="/alerts">Compliance Alerts</a>
+        <a href="/docs-page">API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <h1>Tender Analyzer</h1>
+    <p class="muted">Paste a product description, technical specification or draft tender text.
+       The engine identifies relevant Indian Standards, missing allied/normative standards,
+       mandatory certification requirements and outdated code references.</p>
+
+    <section class="card no-print">
+      <label for="spec"><strong>Specification text</strong> (min 10 characters, max 20,000)</label><br><br>
+      <textarea id="spec" class="spec-input" placeholder="Example:
+Supply and installation of room air conditioners for the office block. Units shall be
+window type, 1.5 ton, with copper condenser. TMT bars Fe 500 per IS 1786:2008 shall be
+used for the plinth. Supply of packaged drinking water in 20 L jars for staff."></textarea>
+      <br><br>
+      <button id="analyze-btn" class="btn">Analyze specification</button>
+      <button id="demo-btn" class="btn secondary" type="button">Load sample tender text</button>
+      <div id="status" class="muted small" style="margin-top:.75rem"></div>
+    </section>
+
+    <section id="report" aria-live="polite"></section>
+  </main>
+
+  <footer class="site-footer">
+    MVP demo · seed catalogue · recommendations are decision support, not a compliance guarantee.
+  </footer>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/analyzer.js"></script>
+</body>
+</html>

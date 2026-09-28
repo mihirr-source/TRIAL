@@ -8,6 +8,26 @@ A hackathon demo with two parts:
 - **`extension/`** — Chrome MV3 extension that runs on **any website**, blurs
   toxic text and NSFW images it finds, and offers click-to-reveal.
 
+---
+
+# AI-Powered Standards Recommendation Engine (BIS)
+
+A second, independent app lives in **`bis_engine/`**: an NLP decision-support
+engine that maps everyday, multilingual procurement language to Indian
+Standards (BIS codes) — with allied/normative-standard mapping, latest-version
+highlighting, obsolete-citation flagging and mandatory certification alerts
+(ISI mark, MeitY CRS, BEE star labelling). FastAPI + demo website + tests.
+
+```bash
+cd bis_engine
+pip install -r requirements.txt
+uvicorn main:app --port 8002
+```
+
+Open http://localhost:8002 · see [`bis_engine/README.md`](bis_engine/README.md).
+
+---
+
 ## Quick start
 
 **1. Backend** (from `backend/`):

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Docs — BIS Standards Assistant</title>
+  <meta name="description" content="REST API reference for the BIS Standards Recommendation Engine MVP: search, tender analysis, catalogue and certification endpoints.">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="/">Home</a>
+        <a href="/standards">Explore Standards</a>
+        <a href="/analyzer">Tender Analyzer</a>
+        <a href="/alerts">Compliance Alerts</a>
+        <a href="/docs-page">API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <h1>API Reference</h1>
+    <p class="muted">All endpoints are JSON over HTTP. Interactive OpenAPI docs:
+       <a href="/docs">/docs</a> (Swagger UI) · <a href="/redoc">/redoc</a></p>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/health</h2>
+      <p class="small muted">Service status, catalogue version, sync mode and index stats.</p>
+      <pre class="kbd" style="white-space:pre-wrap">{ "status": "ok", "catalog_version": "2026.09-seed-1",
+  "sync": { "mode": "seed", "last_synced": "2026-09-29" },
+  "stats": { "catalogue_size": 24, "alias_count": 150 } }</pre>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/search?q=…&amp;top_k=6</h2>
+      <p class="small muted">Hybrid semantic + alias search. Multilingual queries supported
+        (Hindi, Tamil in the seed vocabulary). Returns <code>primary</code> plus ranked
+        <code>alternatives</code> with confidence scores and matched aliases.</p>
+      <pre class="kbd" style="white-space:pre-wrap">curl "http://localhost:8002/api/search?q=cooling+unit+for+office"</pre>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze</h2>
+      <p class="small muted">Full tender analysis. Body: <code>{"text": "…"}</code> (10–20,000 chars).
+        Returns primaries with confidence, missing allied/normative standards, mandatory
+        certification alerts, obsolete/unknown code flags, and a RAG health-check summary.</p>
+      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Supply of packaged drinking water in 20 L jars. TMT bars per IS 1786:2008."}'</pre>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/standards[?sector=electronics]</h2>
+      <p class="small muted">Browse the catalogue; filter by sector key
+        (construction, electronics, appliances, water, food, safety).</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/standards/{code}</h2>
+      <p class="small muted">One standard's detail: version, amendments, aliases, allied
+        standards, certifications, spec pitfalls. Loose matching: <code>IS 13252</code>
+        resolves to <code>IS 13252 (Part 1)</code>.</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/certifications</h2>
+      <p class="small muted">All mandatory certification schemes mapped in the catalogue
+        with the standards they apply to.</p>
+    </div>
+
+    <div class="alert-banner warn">
+      <strong>Data status:</strong> the engine runs on a curated seed catalogue for demo
+      purposes. Before production use in any procurement workflow, replace it with a
+      licensed/live BIS data feed and legal review of every recommendation.
+    </div>
+  </main>
+
+  <footer class="site-footer">MVP demo · seed catalogue · <a href="/docs">OpenAPI</a></footer>
+  <script src="/static/js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compliance Alerts — BIS Standards Assistant</title>
+  <meta name="description" content="Mandatory certification schemes mapped in the catalogue: BIS Product Certification (ISI mark), MeitY CRS, BEE star labelling — and the standards they apply to.">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="/">Home</a>
+        <a href="/standards">Explore Standards</a>
+        <a href="/analyzer">Tender Analyzer</a>
+        <a href="/alerts">Compliance Alerts</a>
+        <a href="/docs-page">API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <h1>Compliance Alerts</h1>
+    <p class="muted">Some product categories cannot be procured without a mandatory certification —
+       a technically compliant tender that omits the certificate requirement still fails.
+       Below are the schemes mapped in the current catalogue and the standards they apply to.</p>
+
+    <section id="schemes" aria-live="polite">
+      <div class="spinner" role="status" aria-label="Loading alerts"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">MVP demo · seed catalogue · verify QCO scope against official notifications.</footer>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/alerts.js"></script>
+</body>
+</html>
