@@ -102,7 +102,11 @@
     panel.hidden = !panel.hidden;
     if (!panel.hidden) panel.querySelector("input").focus();
   });
-  panel.querySelector(".chat-close").addEventListener("click", () => { panel.hidden = true; });
+  panel.querySelector(".chat-close").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    panel.hidden = true;
+  });
   bindForm(panel.querySelector(".chat-form"), panel.querySelector("input"),
            panel.querySelector(".chat-log"), null);
 
