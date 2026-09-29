@@ -1,0 +1,3 @@
+code,title,version,status,sector,category
+IS 1234,Example product specification for the snapshot template,2024,active,construction,Example items
+IS 9999,Example legacy entry demonstrating a superseded edition,1992,superseded-edition,water,Example legacy items

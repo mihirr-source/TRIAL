@@ -30,7 +30,7 @@
   }
 
   async function doSearch(q) {
-    setStatus(results, "loading", "Searching…");
+    setStatus(results, "loading", t("status.searching"));
     results.innerHTML = `<div class="spinner" role="status" aria-label="Searching"></div>`;
     try {
       const data = await fetchJSON(`/api/search?q=${encodeURIComponent(q)}&top_k=6`);

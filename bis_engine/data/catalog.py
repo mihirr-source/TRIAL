@@ -1,7 +1,9 @@
 """Seed catalogue of Indian Standards (BIS) for the recommendation engine MVP.
 
-DATA STATUS: This is a curated, hand-built DEMO SEED of 40 well-known standards,
-hand-written in September 2026. It is NOT a live mirror of the BIS catalogue.
+DATA STATUS: This is a curated, hand-built DEMO SEED of 84 standards across 11
+sectors, originally 40 entries hand-written in September 2026 and expanded the same
+month with a CLOSED allied-reference graph (every IS code in `allied` resolves to a
+catalogue entry — guarded by an integrity test). It is NOT a live mirror of the BIS catalogue.
 Every entry carries `last_reviewed`, and the app surfaces a visible "seed data"
 disclaimer. See README (Upgrade Path) for swapping in a live/licensed BIS feed.
 
@@ -17,16 +19,14 @@ Field guide:
   examples        [{bad, good, note}] real specification pitfalls for the UI
 """
 
+import json
 import re
+from pathlib import Path
 
-CATALOG_VERSION = "2026.09-seed-1"
+CATALOG_VERSION = "2026.09-seed-2"
 LAST_SYNCED = "2026-09-29"
 
-SYNC_HEALTH = {
-    "mode": "seed",
-    "last_synced": LAST_SYNCED,
-    "source_note": "Curated seed catalogue (demo). Live BIS reconciliation not configured.",
-}
+# SYNC_HEALTH is finalised after the snapshot merge at the bottom of the seed list.
 
 SECTORS = {
     "construction": "Construction & Civil Works",
@@ -36,9 +36,12 @@ SECTORS = {
     "water": "Water Supply & Sanitation",
     "food": "Food & Agriculture",
     "safety": "Industrial & Safety Supplies",
+    "steel": "Steel & Metals",
+    "pumps": "Pumps & Fluid Machinery",
+    "furniture": "Furniture & Office Equipment",
+    "medical": "Medical & Hospital Supplies",
 }
-
-STANDARDS = [
+_SEED_STANDARDS = [
     # ------------------------------------------------------------------ CONSTRUCTION
     {
         "code": "IS 456",
@@ -56,6 +59,7 @@ STANDARDS = [
         "aliases": {
             "en": ["concrete", "rcc", "reinforced concrete", "cement concrete works",
                    "structural concrete", "concrete construction", "rcc works"],
+            "te": ["కాంక్రీట్", "ఆర్సీసీ పనులు"],
             "hi": ["कंक्रीट", "सीमेंट कंक्रीट", "ढांचागत कंक्रीट", "आरसीसी"],
             "ta": ["காங்கிரீட்", "சிமென்ட் காங்கிரீட் வேலைகள்"],
         },
@@ -207,9 +211,10 @@ STANDARDS = [
                    "burnt clay bricks", "building bricks"],
             "hi": ["ईंटें", "ईंट", "लाल ईंट"],
             "ta": ["செங்கல்", "மண் செங்கல்"],
+            "te": ["ఇటుకలు"],
         },
         "allied": [
-            {"code": "IS 3495", "relation": "method — brick test methods"},
+            {"code": "IS 3495 (Parts 1–4)", "relation": "method — brick test methods"},
             {"code": "IS 1905", "relation": "code — structural masonry"},
             {"code": "IS 2212", "relation": "code — brickwork practice"},
         ],
@@ -292,6 +297,7 @@ STANDARDS = [
                    "it hardware", "power adapters", "electronic devices"],
             "hi": ["आईटी उपकरण", "कंप्यूटर", "प्रिंटर"],
             "ta": ["கணினி", "ஐடி உபகரணங்கள்"],
+            "te": ["కంప్యూటర్", "ప్రింటర్"],
         },
         "allied": [
             {"code": "IS 616", "relation": "related — audio/video apparatus safety"},
@@ -487,6 +493,7 @@ STANDARDS = [
                    "air conditioning", "hvac units", "room cooler"],
             "hi": ["एयर कंडीशनर", "एसी", "ठंडा करने की मशीन", "कूलिंग यूनिट"],
             "ta": ["காற்றுச் சீரமைப்பான்", "ஏசி"],
+            "te": ["ఎయిర్ కండిషనర్", "ఏసీ"],
         },
         "allied": [
             {"code": "IS 1391 (Part 2)", "relation": "related — split room air conditioners"},
@@ -556,6 +563,7 @@ STANDARDS = [
                    "plastic pipes", "polyethylene pipes", "pe pipes", "mdpe pipes"],
             "hi": ["पानी के पाइप", "एचडीपीई पाइप", "पेयजल पाइप"],
             "ta": ["நீர் குழாய்கள்", "குடிநீர் குழாய்"],
+            "te": ["నీటి పైపులు", "పైపులు", "తాగునీటి పైపులు"],
         },
         "allied": [
             {"code": "IS 4985", "relation": "related — uPVC pipes for water supply"},
@@ -607,6 +615,7 @@ STANDARDS = [
             "en": ["drinking water quality", "water quality standards", "potable water"],
             "hi": ["पेयजल गुणवत्ता"],
             "ta": ["குடிநீர் தரம்"],
+            "te": ["తాగునీటి నాణ్యత"],
         },
         "allied": [
             {"code": "IS 3025", "relation": "method — water analysis test methods (parts)"},
@@ -635,6 +644,7 @@ STANDARDS = [
                    "water pouches", "drinking water supply"],
             "hi": ["बोतलबंद पानी", "पैकेज्ड पेय जल"],
             "ta": ["குடிநீர் பாட்டில்", "அருந்ததுபவர் நீர்"],
+            "te": ["ప్యాకెడ్ డ్రింకింగ్ వాటర్"],
         },
         "allied": [
             {"code": "IS 13428", "relation": "related — packaged natural mineral water (distinct standard)"},
@@ -664,7 +674,7 @@ STANDARDS = [
         "version": "2011 — verify consolidated edition",
         "amendments": [],
         "status": "active",
-        "sector": "safety",
+        "sector": "steel",
         "category": "Steel & metals",
         "summary": (
             "Structural steel plates, sheets and sections (E250 grades and above) "
@@ -698,7 +708,7 @@ STANDARDS = [
         "version": "2008 — verify consolidated edition",
         "amendments": [],
         "status": "active",
-        "sector": "safety",
+        "sector": "steel",
         "category": "Steel & metals",
         "summary": (
             "TMT / high-strength deformed bars (Fe 415, Fe 500, Fe 550 grades) for "
@@ -708,6 +718,7 @@ STANDARDS = [
         "aliases": {
             "en": ["tmt bars", "tmt", "rebar", "reinforcement steel", "deformed bars",
                    "fe 500", "fe500", "reinforcement", "sariya", "saria"],
+            "te": ["టీఎంటీ స్టీల్", "సరియా"],
             "hi": ["सरिया", "टीएमटी", "सुदृढ़ीकरण स्टील", "सरिया की छड़ें"],
             "ta": ["டிஎம்டி இரும்புக் கம்பிகள்", "இரும்புக் கம்பிகள்"],
         },
@@ -816,6 +827,7 @@ STANDARDS = [
             "en": ["ordinary portland cement", "opc 33", "33 grade cement", "opc cement 33"],
             "hi": ["सीमेंट", "ओपीसी सीमेंट"],
             "ta": ["சிமெண்ட்"],
+            "te": ["సిమెంట్"],
         },
         "allied": [
             {"code": "IS 4031", "relation": "method — physical tests of cement"},
@@ -1268,7 +1280,1299 @@ STANDARDS = [
         "examples": [],
         "last_reviewed": "2026-09-29",
     },
+
+    # =========================================================================
+    # v0.2 EXPANSION (2026-09) — four new sectors (steel, pumps, furniture,
+    # medical) plus entry versions of every allied/normative code the original
+    # 40 entries referenced, so the allied graph is CLOSED: every IS code in
+    # `allied` resolves to a catalogue entry (guarded by an integrity test).
+    # =========================================================================
+
+    # ------------------------------------------------------------- STEEL & METALS
+    {
+        "code": "IS 808",
+        "title": "Dimensions of Hot Rolled Steel Beam, Column, Channel and Angle Sections",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Steel sections",
+        "summary": (
+            "Dimensional standard for hot-rolled structural sections (ISMB beams, "
+            "channels, angles). Tenders that write 'ISMB 200' without this standard "
+            "and the material standard (IS 2062) leave both geometry and grade open."
+        ),
+        "aliases": {
+            "en": ["ismb", "steel beams", "i beams", "steel channels", "steel angles",
+                   "steel sections", "column sections", "structural sections"],
+            "hi": ["आई बीम", "इस्पात सेक्शन"],
+            "ta": ["ஸ்டீல் கற்றைகள்"],
+            "te": ["స్టీల్ సెక్షన్లు"],
+        },
+        "allied": [
+            {"code": "IS 800", "relation": "usage — steel design code"},
+            {"code": "IS 2062", "relation": "material — structural steel grade"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — QCO (verify scope)",
+                "authority": "BIS",
+                "note": "Hot-rolled steel products fall under notified steel QCO batches; "
+                        "confirm applicability for the exact section type.",
+            }
+        ],
+        "examples": [
+            {
+                "bad": "'Provide ISMB sections of standard make'",
+                "good": "Sections per IS 808 in steel grade E250 per IS 2062",
+                "note": "A section size without a material grade standard is not enforceable.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1239 (Part 1)",
+        "title": "Steel Tubes for Water, Gas and Steam Purposes — Specification (Part 1: Hot Finished Welded Tubes)",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Steel tubes",
+        "summary": (
+            "The 'MS pipe' standard of everyday procurement — ERW mild steel tubes for "
+            "plumbing, gas lines and general engineering. Specify the class (light / "
+            "medium / heavy) alongside the standard."
+        ),
+        "aliases": {
+            "en": ["ms pipes", "steel pipes", "erw pipes", "plumbing pipes", "gas pipes",
+                   "mild steel tubes", "water steel pipes"],
+            "hi": ["एमएस पाइप", "स्टील पाइप"],
+            "ta": ["எஃகு குழாய்"],
+            "te": ["స్టీల్ పైపులు"],
+        },
+        "allied": [
+            {"code": "IS 1161", "relation": "related — structural steel tubes"},
+            {"code": "IS 2062", "relation": "material — base steel grades"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — QCO (verify scope)",
+                "authority": "BIS",
+                "note": "Steel tubes are covered under notified steel QCO batches; verify "
+                        "current applicability.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1161",
+        "title": "Steel Tubes for Structural Purposes — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Steel tubes",
+        "summary": (
+            "Structural hollow/tube sections used in trusses, scaffolding supports and "
+            "tubular structures — distinct from the water/gas tubes of IS 1239."
+        ),
+        "aliases": {
+            "en": ["structural tubes", "hollow sections", "scaffolding tubes",
+                   "square tubes", "circular hollow sections", "tube trusses"],
+            "hi": ["स्ट्रक्चरल ट्यूब"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1239 (Part 1)", "relation": "related — water/gas service tubes"},
+            {"code": "IS 2062", "relation": "material — base steel grades"},
+            {"code": "IS 808", "relation": "related — open sections"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 816",
+        "title": "Code of Practice for Use of Metal Arc Welding for General Construction",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Welding",
+        "summary": (
+            "Governs how metal-arc welding is executed in steel construction. Steel "
+            "fabrication tenders that cite only the material standard omit the welding "
+            "code, electrode standard and weld inspection — all three are allied here."
+        ),
+        "aliases": {
+            "en": ["welding code", "metal arc welding", "welding practice",
+                   "arc welding", "fabrication welding"],
+            "hi": ["वेल्डिंग संहिता"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 814", "relation": "material — covered electrodes"},
+            {"code": "IS 9595", "relation": "method — welding procedure recommendations"},
+            {"code": "IS 822", "relation": "method — inspection of welds"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 814",
+        "title": "Covered Electrodes for Manual Metal Arc Welding of Carbon and Carbon Manganese Steels — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Welding",
+        "summary": (
+            "Specification for welding electrodes. Fabrication tenders that forget to "
+            "specify electrodes accept any rod on site — a classic quality loophole."
+        ),
+        "aliases": {
+            "en": ["welding electrodes", "ms electrodes", "welding rods", "electrodes"],
+            "hi": ["वेल्डिंग इलेक्ट्रोड"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 816", "relation": "usage — welding code of practice"},
+            {"code": "IS 9595", "relation": "method — welding procedure"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — verify applicability",
+                "authority": "BIS",
+                "note": "Welding consumables have been progressively notified under "
+                        "Quality Control Orders — confirm the current scope.",
+            }
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 9595",
+        "title": "Metal-Arc Welding of Carbon and Carbon Manganese Steels — Recommendations",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Welding",
+        "summary": "Procedure recommendations that IS 816 and electrode supply depend on.",
+        "aliases": {
+            "en": ["welding procedure", "wps recommendations", "welding recommendations"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 816", "relation": "usage — welding code of practice"},
+            {"code": "IS 814", "relation": "material — electrodes"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 822",
+        "title": "Code of Procedure for Inspection of Welds",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Welding",
+        "summary": (
+            "How welded joints are inspected and accepted. Without this code a steel "
+            "tender has no weld acceptance criteria at all."
+        ),
+        "aliases": {
+            "en": ["weld inspection", "weld acceptance", "inspection of welds"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 816", "relation": "usage — welding code of practice"},
+            {"code": "IS 814", "relation": "material — electrodes"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 4759",
+        "title": "Hot-Dip Zinc Coatings on Structural Steel and Other Related Products — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "steel",
+        "category": "Protective coatings",
+        "summary": (
+            "Galvanizing requirements for structural steel. Corrosion protection is "
+            "routinely forgotten in outdoor steel tenders until the first repaint bill."
+        ),
+        "aliases": {
+            "en": ["galvanizing", "galvanised coating", "zinc coating",
+                   "hot dip galvanizing", "galvanized steel work"],
+            "hi": ["गैल्वनाइज़िंग"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 2062", "relation": "material — base structural steel"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------------- PUMPS & FLUID MACHINERY
+    {
+        "code": "IS 9079",
+        "title": "Monoset Pumps for Clear, Cold Water for Agricultural and Water Supply Purposes — Specification",
+        "version": "2018 (3rd revision)",
+        "amendments": [],
+        "status": "active",
+        "sector": "pumps",
+        "category": "Pumps",
+        "summary": (
+            "The monoblock/monoset pump standard — what 'water pump' or 'agricultural "
+            "pump' almost always means in procurement. Covered by the Pumps Quality "
+            "Control Order along with IS 8034 and IS 8472."
+        ),
+        "aliases": {
+            "en": ["monoblock pump", "monobloc pump", "monoset pump", "monoset pumps",
+                   "centrifugal monoblock pumps", "agricultural pumps", "water pumps"],
+            "hi": ["मोनोब्लॉक पंप", "पानी का पंप", "कृषि पंप"],
+            "ta": ["மோனோபிளாக் பம்ப்"],
+            "te": ["మోనోబ్లాక్ పంపు"],
+        },
+        "allied": [
+            {"code": "IS 5120", "relation": "method — technical requirements for rotodynamic pumps"},
+            {"code": "IS 11346", "relation": "method — efficiency testing of pumpsets"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — Pumps QCO",
+                "authority": "BIS",
+                "note": "Water pumps are covered by the Pumps (Quality Control) Order — "
+                        "ISI-marked units are mandatory. Verify the current schedule.",
+            },
+            {
+                "scheme": "BEE Star Rating — pumpsets (verify schedule)",
+                "authority": "Bureau of Energy Efficiency",
+                "note": "Energy labelling obligations for pumpsets have been progressively "
+                        "notified — confirm the current BEE schedule.",
+            },
+        ],
+        "examples": [
+            {
+                "bad": "'Supply of water pumps of reputed make'",
+                "good": "Monoset pumpsets per IS 9079:2018, ISI-marked, with efficiency tests per IS 11346",
+                "note": "'Reputed make' is unenforceable; the QCO makes ISI marking non-negotiable.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 8034",
+        "title": "Submersible Pumpsets — Specification",
+        "version": "2018 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "pumps",
+        "category": "Pumps",
+        "summary": (
+            "Borewell submersible pumpsets — the standard behind 'borewell pump' "
+            "queries. Pumps QCO item; specify stage count and discharge class explicitly."
+        ),
+        "aliases": {
+            "en": ["submersible pump", "borewell pump", "submersible pumpset",
+                   "bore well pumps", "borewell pumps"],
+            "hi": ["सबमर्सिबल पंप", "बोरवेल पंप"],
+            "ta": ["மூழ்கும் பம்ப்"],
+            "te": ["సబ్మర్సిబుల్ పంపు"],
+        },
+        "allied": [
+            {"code": "IS 11346", "relation": "method — efficiency testing of pumpsets"},
+            {"code": "IS 5120", "relation": "method — technical requirements"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — Pumps QCO",
+                "authority": "BIS",
+                "note": "Submersible pumpsets are Pumps QCO items — ISI mark mandatory.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 8472",
+        "title": "Regenerative Self-Priming Pumps for Clear, Cold Fresh Water — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "pumps",
+        "category": "Pumps",
+        "summary": (
+            "Self-priming domestic and small-community water pumps; Pumps QCO item."
+        ),
+        "aliases": {
+            "en": ["self priming pump", "regenerative pumps", "domestic water pumps"],
+            "hi": ["सेल्फ प्राइमिंग पंप"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 5120", "relation": "method — technical requirements"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — Pumps QCO",
+                "authority": "BIS",
+                "note": "Listed among pumps covered by the Quality Control Order.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 5120",
+        "title": "Technical Requirements for Rotodynamic Pumps",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "pumps",
+        "category": "Pump methods",
+        "summary": (
+            "Cross-cutting technical requirements the pump product standards lean on — "
+            "routine companion code in pump tenders."
+        ),
+        "aliases": {
+            "en": ["pump technical requirements", "rotodynamic pumps"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 9079", "relation": "product — monoset pumps"},
+            {"code": "IS 8034", "relation": "product — submersible pumpsets"},
+            {"code": "IS 8472", "relation": "product — self-priming pumps"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 11346",
+        "title": "Tests for Agricultural and Water Supply Pumpsets — Method",
+        "version": "2002 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "pumps",
+        "category": "Pump methods",
+        "summary": (
+            "Efficiency and performance testing of pumpsets. Cite it whenever a pump "
+            "tender promises an efficiency figure — otherwise acceptance is unmeasurable."
+        ),
+        "aliases": {
+            "en": ["pump efficiency test", "pump testing", "pumpset tests"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 9079", "relation": "product — monoset pumps"},
+            {"code": "IS 8034", "relation": "product — submersible pumpsets"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # --------------------------------------- FURNITURE & OFFICE EQUIPMENT
+    {
+        "code": "IS 11525",
+        "title": "Wooden Chairs for Office Purposes — Specification",
+        "version": "1986 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "furniture",
+        "category": "Office furniture",
+        "summary": (
+            "Wooden office chairs. Furniture purchases without a standard accept "
+            "staple-glued assemblies that fail within a year."
+        ),
+        "aliases": {
+            "en": ["office chairs", "wooden chairs", "staff chairs", "executive chairs",
+                   "work chairs"],
+            "hi": ["कुर्सी", "ऑफिस कुर्सी", "कार्यालय कुर्सी"],
+            "ta": ["நாற்காலி", "அலுவலக நாற்காலி"],
+            "te": ["కుర్చీ", "ఆఫీస్ కుర్చీలు"],
+        },
+        "allied": [
+            {"code": "IS 11679", "relation": "related — office tables"},
+            {"code": "IS 303", "relation": "material — plywood components"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 11679",
+        "title": "Wooden Tables for Office Use — Specification",
+        "version": "1986 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "furniture",
+        "category": "Office furniture",
+        "summary": (
+            "Wooden office tables/desks — workmanship, dimensions, glue-adhesion and "
+            "finish requirements. Pair with IS 11525 for full office furniture supply."
+        ),
+        "aliases": {
+            "en": ["office tables", "wooden tables", "office desks", "study tables"],
+            "hi": ["मेज", "ऑफिस मेज", "डेस्क"],
+            "ta": ["மேசை"],
+            "te": ["టేబుల్", "ఆఫీస్ టేబుల్"],
+        },
+        "allied": [
+            {"code": "IS 11525", "relation": "related — office chairs"},
+            {"code": "IS 303", "relation": "material — plywood components"},
+        ],
+        "certifications": [],
+        "examples": [
+            {
+                "bad": "'Wooden furniture as per approved sample'",
+                "good": "Office tables per IS 11679 and chairs per IS 11525",
+                "note": "Sample-only furniture clauses give no testable acceptance criteria.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------ MEDICAL & HOSPITAL SUPPLIES
+    {
+        "code": "IS 16289",
+        "title": "Medical Textiles — Surgical Face Masks — Specification",
+        "version": "2014 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "medical",
+        "category": "Medical textiles",
+        "summary": (
+            "Surgical face masks (bacterial filtration, splash resistance). Mask "
+            "tenders must state the standard AND registration status — '3-ply masks' "
+            "alone is not a specification."
+        ),
+        "aliases": {
+            "en": ["face masks", "surgical masks", "3 ply masks", "medical masks",
+                   "surgical face masks"],
+            "hi": ["फेस मास्क", "सर्जिकल मास्क"],
+            "ta": ["முகக்கவசம்"],
+            "te": ["ఫేస్ మాస్క్", "సర్జికల్ మాస్క్"],
+        },
+        "allied": [],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — verify applicability",
+                "authority": "BIS",
+                "note": "Confirm current QCO/registration scope for the mask category "
+                        "before tendering; medical devices additionally fall under the "
+                        "Drugs and Cosmetics Rules/MDR 2017 (CDSCO).",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 13422",
+        "title": "Single-Use Sterile Rubber Surgical Gloves — Specification",
+        "version": "2024 (first revision, aligned with ISO 10282:2023)",
+        "amendments": [],
+        "status": "active",
+        "sector": "medical",
+        "category": "Hospital consumables",
+        "summary": (
+            "Sterile surgical gloves for operation theatres. A 2024 revision replaced "
+            "the 1992 edition — legacy tenders still cite IS 13422:1992. A QCO for "
+            "medical gloves has been notified/drafted (verify current status)."
+        ),
+        "aliases": {
+            "en": ["surgical gloves", "sterile gloves", "operation theatre gloves",
+                   "ot gloves"],
+            "hi": ["सर्जिकल दस्ताने"],
+            "ta": ["அறுவை கையுறைகள்"],
+            "te": ["సర్జికల్ గ్లవ్స్"],
+        },
+        "allied": [
+            {"code": "IS 15354 (Part 1)", "relation": "related — examination gloves"},
+            {"code": "IS 4905", "relation": "method — random sampling for acceptance"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — Medical Gloves QCO (verify)",
+                "authority": "BIS",
+                "note": "A Quality Control Order covering surgical and examination gloves "
+                        "has been progressed — verify the current notification before "
+                        "tendering.",
+            },
+        ],
+        "examples": [
+            {
+                "bad": "IS 13422:1992",
+                "good": "IS 13422:2024 (single-use sterile rubber surgical gloves)",
+                "note": "The 1992 disposable-glove edition is superseded by the 2024 revision.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 15354 (Part 1)",
+        "title": "Single-Use Medical Examination Gloves — Specification (Part 1: Rubber)",
+        "version": "2023 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "medical",
+        "category": "Hospital consumables",
+        "summary": (
+            "Non-sterile examination gloves (Part 1 covers rubber; verify the part for "
+            "other materials such as nitrile). Distinct from sterile surgical gloves "
+            "(IS 13422) — hospital tenders routinely blur the two."
+        ),
+        "aliases": {
+            "en": ["examination gloves", "disposable gloves", "latex gloves",
+                   "medical examination gloves"],
+            "hi": ["परीक्षण दस्ताने"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 13422", "relation": "related — sterile surgical gloves"},
+            {"code": "IS 4905", "relation": "method — random sampling"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — Medical Gloves QCO (verify)",
+                "authority": "BIS",
+                "note": "Covered by the medical-gloves QCO process — verify current status.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 4905",
+        "title": "Methods for Random Sampling",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "medical",
+        "category": "Test & sampling methods",
+        "summary": (
+            "Statistical random-sampling method referenced by acceptance schedules "
+            "for consumables such as gloves and masks."
+        ),
+        "aliases": {
+            "en": ["random sampling", "sampling method", "acceptance sampling"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------- DOORS (QCO-NOTIFIED, CONSTRUCTION)
+    {
+        "code": "IS 2191 (Part 1)",
+        "title": "Wooden Flush Door Shutters (Cellular and Hollow Core Type) with Plywood Face Panels — Specification",
+        "version": "2022",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Doors & shutters",
+        "summary": (
+            "Flush door shutters with plywood faces — notified under BIS mandatory "
+            "certification for furniture/wood products; ISI mark applies."
+        ),
+        "aliases": {
+            "en": ["flush doors", "wooden doors", "door shutters", "hollow core doors"],
+            "hi": ["दरवाजे", "लकड़ी के दरवाजे"],
+            "ta": ["கதவுகள்"],
+            "te": ["తలుపులు"],
+        },
+        "allied": [
+            {"code": "IS 303", "relation": "material — plywood face panels"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — QCO",
+                "authority": "BIS",
+                "note": "Wooden flush door shutters are under mandatory certification — "
+                        "ISI mark required.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2191 (Part 2)",
+        "title": "Wooden Flush Door Shutters (Cellular and Hollow Core Type) with Particle Board and Hardboard Face Panels — Specification",
+        "version": "2022",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Doors & shutters",
+        "summary": (
+            "Flush door shutters with particle-board/hardboard faces — QCO-notified "
+            "companion to IS 2191 (Part 1)."
+        ),
+        "aliases": {
+            "en": ["flush doors", "wooden doors", "door shutters", "particle board doors"],
+            "hi": ["दरवाजे", "लकड़ी के दरवाजे"],
+            "ta": ["கதவுகள்"],
+            "te": ["తలుపులు"],
+        },
+        "allied": [
+            {"code": "IS 303", "relation": "related — plywood alternative faces"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) — QCO",
+                "authority": "BIS",
+                "note": "Wooden flush door shutters are under mandatory certification.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ---------------------------------- KITCHEN APPLIANCES (QCO-LONG-STANDING)
+    {
+        "code": "IS 2347",
+        "title": "Domestic Pressure Cookers — Specification",
+        "version": "2023 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "appliances",
+        "category": "Kitchen appliances",
+        "summary": (
+            "Domestic pressure cookers — among the longest-standing mandatory BIS "
+            "certification items; only ISI-marked cookers may be sold in India."
+        ),
+        "aliases": {
+            "en": ["pressure cooker", "pressure cookers", "cookers", "domestic pressure cookers"],
+            "hi": ["प्रेशर कुकर", "कुकर"],
+            "ta": ["பிரஷர் குக்கர்"],
+            "te": ["ప్రెషర్ కుక్కర్"],
+        },
+        "allied": [],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Domestic pressure cookers cannot legally be sold without BIS "
+                        "certification — insist on the ISI mark in the contract.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------------------------------ CONCRETE METHODS
+    {
+        "code": "IS 516",
+        "title": "Method of Tests for Strength of Concrete",
+        "version": "2021 (Part 1, Section 1 — compressive strength) — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": (
+            "Cube/cylinder strength testing of concrete. The 2021 revision restructured "
+            "it into parts — blanket 'IS 516' citations should name the part relied on."
+        ),
+        "aliases": {
+            "en": ["concrete testing", "compressive strength test", "concrete cube test",
+                   "strength of concrete", "concrete strength"],
+            "hi": ["कंक्रीट परीक्षण"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 456", "relation": "usage — concrete code of practice"},
+            {"code": "IS 10262", "relation": "related — mix proportioning"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 10262",
+        "title": "Guidelines for Concrete Mix Design Proportioning",
+        "version": "2019 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": (
+            "How designed mixes are proportioned for specified grades — the companion "
+            "to IS 456 acceptance requirements."
+        ),
+        "aliases": {
+            "en": ["mix design", "concrete mix proportioning", "mix proportioning"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 456", "relation": "usage — concrete code of practice"},
+            {"code": "IS 516", "relation": "method — strength verification"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2386",
+        "title": "Methods of Test for Aggregates for Concrete (Parts 1–8)",
+        "version": "1963 (reaffirmed) — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": "The multi-part test battery behind IS 383 aggregate acceptance.",
+        "aliases": {
+            "en": ["aggregate testing", "aggregate tests", "aggregate quality tests"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 383", "relation": "material — aggregate specification"},
+            {"code": "IS 2430", "relation": "method — sampling of aggregates"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2430",
+        "title": "Methods for Sampling of Aggregates for Concrete",
+        "version": "1986 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": "How aggregate lots are sampled before IS 2386 testing.",
+        "aliases": {
+            "en": ["aggregate sampling"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 2386", "relation": "method — aggregate tests"},
+            {"code": "IS 383", "relation": "material — aggregate specification"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------------------------------ MASONRY METHODS
+    {
+        "code": "IS 3495 (Parts 1–4)",
+        "title": "Methods of Tests of Burnt Clay Building Bricks (Parts 1–4)",
+        "version": "1992 — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": (
+            "Determination of compressive strength, water absorption, efflorescence "
+            "and warpage of bricks — the acceptance battery for IS 1077 supplies."
+        ),
+        "aliases": {
+            "en": ["brick testing", "brick water absorption test",
+                   "brick compressive strength", "brick tests"],
+            "hi": ["ईंट परीक्षण"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1077", "relation": "material — brick specification"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1905",
+        "title": "Code of Practice for Structural Use of Unreinforced Masonry",
+        "version": "1987 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Masonry design",
+        "summary": "Structural design rules for masonry built from IS 1077 bricks.",
+        "aliases": {
+            "en": ["masonry design", "structural masonry", "masonry code"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1077", "relation": "material — bricks"},
+            {"code": "IS 2212", "relation": "code — brickwork execution"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2212",
+        "title": "Code of Practice for Brickwork",
+        "version": "1991 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Masonry construction",
+        "summary": "Execution practice for brickwork — mortar, bonds, tolerances.",
+        "aliases": {
+            "en": ["brickwork", "brick laying", "masonry construction"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1077", "relation": "material — bricks"},
+            {"code": "IS 1905", "relation": "code — masonry design"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1734",
+        "title": "Methods of Test for Plywood (Parts 1–20)",
+        "version": "Part-wise editions — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Test methods",
+        "summary": "The test battery behind IS 303 plywood acceptance (glue adhesion etc.).",
+        "aliases": {
+            "en": ["plywood testing", "plywood tests"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 303", "relation": "material — plywood specification"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 3646 (Part 1)",
+        "title": "Code of Practice for Interior Illumination (Part 1)",
+        "version": "1992 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Lighting design",
+        "summary": (
+            "Interior illumination design practice — pairs with luminaire safety "
+            "(IS 10322) in lighting tenders."
+        ),
+        "aliases": {
+            "en": ["interior illumination", "lighting design", "illumination code"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 10322 (Part 5)", "relation": "product — luminaires"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 5831",
+        "title": "PVC Insulation and Sheath of Electric Cables — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Cable materials",
+        "summary": "The insulation/sheath material standard behind IS 694 and IS 1554 cables.",
+        "aliases": {
+            "en": ["pvc compound", "cable insulation material", "pvc insulation"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1554 (Part 1)", "relation": "usage — heavy-duty cables"},
+            {"code": "IS 694", "relation": "usage — internal wiring cables"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 3854",
+        "title": "Switches for Domestic Purposes — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "electronics",
+        "category": "Electrical accessories",
+        "summary": (
+            "Domestic switches (light/board switches). Long-standing mandatory ISI "
+            "certification applies."
+        ),
+        "aliases": {
+            "en": ["switches", "light switches", "electrical switches", "board switches",
+                   "modular switches"],
+            "hi": ["स्विच", "बोर्ड स्विच"],
+            "ta": ["ஸ்விச்"],
+            "te": ["స్విచ్"],
+        },
+        "allied": [
+            {"code": "IS 1293", "relation": "related — plugs & socket-outlets"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark)",
+                "authority": "BIS",
+                "note": "Domestic switches carry long-standing mandatory BIS certification.",
+            },
+        ],
+        "examples": [
+            {
+                "bad": "'Modular switches of reputed make'",
+                "good": "Switches per IS 3854 with valid ISI mark",
+                "note": "'Reputed make' cannot be enforced; the ISI mark can.",
+            }
+        ],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 1391 (Part 2)",
+        "title": "Room Air Conditioners — Specification (Part 2: Split Type)",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "appliances",
+        "category": "Cooling appliances",
+        "summary": "Split room air conditioners — mandatory BEE star labelling applies.",
+        "aliases": {
+            "en": ["split ac", "split air conditioner", "split units"],
+            "hi": ["स्प्लिट एसी"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1391 (Part 1)", "relation": "related — unitary (window) units"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BEE Star Rating",
+                "authority": "Bureau of Energy Efficiency",
+                "note": "Room air conditioners carry mandatory BEE star labelling — state "
+                        "the minimum star rating in the tender.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ------------------------------------------------------------ WATER METHODS & PIPES
+    {
+        "code": "IS 4985",
+        "title": "Unplasticized PVC (uPVC) Pipes for Water Supply — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "water",
+        "category": "Pipes & fittings",
+        "summary": (
+            "uPVC water-supply pipes — what many 'PVC pipe' tenders actually need; "
+            "distinct from HDPE (IS 4984)."
+        ),
+        "aliases": {
+            "en": ["upvc pipes", "pvc pipes", "pvc water pipes"],
+            "hi": ["पीवीसी पाइप"],
+            "te": ["పీవీసీ పైపులు"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 4984", "relation": "related — HDPE pipes"},
+            {"code": "IS 10500", "relation": "normative context — drinking water quality"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 3597",
+        "title": "Method of Hydrostatic Testing of Concrete Pipes",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "water",
+        "category": "Test methods",
+        "summary": "Acceptance testing behind IS 458 concrete pipe supplies.",
+        "aliases": {
+            "en": ["hydrostatic testing", "pipe testing"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 458", "relation": "material — concrete pipes"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 783",
+        "title": "Code of Practice for Laying of Concrete Pipes",
+        "version": "1985 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "water",
+        "category": "Installation",
+        "summary": "Bedding, laying and jointing practice for concrete pipe mains.",
+        "aliases": {
+            "en": ["pipe laying", "concrete pipe laying", "pipeline construction"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 458", "relation": "material — concrete pipes"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 3025",
+        "title": "Methods of Sampling and Test (Physical and Chemical) for Water (Parts 1–60+)",
+        "version": "Part-wise editions — verify part applicability",
+        "amendments": [],
+        "status": "active",
+        "sector": "water",
+        "category": "Test methods",
+        "summary": (
+            "The water-analysis test battery behind IS 10500 (drinking water) and "
+            "packaged-water acceptance. Name the parts your acceptance schedule uses."
+        ),
+        "aliases": {
+            "en": ["water testing", "water analysis methods", "water quality tests"],
+            "hi": ["जल परीक्षण"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 10500", "relation": "context — drinking water limits"},
+            {"code": "IS 14543", "relation": "context — packaged drinking water"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 13428",
+        "title": "Packaged Natural Mineral Water — Specification",
+        "version": "2005 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "food",
+        "category": "Packaged foods",
+        "summary": (
+            "Packaged natural MINERAL water — the legally distinct category from "
+            "packaged drinking water (IS 14543). Both are BIS-mandatory."
+        ),
+        "aliases": {
+            "en": ["mineral water", "packaged mineral water"],
+            "hi": ["खनिज जल"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 14543", "relation": "related — packaged drinking water (distinct)"},
+            {"code": "IS 3025", "relation": "method — water analysis"},
+        ],
+        "certifications": [
+            {
+                "scheme": "BIS Product Certification (ISI Mark) + FSSAI licence",
+                "authority": "BIS / FSSAI",
+                "note": "BIS certification is mandatory for packaged natural mineral water; "
+                        "ISI mark on every unit plus FSSAI licensing.",
+            },
+        ],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+
+    # ----------------------------------------------------- REINFORCEMENT & FIRE PRACTICE
+    {
+        "code": "IS 2751",
+        "title": "Code of Practice for Welding of Mild Steel Bars Used in Reinforced Concrete Construction",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Reinforcement practice",
+        "summary": "Rules for welding reinforcement bars — cited whenever bars are butted or spliced.",
+        "aliases": {
+            "en": ["bar welding", "reinforcement welding"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1786", "relation": "material — high strength deformed bars"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2502",
+        "title": "Code of Practice for Bending and Fixing of Bars for Concrete Reinforcement",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "construction",
+        "category": "Reinforcement practice",
+        "summary": "Bar-bending schedule practice — pairs with IS 1786 material supply.",
+        "aliases": {
+            "en": ["bar bending", "bar bending schedule", "reinforcement fixing"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 1786", "relation": "material — reinforcement bars"},
+            {"code": "IS 456", "relation": "usage — concrete works"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 6994",
+        "title": "Industrial Safety Belts and Harnesses — Specification",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "safety",
+        "category": "Personal protective equipment",
+        "summary": "Fall-protection belts and harnesses for work at height.",
+        "aliases": {
+            "en": ["safety belts", "safety harness", "full body harness", "fall protection"],
+            "hi": ["सुरक्षा बेल्ट", "हार्नेस"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 2925", "relation": "related — safety helmets"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2190",
+        "title": "Code of Practice for Selection, Installation and Maintenance of Portable First-Aid Fire Extinguishers",
+        "version": "1992 — verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "safety",
+        "category": "Fire safety",
+        "summary": "How extinguishers are placed, inspected and maintained after purchase.",
+        "aliases": {
+            "en": ["fire extinguisher maintenance", "extinguisher installation",
+                   "extinguisher placement"],
+            "hi": [],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 15683", "relation": "product — portable extinguishers"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
+    {
+        "code": "IS 2189",
+        "title": "Code of Practice for Selection, Installation and Maintenance of Automatic Fire Alarm Systems",
+        "version": "verify consolidated edition",
+        "amendments": [],
+        "status": "active",
+        "sector": "safety",
+        "category": "Fire safety",
+        "summary": "Fire alarm system design/installation — the missed companion in fire-safety packages.",
+        "aliases": {
+            "en": ["fire alarm", "fire alarm system", "smoke detectors", "alarm installation"],
+            "hi": ["फायर अलार्म"],
+            "ta": [],
+        },
+        "allied": [
+            {"code": "IS 15683", "relation": "related — extinguishers"},
+        ],
+        "certifications": [],
+        "examples": [],
+        "last_reviewed": "2026-09-29",
+    },
 ]
+
+
+# ------------------------------------------------------------- snapshot merge
+# Offline-imported rows (bis_engine/data/generated/bis_catalog.json, produced by
+# `python -m bis_engine.data.importers.bis_snapshot`) extend the seed at import
+# time. Seed records stay authoritative: snapshot rows never shadow them unless
+# the importer ran with --force (recorded as "force": true in the payload).
+_GENERATED_PATH = Path(__file__).resolve().parent / "generated" / "bis_catalog.json"
+
+
+def _load_generated_payload() -> dict:
+    try:
+        payload = json.loads(_GENERATED_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _merge_snapshot_records(seed: list[dict]) -> list[dict]:
+    payload = _load_generated_payload()
+    records = payload.get("records", [])
+    if not isinstance(records, list):
+        return list(seed)
+
+    def _nc(code: str) -> str:  # normalize_code is defined further below
+        return re.sub(r"\s+", " ", str(code).strip().lower())
+
+    merged = list(seed)
+    by_key = {_nc(s["code"]): i for i, s in enumerate(merged)}
+    for rec in records:
+        if not isinstance(rec, dict):
+            continue
+        key = _nc(str(rec.get("code", "")))
+        if not key:
+            continue
+        if key in by_key:
+            if rec.get("force"):
+                merged[by_key[key]] = {**seed[by_key[key]], **rec}
+            continue
+        by_key[key] = len(merged)
+        merged.append(rec)
+    return merged
+
+
+_snapshot_payload = _load_generated_payload()
+_snapshot_count = len(_snapshot_payload.get("records", []) or [])
+
+STANDARDS = _merge_snapshot_records(_SEED_STANDARDS)
+
+SYNC_HEALTH = {
+    "mode": "seed+snapshot" if _snapshot_count else "seed",
+    "last_synced": _snapshot_payload.get("imported_on") or LAST_SYNCED,
+    "source_note": (
+        f"Curated seed catalogue + {_snapshot_count} offline-imported snapshot record(s) "
+        "(demo). Live BIS reconciliation not configured."
+    ) if _snapshot_count else
+    "Curated seed catalogue (demo). Live BIS reconciliation not configured.",
+    "snapshot_records": _snapshot_count,
+}
 
 
 def all_standards() -> list[dict]:

@@ -11,48 +11,49 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
       <nav class="main-nav" aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/standards">Explore Standards</a>
-        <a href="/analyzer">Tender Analyzer</a>
-        <a href="/alerts">Compliance Alerts</a>
-        <a href="/docs-page">API Docs</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap">
     <section class="hero">
-      <h1>Find the right Indian Standard — in plain language.</h1>
-      <p>Describe a product the way you'd say it in a meeting. The engine maps your words to
+      <h1 data-i18n="home.hero.title">Find the right Indian Standard — in plain language.</h1>
+      <p data-i18n="home.hero.sub">Describe a product the way you'd say it in a meeting. The engine maps your words to
          Indian Standards (BIS codes), bundles the allied test and material standards, and warns
          you about mandatory certifications before a tender goes out.</p>
       <form class="searchbar" id="search-form" role="search">
         <label class="skip-link" for="q">Search standards</label>
-        <input id="q" name="q" type="search" autocomplete="off" placeholder="e.g. cooling units for the new office block, drinking water pipes, TMT bars…">
-        <button type="submit">Search</button>
+        <input id="q" name="q" type="search" autocomplete="off" data-i18n-ph="home.search.ph" placeholder="e.g. cooling units for the new office block, drinking water pipes, TMT bars…">
+        <button type="submit" data-i18n="home.search.btn">Search</button>
       </form>
       <div class="chips" id="chips">
-        <button class="chip" type="button">cooling unit for office</button>
-        <button class="chip" type="button">drinking water pipes</button>
-        <button class="chip" type="button">TMT bars for slab</button>
-        <button class="chip" type="button">पानी के पाइप</button>
-        <button class="chip" type="button">fire extinguishers for server room</button>
-        <button class="chip" type="button">sockets and switches</button>
+        <button class="chip" type="button" data-i18n="home.chip1">cooling unit for office</button>
+        <button class="chip" type="button" data-i18n="home.chip2">drinking water pipes</button>
+        <button class="chip" type="button" data-i18n="home.chip3">TMT bars for slab</button>
+        <button class="chip" type="button" data-i18n="home.chip4">पानी के पाइप</button>
+        <button class="chip" type="button" data-i18n="home.chip5">fire extinguishers for server room</button>
+        <button class="chip" type="button" data-i18n="home.chip6">sockets and switches</button>
       </div>
-      <span class="disclaimer-chip" id="sync-chip">⚠ Seed catalogue demo — verify against official BIS before tender citation</span>
+      <span class="disclaimer-chip" id="sync-chip" data-i18n="home.syncchip">⚠ Seed catalogue demo — verify against official BIS before tender citation</span>
     </section>
 
     <section class="card no-print" id="features">
-      <h2>What this assistant does</h2>
+      <h2 data-i18n="home.features.title">What this assistant does</h2>
       <div class="grid cols-3">
-        <div><span class="feature-icon">🧠</span><h3 style="margin:.3rem 0">Semantic search</h3>
-          <p class="small muted">"Cooling unit", "cooling unit for office" or AC — intent-based matching, not keyword lookup.</p></div>
-        <div><span class="feature-icon">🔗</span><h3 style="margin:.3rem 0">Allied standard bundling</h3>
-          <p class="small muted">Normative references, test methods and companion codes suggested with every primary hit.</p></div>
-        <div><span class="feature-icon">🏷️</span><h3 style="margin:.3rem 0">Certification alerts</h3>
-          <p class="small muted">Mandatory schemes (CRS, ISI mark, BEE star labelling) flagged where applicable.</p></div>
+        <div><span class="feature-icon">🧠</span><h3 style="margin:.3rem 0" data-i18n="home.f1.t">Semantic search</h3>
+          <p class="small muted" data-i18n="home.f1.d">"Cooling unit", "geyser" or AC — intent-based matching, not keyword lookup.</p></div>
+        <div><span class="feature-icon">🔗</span><h3 style="margin:.3rem 0" data-i18n="home.f2.t">Allied standard bundling</h3>
+          <p class="small muted" data-i18n="home.f2.d">Normative references, test methods and companion codes suggested with every primary hit.</p></div>
+        <div><span class="feature-icon">🏷️</span><h3 style="margin:.3rem 0" data-i18n="home.f3.t">Certification alerts</h3>
+          <p class="small muted" data-i18n="home.f3.d">Mandatory schemes (CRS, ISI mark, BEE star labelling) flagged where applicable.</p></div>
       </div>
     </section>
 
@@ -60,10 +61,13 @@
   </main>
 
   <footer class="site-footer">
-    MVP demo · seed catalogue · <span id="stats"></span> · <a href="/docs-page">API docs</a>
+    <span data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</span> ·
+    <span id="stats"></span> · <a href="/docs-page">API docs</a>
   </footer>
 
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/home.js"></script>
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>

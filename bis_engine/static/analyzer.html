@@ -4,50 +4,59 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tender Analyzer — BIS Standards Assistant</title>
-  <meta name="description" content="Paste a product description or tender specification and get a red/amber/green report: relevant standards, missing allied standards, mandatory certifications and outdated code references.">
+  <meta name="description" content="Paste or upload a product description / tender specification and get a red/amber/green report: relevant standards, missing allied standards, mandatory certifications and outdated code references — plus copy-ready specification clauses.">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
       <nav class="main-nav" aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/standards">Explore Standards</a>
-        <a href="/analyzer">Tender Analyzer</a>
-        <a href="/alerts">Compliance Alerts</a>
-        <a href="/docs-page">API Docs</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap">
-    <h1>Tender Analyzer</h1>
-    <p class="muted">Paste a product description, technical specification or draft tender text.
+    <h1 data-i18n="an.title">Tender Analyzer</h1>
+    <p class="muted" data-i18n="an.sub">Paste a product description, technical specification or draft tender text.
        The engine identifies relevant Indian Standards, missing allied/normative standards,
        mandatory certification requirements and outdated code references.</p>
 
     <section class="card no-print">
-      <label for="spec"><strong>Specification text</strong> (min 10 characters, max 20,000)</label><br><br>
-      <textarea id="spec" class="spec-input" placeholder="Example:
+      <label for="spec"><strong data-i18n="an.spec.label">Specification text</strong> <span class="muted small">(min 10 / max 20,000)</span></label><br><br>
+      <textarea id="spec" class="spec-input" data-i18n-ph="an.spec.ph" placeholder="Example:
 Supply and installation of room air conditioners for the office block. Units shall be
 window type, 1.5 ton, with copper condenser. TMT bars Fe 500 per IS 1786:2008 shall be
 used for the plinth. Supply of packaged drinking water in 20 L jars for staff."></textarea>
       <br><br>
-      <button id="analyze-btn" class="btn">Analyze specification</button>
-      <button id="demo-btn" class="btn secondary" type="button">Load sample tender text</button>
-      <div id="status" class="muted small" style="margin-top:.75rem"></div>
+      <button id="analyze-btn" class="btn" data-i18n="an.analyze.btn">Analyze specification</button>
+      <button id="demo-btn" class="btn secondary" type="button" data-i18n="an.sample.btn">Load sample tender text</button>
+
+      <div class="upload-zone" id="upload-zone">
+        <span class="muted small" data-i18n="an.upload.label">…or upload a tender document (PDF / DOCX, max 10 MB)</span>
+        <input type="file" id="file-input" accept=".pdf,.docx" class="visually-hidden-input">
+        <button id="file-btn" class="btn secondary" type="button" data-i18n="an.upload.btn">Analyze file</button>
+      </div>
+      <div id="status" class="muted small" style="margin-top:.75rem" role="status"></div>
     </section>
 
     <section id="report" aria-live="polite"></section>
   </main>
 
   <footer class="site-footer">
-    MVP demo · seed catalogue · recommendations are decision support, not a compliance guarantee.
+    <span data-i18n="footer.demo">MVP demo · seed catalogue · recommendations are decision support, not a compliance guarantee.</span>
   </footer>
 
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/analyzer.js"></script>
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>

@@ -4,41 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>API Docs — BIS Standards Assistant</title>
-  <meta name="description" content="REST API reference for the BIS Standards Recommendation Engine MVP: search, tender analysis, catalogue and certification endpoints.">
+  <meta name="description" content="REST API reference: search, tender analysis (text & file), specification clauses, report export, assistant, catalogue and certification endpoints.">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
       <nav class="main-nav" aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/standards">Explore Standards</a>
-        <a href="/analyzer">Tender Analyzer</a>
-        <a href="/alerts">Compliance Alerts</a>
-        <a href="/docs-page">API Docs</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap">
-    <h1>API Reference</h1>
-    <p class="muted">All endpoints are JSON over HTTP. Interactive OpenAPI docs:
+    <h1 data-i18n="docs.title">API Reference</h1>
+    <p class="muted" data-i18n="docs.sub">All endpoints are JSON over HTTP. Interactive OpenAPI docs:
        <a href="/docs">/docs</a> (Swagger UI) · <a href="/redoc">/redoc</a></p>
 
     <div class="card">
       <h2 style="margin-top:0"><span class="pill version">GET</span> /api/health</h2>
-      <p class="small muted">Service status, catalogue version, sync mode and index stats.</p>
-      <pre class="kbd" style="white-space:pre-wrap">{ "status": "ok", "catalog_version": "2026.09-seed-1",
-  "sync": { "mode": "seed", "last_synced": "2026-09-29" },
-  "stats": { "catalogue_size": 40, "alias_count": 362 } }</pre>
+      <p class="small muted">Service status, catalogue version, sync mode, retrieval mode and index stats.</p>
+      <pre class="kbd" style="white-space:pre-wrap">{ "status": "ok", "catalog_version": "2026.09-seed-2",
+  "retrieval_mode": "lexical",   // or "hybrid" with embeddings installed
+  "sync": { "mode": "seed", "last_synced": "2026-09-29",
+            "snapshot_records": 0 },   // "seed+snapshot" after an import
+  "stats": { "catalogue_size": 84, "alias_count": 612 } }</pre>
     </div>
 
     <div class="card">
       <h2 style="margin-top:0"><span class="pill version">GET</span> /api/search?q=…&amp;top_k=6</h2>
       <p class="small muted">Hybrid semantic + alias search. Multilingual queries supported
-        (Hindi, Tamil in the seed vocabulary). Returns <code>primary</code> plus ranked
+        (English, Hindi, Tamil, Telugu vocabularies). Returns <code>primary</code> plus ranked
         <code>alternatives</code> with confidence scores and matched aliases.</p>
       <pre class="kbd" style="white-space:pre-wrap">curl "http://localhost:8002/api/search?q=cooling+unit+for+office"</pre>
     </div>
@@ -54,9 +57,47 @@
     </div>
 
     <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze/file</h2>
+      <p class="small muted">Tender-document intake: multipart upload of a <strong>PDF or DOCX</strong>
+        (≤ 10 MB, ≤ 50 PDF pages). Text is extracted and the same analysis pipeline runs.
+        Scanned/image-only PDFs are rejected with a clear message (no OCR).</p>
+      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/analyze/file -F "file=@tender.pdf"</pre>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/spec-clauses</h2>
+      <p class="small muted">Draft tender clauses per identified primary: correct code + latest
+        known edition + amendments, allied standards to cite, and the mandatory certification
+        sentence. Copy-paste into a specification — then verify.</p>
+      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/spec-clauses \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Split air conditioners for the training hall."}'</pre>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze/export?format=markdown|json</h2>
+      <p class="small muted">Download the analysis report as a Markdown tender-review document
+        (attachment) or JSON.</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/assistant</h2>
+      <p class="small muted">Plain-language assistant. Body:
+        <code>{"message": "What is IS 456?", "lang": "en|hi|te"}</code>.
+        Template mode (default) answers only from the catalogue; with
+        <code>BIS_LLM_API_KEY</code> set, an LLM rephrases the same grounded sources in the
+        requested language and the response reports <code>mode: "llm"</code>. Every reply
+        cites only catalogue-backed codes.</p>
+      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/assistant \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Does a pressure cooker need ISI mark?", "lang": "en"}'</pre>
+    </div>
+
+    <div class="card">
       <h2 style="margin-top:0"><span class="pill version">GET</span> /api/standards[?sector=electronics]</h2>
       <p class="small muted">Browse the catalogue; filter by sector key
-        (construction, electronics, appliances, water, food, safety).</p>
+        (construction, cement, electronics, appliances, water, food, safety,
+        steel, pumps, furniture, medical).</p>
     </div>
 
     <div class="card">
@@ -72,6 +113,13 @@
         with the standards they apply to.</p>
     </div>
 
+    <div class="card">
+      <h2 style="margin-top:0">Offline catalogue import</h2>
+      <p class="small muted">The supported data path is an offline CSV snapshot — no live crawling:</p>
+      <pre class="kbd" style="white-space:pre-wrap">python -m bis_engine.data.importers.bis_snapshot --input snapshot.csv
+# template: bis_engine/data/snapshots/template.csv</pre>
+    </div>
+
     <div class="alert-banner warn">
       <strong>Data status:</strong> the engine runs on a curated seed catalogue for demo
       purposes. Before production use in any procurement workflow, replace it with a
@@ -79,7 +127,8 @@
     </div>
   </main>
 
-  <footer class="site-footer">MVP demo · seed catalogue · <a href="/docs">OpenAPI</a></footer>
+  <footer class="site-footer">Demo · seed catalogue · <a href="/docs">OpenAPI</a></footer>
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
 </body>
 </html>

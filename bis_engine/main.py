@@ -17,13 +17,16 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
 from bis_engine.data.catalog import SECTORS, SYNC_HEALTH, all_standards, CATALOG_VERSION
 from bis_engine.engine.analyzer import TenderAnalyzer
+from bis_engine.engine.assistant import StandardsAssistant
+from bis_engine.engine.clauses import build_spec_clauses, report_to_markdown
+from bis_engine.engine.extract import ExtractionError, extract_text
 from bis_engine.engine.retriever import StandardsRetriever
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -34,11 +37,12 @@ app = FastAPI(
     description="Maps procurement language to Indian Standards (BIS) with allied-standard "
                 "mapping, version checks and mandatory certification alerts. MVP demo — "
                 "seed catalogue; verify against the official BIS catalogue.",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 retriever = StandardsRetriever()
 analyzer = TenderAnalyzer(retriever)
+assistant = StandardsAssistant(retriever)
 
 # Static files live at /static; pretty routes below serve the SPA pages.
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -62,6 +66,12 @@ class SearchRequest(BaseModel):
     top_k: int = Field(6, ge=1, le=20)
 
 
+class AssistantRequest(BaseModel):
+    message: str = Field(..., min_length=2, max_length=1000)
+    lang: str | None = Field(None, pattern="^(en|hi|te)$")
+    history: list[dict] | None = None
+
+
 # ------------------------------------------------------------------------ API
 @app.get("/api/health")
 def health() -> dict:
@@ -71,6 +81,7 @@ def health() -> dict:
         "version": app.version,
         "catalog_version": CATALOG_VERSION,
         "sync": SYNC_HEALTH,
+        "retrieval_mode": retriever.stats().get("retrieval_mode", "lexical"),
         "stats": retriever.stats(),
     }
 
@@ -104,6 +115,64 @@ def analyze(req: AnalyzeRequest) -> dict:
     """Full tender analysis: primaries, allied gaps, certifications, obsolete flags."""
     try:
         return analyzer.analyze(req.text)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/api/analyze/file")
+async def analyze_file(file: UploadFile = File(...)) -> dict:
+    """Tender-document intake: extract text from a PDF/DOCX upload, then run
+    the same analysis pipeline as POST /api/analyze."""
+    data = await file.read()
+    try:
+        text, _pages = extract_text(data, file.filename or "")
+    except ExtractionError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    try:
+        report = analyzer.analyze(text)
+    except ValueError as exc:
+        detail = str(exc)
+        if "20,000" in detail or "20000" in detail:
+            detail = ("Document text exceeds the 20,000-character analysis limit — "
+                      "upload the relevant specification section.")
+        raise HTTPException(status_code=422, detail=detail) from exc
+    report["meta"]["source_file"] = file.filename
+    return report
+
+
+@app.post("/api/spec-clauses")
+def spec_clauses(req: AnalyzeRequest) -> dict:
+    """Draft tender clauses (code + latest version + allied + certification) per primary."""
+    try:
+        report = analyzer.analyze(req.text)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return build_spec_clauses(report)
+
+
+@app.post("/api/analyze/export")
+def analyze_export(req: AnalyzeRequest, format: str = Query("markdown", pattern="^(markdown|json)$")):
+    """Download the analysis report as Markdown (default) or JSON."""
+    try:
+        report = analyzer.analyze(req.text)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if format == "json":
+        return report
+    md = report_to_markdown(report)
+    return Response(
+        content=md,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="specification-report.md"'},
+    )
+
+
+@app.post("/api/assistant")
+def assistant_endpoint(req: AssistantRequest) -> dict:
+    """Plain-language assistant. Template mode by default; LLM mode activates
+    automatically when BIS_LLM_API_KEY is set (falls back on any failure)."""
+    try:
+        return assistant.answer(req.message, lang=req.lang, history=req.history)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -149,6 +218,11 @@ def standard_detail_page(code: str):
 @app.get("/alerts")
 def alerts_page():
     return FileResponse(STATIC_DIR / "alerts.html")
+
+
+@app.get("/assistant")
+def assistant_page():
+    return FileResponse(STATIC_DIR / "assistant.html")
 
 
 @app.get("/docs-page")

@@ -5,7 +5,7 @@ Run from project root:  python -m pytest tests/bis_engine/ -v
 
 import pytest
 
-from bis_engine.data.catalog import all_standards, get_by_code
+from bis_engine.data.catalog import SECTORS, all_standards, get_by_code
 from bis_engine.engine.analyzer import TenderAnalyzer
 from bis_engine.engine.normalize import detect_script, normalize_text
 from bis_engine.engine.retriever import StandardsRetriever
@@ -24,7 +24,7 @@ def analyzer(retriever):
 # --------------------------------------------------------------------- data
 def test_catalogue_loads_with_required_fields():
     standards = all_standards()
-    assert len(standards) >= 40
+    assert len(standards) >= 80
     required = {"code", "title", "version", "amendments", "status", "sector",
                 "aliases", "allied", "certifications", "examples", "last_reviewed"}
     for std in standards:
@@ -33,9 +33,33 @@ def test_catalogue_loads_with_required_fields():
         # Guard against tuple/None slips from hand-edited entries:
         for field in ("title", "summary", "version", "category"):
             assert isinstance(std.get(field), str), f"{std['code']}.{field} must be a string"
-        assert std["sector"] in {"construction", "cement", "electronics", "appliances",
-                                 "water", "food", "safety"}
+        assert std["sector"] in SECTORS, f"{std['code']} has unknown sector {std['sector']}"
         assert isinstance(std["allied"], list) and isinstance(std["certifications"], list)
+
+
+def test_v02_expansion_sectors_present():
+    """v0.2 adds steel / pumps / furniture / medical coverage."""
+    sectors = {s["sector"] for s in all_standards()}
+    assert {"steel", "pumps", "furniture", "medical"} <= sectors
+
+
+def test_allied_graph_is_closed():
+    """Every IS code referenced in `allied` must resolve to a catalogue entry.
+
+    (Non-IS references such as IEC codes are allowed to stay external.)
+    """
+    for std in all_standards():
+        for ref in std["allied"]:
+            code = ref["code"]
+            if code.upper().startswith("IS"):
+                assert get_by_code(code) is not None, (
+                    f"{std['code']} references unknown allied code {code}")
+
+
+def test_aliases_have_english_vocabulary():
+    """Retrieval depends on the alias vocabulary — every entry needs English words."""
+    for std in all_standards():
+        assert std["aliases"].get("en"), f"{std['code']} has no English aliases"
 
 
 def test_get_by_code_loose_matching():
@@ -76,6 +100,28 @@ def test_search_colloquial_sariya(retriever):
     assert res["primary"]["standard"]["code"] == "IS 1786"
 
 
+def test_search_colloquial_ms_pipes(retriever):
+    res = retriever.search("ms pipes for plumbing lines")
+    assert res["primary"]["standard"]["code"] == "IS 1239 (Part 1)"
+
+
+def test_search_water_pump_maps_to_is_9079(retriever):
+    res = retriever.search("monoblock water pumps for the lift irrigation scheme")
+    assert res["primary"]["standard"]["code"] == "IS 9079"
+
+
+def test_search_telugu_query(retriever):
+    res = retriever.search("నీటి పైపులు")
+    assert res["primary"] is not None
+    assert res["primary"]["standard"]["sector"] == "water"
+
+
+def test_search_pressure_cooker_isi(retriever):
+    res = retriever.search("pressure cookers for staff quarters")
+    assert res["primary"]["standard"]["code"] == "IS 2347"
+    assert res["primary"]["standard"]["certifications"]
+
+
 def test_search_hindi_query(retriever):
     """Multilingual support: Hindi input resolves to the right standard."""
     res = retriever.search("पानी के पाइप")
@@ -105,7 +151,7 @@ def test_analyzer_flags_missing_allied_standards(analyzer):
     """Concrete + bricks without test/measurement standards => allied gaps."""
     report = analyzer.analyze("Supply of common burnt clay bricks for the boundary wall.")
     codes = [a["code"] for a in report["allied_missing"]]
-    assert "IS 3495" in codes            # brick test methods
+    assert "IS 3495 (Parts 1–4)" in codes  # brick test methods
     assert all(a["required_by"] == "IS 1077" for a in report["allied_missing"] if a["code"] == "IS 3495")
 
 

@@ -1,6 +1,0 @@
-fastapi
-uvicorn
-pydantic
-opennsfw2
-tf_keras
-tensorflow-cpu

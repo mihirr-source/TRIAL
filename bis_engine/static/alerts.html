@@ -11,20 +11,21 @@
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
       <nav class="main-nav" aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/standards">Explore Standards</a>
-        <a href="/analyzer">Tender Analyzer</a>
-        <a href="/alerts">Compliance Alerts</a>
-        <a href="/docs-page">API Docs</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" datai18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap">
-    <h1>Compliance Alerts</h1>
-    <p class="muted">Some product categories cannot be procured without a mandatory certification —
+    <h1 data-i18n="alerts.title">Compliance Alerts</h1>
+    <p class="muted" data-i18n="alerts.sub">Some product categories cannot be procured without a mandatory certification —
        a technically compliant tender that omits the certificate requirement still fails.
        Below are the schemes mapped in the current catalogue and the standards they apply to.</p>
 
@@ -33,9 +34,11 @@
     </section>
   </main>
 
-  <footer class="site-footer">MVP demo · seed catalogue · verify QCO scope against official notifications.</footer>
+  <footer class="site-footer"><span data-i18n="footer.demo">MVP demo · seed catalogue · verify QCO scope against official notifications.</span></footer>
 
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/alerts.js"></script>
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>

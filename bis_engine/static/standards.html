@@ -4,27 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Explore Standards — BIS Standards Assistant</title>
-  <meta name="description" content="Browse the seed catalogue of Indian Standards by sector: construction, electronics, appliances, water, food and safety.">
+  <meta name="description" content="Browse the catalogue of Indian Standards by sector: construction, steel, pumps, electronics, appliances, water, food, furniture, medical, safety and cement.">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
     <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> BIS Standards Assistant</a>
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
       <nav class="main-nav" aria-label="Main">
-        <a href="/">Home</a>
-        <a href="/standards">Explore Standards</a>
-        <a href="/analyzer">Tender Analyzer</a>
-        <a href="/alerts">Compliance Alerts</a>
-        <a href="/docs-page">API Docs</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
       </nav>
     </div>
   </header>
 
   <main id="main" class="wrap">
-    <h1>Explore Standards</h1>
-    <p class="muted">Seed catalogue, grouped by sector. Each entry shows the current version we
+    <h1 data-i18n="std.title">Explore Standards</h1>
+    <p class="muted" data-i18n="std.sub">Catalogue, grouped by sector. Each entry shows the current version we
        hold, allied standards, and certification requirements where applicable.</p>
 
     <div class="chips" id="sector-chips" style="margin-bottom:1rem"></div>
@@ -34,9 +35,11 @@
     </section>
   </main>
 
-  <footer class="site-footer">MVP demo · seed catalogue · verify against official BIS.</footer>
+  <footer class="site-footer"><span data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</span></footer>
 
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/standards.js"></script>
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Assistant — BIS Standards Assistant</title>
+  <meta name="description" content="Ask about Indian Standards in plain language — the assistant answers only from the standards catalogue, in English, Hindi or Telugu.">
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
+        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
+        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
+        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
+        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <h1 data-i18n="asst.title">AI Assistant</h1>
+    <p class="muted" data-i18n="asst.sub">Ask about Indian Standards in simple words — English, हिन्दी or తెలుగు.
+       The assistant answers only from the standards catalogue and never invents codes.</p>
+
+    <div class="card" id="chat-page">
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <div class="chips" id="chat-suggest">
+        <button class="chip" type="button" data-i18n="asst.suggest1">What is IS 456?</button>
+        <button class="chip" type="button" data-i18n="asst.suggest2">Which standard for drinking water pipes?</button>
+        <button class="chip" type="button" data-i18n="asst.suggest3">Does a pressure cooker need ISI mark?</button>
+        <button class="chip" type="button" data-i18n="asst.suggest4">Latest version of IS 1786?</button>
+      </div>
+      <form id="chat-form" class="searchbar" style="margin-top:1rem">
+        <input id="chat-input" type="text" autocomplete="off" data-i18n-ph="asst.ph"
+               placeholder="Ask anything… e.g. “Which standard for drinking water pipes?”">
+        <button type="submit" data-i18n="asst.send">Send</button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer"><span data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</span></footer>
+
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/chat.js"></script>
+</body>
+</html>

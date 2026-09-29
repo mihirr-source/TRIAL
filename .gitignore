@@ -7,11 +7,11 @@ venv/
 
 # Temp artifacts
 temp_*
-ai_shield_*
 *.log
+.pytest_cache/
 
-# Model weights (auto-downloaded on first run)
-backend/nsfw/weights/
+# Offline importer outputs (generated from snapshot CSVs)
+bis_engine/data/generated/
 
 # Tooling
 .freebuff/
