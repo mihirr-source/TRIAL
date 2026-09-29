@@ -3,46 +3,130 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tender Analyzer — BIS Standards Assistant</title>
+  <title>Tender Analyzer — BIS Standards Engine</title>
   <meta name="description" content="Paste or upload a product description / tender specification and get a red/amber/green report: relevant standards, missing allied standards, mandatory certifications and outdated code references — plus copy-ready specification clauses.">
+  
+  <!-- Anti-flash inline script -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem("bis_theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="site-header">
-    <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
-      <nav class="main-nav" aria-label="Main">
-        <a href="/" data-i18n="nav.home">Home</a>
-        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
-        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
-        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
-        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
-        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
-      </nav>
+
+  <!-- Header / Navbar -->
+  <!-- Header / Navbar -->
+  <header class="site-header scrolled" id="site-header">
+    <div class="header-container">
+      <div class="header-left">
+        <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          ☰
+        </button>
+        <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+          <span class="brand-shield">IS</span>
+          <span data-i18n="brand">BIS Standards Engine</span>
+        </a>
+      </div>
+
+      <div class="header-actions">
+        <!-- User Profile & Logout Action -->
+        <div id="user-profile-badge" class="user-badge" style="display:inline-flex;">
+          <span class="user-avatar" id="nav-user-avatar">👤</span>
+          <span class="user-name-text" id="nav-user-name">User</span>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
+            <span>⏻</span> Logout
+          </button>
+        </div>
+
+        <!-- Language Switcher Dropdown -->
+        <div class="lang-dropdown-container">
+          <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
+            🌐 <span id="current-lang-label" style="margin-left:4px; font-weight:600;">English</span> ▾
+          </button>
+          <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
+            <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
+            <button class="lang-option" type="button" data-lang="hi" role="menuitem">हिन्दी</button>
+            <button class="lang-option" type="button" data-lang="te" role="menuitem">తెలుగు</button>
+          </div>
+        </div>
+
+        <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
+          <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="main" class="wrap">
-    <h1 data-i18n="an.title">Tender Analyzer</h1>
-    <p class="muted" data-i18n="an.sub">Paste a product description, technical specification or draft tender text.
-       The engine identifies relevant Indian Standards, missing allied/normative standards,
-       mandatory certification requirements and outdated code references.</p>
+  <!-- Slide-out Left Navigation Drawer & Backdrop -->
+  <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+  <aside class="nav-drawer" id="main-nav" aria-label="Main Navigation">
+    <div class="drawer-header">
+      <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+        <span class="brand-shield">IS</span>
+        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">BIS Standards</span>
+      </a>
+      <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
+    </div>
+    <div class="drawer-body">
+      <a class="nav-link" href="/" data-i18n="nav.home"><span>🏠</span> Home</a>
+      <a class="nav-link" href="/standards" data-i18n="nav.standards"><span>🔍</span> Explore Standards</a>
+      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer" aria-current="page"><span>📋</span> Tender Analyzer</a>
+      <a class="nav-link" href="/alerts" data-i18n="nav.alerts"><span>🔔</span> Compliance Alerts</a>
+      <a class="nav-link" href="/assistant" data-i18n="nav.assistant"><span>🤖</span> AI Assistant</a>
+      <a class="nav-link" href="/docs-page" data-i18n="nav.docs"><span>📖</span> API Docs</a>
+
+      <!-- Mobile / Drawer Language Selector Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Language / भाषा / భాష</span>
+        <div class="mobile-lang-pills">
+          <button type="button" class="mobile-lang-pill active" data-lang="en">English</button>
+          <button type="button" class="mobile-lang-pill" data-lang="hi">हिन्दी</button>
+          <button type="button" class="mobile-lang-pill" data-lang="te">తెలుగు</button>
+        </div>
+      </div>
+
+      <!-- Drawer User Account / Logout Section -->
+      <div class="mobile-nav-section" id="mobile-auth-section"></div>
+    </div>
+  </aside>
+
+  <main id="main" class="wrap animate-fade-in" style="padding-top: 6rem;">
+    <div class="section-header">
+      <h1 class="section-title" data-i18n="an.title">Tender Analyzer</h1>
+      <div class="section-accent-line"></div>
+      <p class="section-subtitle" data-i18n="an.sub">Paste a product description, technical specification or draft tender text. The engine identifies relevant Indian Standards, missing allied/normative standards, mandatory certification requirements and outdated code references.</p>
+    </div>
 
     <section class="card no-print">
-      <label for="spec"><strong data-i18n="an.spec.label">Specification text</strong> <span class="muted small">(min 10 / max 20,000)</span></label><br><br>
+      <label for="spec"><strong data-i18n="an.spec.label">Specification text</strong> <span class="muted small">(min 10 / max 20,000 characters)</span></label><br><br>
       <textarea id="spec" class="spec-input" data-i18n-ph="an.spec.ph" placeholder="Example:
 Supply and installation of room air conditioners for the office block. Units shall be
 window type, 1.5 ton, with copper condenser. TMT bars Fe 500 per IS 1786:2008 shall be
 used for the plinth. Supply of packaged drinking water in 20 L jars for staff."></textarea>
       <br><br>
-      <button id="analyze-btn" class="btn" data-i18n="an.analyze.btn">Analyze specification</button>
-      <button id="demo-btn" class="btn secondary" type="button" data-i18n="an.sample.btn">Load sample tender text</button>
+      <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+        <button id="analyze-btn" class="btn btn-press" data-i18n="an.analyze.btn">Analyze specification</button>
+        <button id="demo-btn" class="btn secondary btn-press" type="button" data-i18n="an.sample.btn">Load sample tender text</button>
+      </div>
 
       <div class="upload-zone" id="upload-zone">
         <span class="muted small" data-i18n="an.upload.label">…or upload a tender document (PDF / DOCX, max 10 MB)</span>
         <input type="file" id="file-input" accept=".pdf,.docx" class="visually-hidden-input">
-        <button id="file-btn" class="btn secondary" type="button" data-i18n="an.upload.btn">Analyze file</button>
+        <button id="file-btn" class="btn secondary btn-press" type="button" data-i18n="an.upload.btn">Analyze file</button>
       </div>
       <div id="status" class="muted small" style="margin-top:.75rem" role="status"></div>
     </section>
@@ -51,11 +135,19 @@ used for the plinth. Supply of packaged drinking water in 20 L jars for staff.">
   </main>
 
   <footer class="site-footer">
-    <span data-i18n="footer.demo">MVP demo · seed catalogue · recommendations are decision support, not a compliance guarantee.</span>
+    <div class="footer-container">
+      <p data-i18n="footer.demo">MVP demo · seed catalogue · recommendations are decision support, not a compliance guarantee.</p>
+    </div>
   </footer>
 
+  <div id="toast-container" aria-live="polite"></div>
+
+  <script src="/static/js/theme.js"></script>
   <script src="/static/js/common.js"></script>
   <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/navbar.js"></script>
+  <script src="/static/js/components.js"></script>
   <script src="/static/js/analyzer.js"></script>
   <script src="/static/js/chat.js"></script>
 </body>

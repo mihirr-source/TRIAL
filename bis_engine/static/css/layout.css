@@ -1,0 +1,130 @@
+/* =====================================================================
+   BIS Standards Recommendation Engine — Layout Stylesheet (layout.css)
+   ===================================================================== */
+
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  flex: 1;
+}
+
+.section-block {
+  padding: 4.5rem 0;
+  position: relative;
+}
+
+.section-block.alt-bg {
+  background-color: var(--bg-surface-alt);
+}
+
+.section-block.surface-bg {
+  background-color: var(--bg-surface);
+}
+
+/* Section Header with Red Accent Line */
+.section-header {
+  margin-bottom: 2.5rem;
+  text-align: left;
+}
+
+.section-header.centered {
+  text-align: center;
+}
+
+.section-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.section-accent-line {
+  width: 48px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 2px;
+  margin-top: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.section-header.centered .section-accent-line {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 600px;
+}
+
+/* Two-Column Grid */
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Three-Column Grid */
+.three-col-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+/* Skip to Content */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  background: var(--primary);
+  color: var(--text-white);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  z-index: 10000;
+  font-weight: 600;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Responsive Grid Rules */
+@media (max-width: 1024px) {
+  .three-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .three-col-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-block {
+    padding: 3rem 0;
+  }
+  
+  .wrap {
+    padding: 1.5rem 1rem 3rem;
+  }
+}

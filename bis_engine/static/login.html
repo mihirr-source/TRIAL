@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In — BIS Standards Engine</title>
+  <meta name="description" content="Sign in or register to access the AI-Powered Standards Recommendation Engine.">
+
+  <!-- Anti-flash inline script to apply saved theme immediately -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem("bis_theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core Theme & Login Stylesheets -->
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
+  <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+  <div class="auth-page">
+    <!-- Hero Slideshow Background with Slow Cross-Fade -->
+    <div class="auth-slideshow hero-background-slideshow">
+      <div class="hero-slide active" style="background: radial-gradient(circle at 20% 30%, #1e1b4b 0%, #0f172a 70%, #090d16 100%);"></div>
+      <div class="hero-slide" style="background: radial-gradient(circle at 80% 40%, #2e1065 0%, #0f172a 75%, #020617 100%);"></div>
+      <div class="hero-slide" style="background: radial-gradient(circle at 50% 20%, #172554 0%, #0f172a 70%, #030712 100%);"></div>
+    </div>
+    <div class="auth-overlay"></div>
+
+    <!-- Top Corner Controls (Language & Theme) -->
+    <div class="auth-top-controls">
+      <!-- Language Switcher Dropdown -->
+      <div class="lang-dropdown-container">
+        <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
+          🌐 <span id="current-lang-label" style="margin-left:4px; font-weight:600;">English</span> ▾
+        </button>
+        <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
+          <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
+          <button class="lang-option" type="button" data-lang="hi" role="menuitem">हिन्दी</button>
+          <button class="lang-option" type="button" data-lang="te" role="menuitem">తెలుగు</button>
+        </div>
+      </div>
+
+      <!-- Theme Toggle Button -->
+      <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
+        <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+
+    <!-- Main Centered Auth Card -->
+    <main class="auth-card" id="auth-card">
+      <div class="auth-header">
+        <a class="auth-brand" href="/">
+          <span class="brand-shield">IS</span>
+          <span data-i18n="brand">BIS Standards Engine</span>
+        </a>
+        <h1 class="auth-title" id="auth-card-title" data-i18n="auth.login_title">Sign In</h1>
+        <p class="auth-sub" id="auth-card-sub" data-i18n="auth.login_sub">Access the AI-Powered Standards Recommendation Engine</p>
+      </div>
+
+      <!-- Mode Tabs (Sign In / Register) -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab-btn active btn-press" id="tab-login" type="button" role="tab" aria-selected="true" data-i18n="auth.tab_login">Sign In</button>
+        <button class="auth-tab-btn btn-press" id="tab-register" type="button" role="tab" aria-selected="false" data-i18n="auth.tab_register">Register</button>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="auth-form" novalidate>
+        <!-- Name Field (Register Mode Only) -->
+        <div class="form-group" id="name-group" style="display: none;">
+          <label class="form-label" for="name" data-i18n="auth.name_label">Full Name</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="name" type="text" autocomplete="name" data-i18n-ph="auth.name_ph" placeholder="e.g. Priya Sharma">
+          </div>
+          <div class="inline-error" id="name-error"></div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label class="form-label" for="email" data-i18n="auth.email_label">Email Address</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="email" type="email" autocomplete="email" required data-i18n-ph="auth.email_ph" placeholder="name@organization.gov.in">
+          </div>
+          <div class="inline-error" id="email-error"></div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="auth.password_label">Password</label>
+          <div class="input-wrapper">
+            <input class="form-input" id="password" type="password" autocomplete="current-password" required minlength="8" data-i18n-ph="auth.password_ph" placeholder="At least 8 characters">
+            <button class="password-toggle-btn" id="toggle-password" type="button" aria-label="Show password">👁️</button>
+          </div>
+          <div class="inline-error" id="password-error"></div>
+        </div>
+
+        <!-- Submit Button with Spinner -->
+        <button class="btn-primary-auth btn-press" id="submit-btn" type="submit">
+          <span class="auth-spinner" id="submit-spinner" style="display: none;" aria-hidden="true"></span>
+          <span id="submit-text" data-i18n="auth.signin_btn">Sign In</span>
+        </button>
+      </form>
+
+      <!-- Toggle Mode Link -->
+      <div class="auth-footer">
+        <button class="auth-switch-link" id="switch-auth-link" type="button" data-i18n="auth.need_account">Don't have an account? Create one</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- JavaScript Modules -->
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/navbar.js"></script>
+  <script src="/static/js/hero.js"></script>
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>

@@ -83,6 +83,30 @@ const I18N = {
     "status.toolong": "Text exceeds 20,000 characters.",
     "footer.demo": "Demo · seed catalogue · verify against official BIS.",
     "lang.label": "Language",
+    "auth.login_title": "Sign In",
+    "auth.login_sub": "Access the AI-Powered Standards Recommendation Engine",
+    "auth.register_title": "Create an Account",
+    "auth.register_sub": "Sign up to access procurement standards and tools",
+    "auth.email_label": "Email Address",
+    "auth.email_ph": "name@organization.gov.in",
+    "auth.password_label": "Password",
+    "auth.password_ph": "At least 8 characters",
+    "auth.name_label": "Full Name",
+    "auth.name_ph": "e.g. Priya Sharma",
+    "auth.show_password": "Show password",
+    "auth.signin_btn": "Sign In",
+    "auth.signup_btn": "Create Account",
+    "auth.tab_login": "Sign In",
+    "auth.tab_register": "Register",
+    "auth.have_account": "Already have an account? Sign in",
+    "auth.need_account": "Don't have an account? Create one",
+    "auth.logout": "Logout",
+    "auth.welcome": "Welcome",
+    "auth.login_success": "Logged in successfully!",
+    "auth.register_success": "Account created and logged in!",
+    "auth.pass_min_error": "Password must be at least 8 characters long.",
+    "auth.email_error": "Please enter a valid email address.",
+    "auth.name_error": "Please enter your name.",
   },
   hi: {
     "nav.home": "होम",
@@ -159,6 +183,30 @@ const I18N = {
     "status.toolong": "पाठ 20,000 अक्षरों से अधिक है।",
     "footer.demo": "डेमो · सीड सूची · आधिकारिक BIS से जाँच करें।",
     "lang.label": "भाषा",
+    "auth.login_title": "साइन इन",
+    "auth.login_sub": "एआई-संचालित मानक अनुशंसा इंजन का उपयोग करें",
+    "auth.register_title": "खाता बनाएं",
+    "auth.register_sub": "खरीद मानकों और उपकरणों का उपयोग करने के लिए साइन अप करें",
+    "auth.email_label": "ईमेल पता",
+    "auth.email_ph": "name@organization.gov.in",
+    "auth.password_label": "पासवर्ड",
+    "auth.password_ph": "कम से कम 8 अक्षर",
+    "auth.name_label": "पूरा नाम",
+    "auth.name_ph": "उदा. प्रिया शर्मा",
+    "auth.show_password": "पासवर्ड दिखाएं",
+    "auth.signin_btn": "साइन इन करें",
+    "auth.signup_btn": "खाता बनाएं",
+    "auth.tab_login": "साइन इन",
+    "auth.tab_register": "पंजीकरण",
+    "auth.have_account": "क्या आपके पास खाता है? साइन इन करें",
+    "auth.need_account": "खाता नहीं है? नया बनाएं",
+    "auth.logout": "लॉग आउट",
+    "auth.welcome": "स्वागत है",
+    "auth.login_success": "सफलतापूर्वक लॉग इन हुआ!",
+    "auth.register_success": "खाता बनाया गया और लॉग इन हुआ!",
+    "auth.pass_min_error": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।",
+    "auth.email_error": "कृपया एक मान्य ईमेल पता दर्ज करें।",
+    "auth.name_error": "कृपया अपना नाम दर्ज करें।",
   },
   te: {
     "nav.home": "హోమ్",
@@ -235,6 +283,30 @@ const I18N = {
     "status.toolong": "పాఠ్యం 20,000 అక్షరాలు మించింది.",
     "footer.demo": "డెమో · సీడ్ జాబితా · అధికారిక BIS తో సరిచూసుకోండి.",
     "lang.label": "భాష",
+    "auth.login_title": "సైన్ ఇన్",
+    "auth.login_sub": "AI-ఆధారిత ప్రమద సిఫార్సు ఇంజన్‌ను యాక్సెస్ చేయండి",
+    "auth.register_title": "ఖాతాను సృష్టించండి",
+    "auth.register_sub": "ప్రొక్యూర్‌మెంట్ ప్రమదాలు మరియు సాధనాల కోసం సైన్ అప్ చేయండి",
+    "auth.email_label": "ఇమెయిల్ చిరునామా",
+    "auth.email_ph": "name@organization.gov.in",
+    "auth.password_label": "పాస్‌వర్డ్",
+    "auth.password_ph": "కనీసం 8 అక్షరాలు",
+    "auth.name_label": "పూర్తి పేరు",
+    "auth.name_ph": "ఉదా. ప్రియా శర్మ",
+    "auth.show_password": "పాస్‌వర్డ్ చూపించు",
+    "auth.signin_btn": "సైన్ ఇన్ చేయండి",
+    "auth.signup_btn": "ఖాతా సృష్టించండి",
+    "auth.tab_login": "సైన్ ఇన్",
+    "auth.tab_register": "రిజిస్టర్",
+    "auth.have_account": "ఇప్పటికే ఖాతా ఉందా? సైన్ ఇన్ చేయండి",
+    "auth.need_account": "ఖాతా లేదా? కొత్తది సృష్టించండి",
+    "auth.logout": "లాగ్ అవుట్",
+    "auth.welcome": "స్వాగతం",
+    "auth.login_success": "విజయవంతంగా లాగిన్ అయ్యారు!",
+    "auth.register_success": "ఖాతా సృష్టించబడింది మరియు లాగిన్ అయ్యారు!",
+    "auth.pass_min_error": "పాస్‌వర్డ్ కనీసం 8 అక్షరాలు ఉండాలి.",
+    "auth.email_error": "దయచేసి సరైన ఇమెయిల్ చిరునామాను నమోదు చేయండి.",
+    "auth.name_error": "దయచేసి మీ పేరును నమోదు చేయండి.",
   },
 };
 
@@ -261,26 +333,6 @@ function setLang(lang) {
   document.dispatchEvent(new CustomEvent("bis:langchange", { detail: { lang } }));
 }
 
-// Language switcher is injected into every header.
-function injectLangSwitcher() {
-  const nav = $(".main-nav");
-  if (!nav || $("#lang-switch")) return;
-  const wrap = document.createElement("label");
-  wrap.id = "lang-switch";
-  wrap.className = "lang-switch";
-  wrap.innerHTML = `
-    <span class="visually-hidden" data-i18n-title="lang.label">🌐</span>
-    <select aria-label="${t("lang.label")}">
-      <option value="en">English</option>
-      <option value="hi">हिन्दी</option>
-      <option value="te">తెలుగు</option>
-    </select>`;
-  wrap.querySelector("select").value = i18nLang();
-  wrap.querySelector("select").addEventListener("change", (e) => setLang(e.target.value));
-  nav.appendChild(wrap);
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  injectLangSwitcher();
   applyI18n();
 });

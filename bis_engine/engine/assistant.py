@@ -5,10 +5,9 @@ Two modes:
      message, then a reply composed *only* from the catalogue — title, simple
      explanation, version, allied standards, certifications. Deterministic,
      zero API keys, demo-safe, and structurally incapable of inventing codes.
-  2. **LLM mode (optional):** if BIS_LLM_API_KEY is set, the top catalogue
-     matches are injected as context and an LLM is asked to explain in the
-     user's language, citing only the provided codes. Any error/absence falls
-     back to template mode; the response always reports which mode answered.
+  2. **LLM mode (optional):** if BIS_LLM_API_KEY is set, Gemini models are used to
+     give plain, direct, and conversational explanations grounded by verified
+     catalogue standards.
 
 Languages: en / hi / te (matches the UI switcher).
 """
@@ -140,63 +139,39 @@ _SIMPLE: dict[str, dict[str, str]] = {
 # ------------------------------------------------------------------ templates
 _T = {
     "explain": {
-        "en": ("📖 **{code} — {title}**\n\nIn simple words: {simple}\n\n"
-               "Edition we hold: {version}.{cert}\n\n_Always verify against the official "
-               "BIS catalogue before citing in a tender._"),
-        "hi": ("📖 **{code} — {title}**\n\nआसान भाषा में: {simple}\n\n"
-               "हमारे पास दर्ज संस्करण: {version}।{cert}\n\n_टेंडर में उद्धृत करने से पहले "
-               "आधिकारिक BIS सूची से जाँच अवश्य करें।_"),
-        "te": ("📖 **{code} — {title}**\n\nసులభ భాషలో: {simple}\n\n"
-               "మా వద్ద ఉన్న ఎడిషన్: {version}.{cert}\n\n_టెండర్‌లో ఉదహరించే ముందు "
-               "అధికారిక BIS జాబితాతో సరిచూసుకోండి._"),
+        "en": ("**{code} — {title}**\n\n{simple}\n\n"
+               "Current Version: {version}.{cert}"),
+        "hi": ("**{code} — {title}**\n\n{simple}\n\n"
+               "वर्तमान संस्करण: {version}।{cert}"),
+        "te": ("**{code} — {title}**\n\n{simple}\n\n"
+               "ప్రస్తుత ఎడిషన్: {version}.{cert}"),
     },
     "recommend": {
-        "en": ("For “{topic}”, the most relevant standard is **{code} — {title}** "
-               "({version}).\n\n{extras}\n\n_Always verify against the official BIS "
-               "catalogue before citing in a tender._"),
-        "hi": ("“{topic}” के लिए सबसे उपयुक्त मानक है **{code} — {title}** ({version})।\n\n"
-               "{extras}\n\n_टेंडर में उद्धृत करने से पहले आधिकारिक BIS सूची से जाँच "
-               "अवश्य करें।_"),
-        "te": ("“{topic}” కు అత్యంత సరైన ప్రమద **{code} — {title}** ({version}).\n\n"
-               "{extras}\n\n_టెండర్‌లో ఉదహరించే ముందు అధికారిక BIS జాబితాతో "
-               "సరిచూసుకోండి._"),
+        "en": ("For “{topic}”, the standard is **{code} — {title}** ({version}).\n\n{extras}"),
+        "hi": ("“{topic}” के लिए मानक **{code} — {title}** ({version}) है।\n\n{extras}"),
+        "te": ("“{topic}” కోసం ప్రమద **{code} — {title}** ({version}).\n\n{extras}"),
     },
     "cert": {
-        "en": ("Products under **{code} — {title}** carry mandatory certification:\n{list}\n\n"
-               "Include the certificate requirement in the tender text, not just the standard.\n\n"
-               "_Verify the current QCO scope against official notifications._"),
-        "hi": ("**{code} — {title}** के अंतर्गत आने वाले उत्पादों के लिए अनिवार्य प्रमाणन:\n{list}\n\n"
-               "टेंडर में केवल मानक नहीं, प्रमाण-पत्र की शर्त भी लिखें।\n\n"
-               "_वर्तमान QCO दायरे की आधिकारिक अधिसूचनाओं से जाँच करें।_"),
-        "te": ("**{code} — {title}** కింద వచ్చే ఉత్పత్తులకు తప్పనిసరి ధృవీకరణ:\n{list}\n\n"
-               "టెండర్‌లో ప్రమదతో పాటు ధృవీకరణ పత్ర నిబంధన కూడా రాయండి.\n\n"
-               "_ప్రస్తుత QCO పరిధిని అధికారిక ప్రకటనలతో సరిచూసుకోండి._"),
+        "en": ("Products under **{code} — {title}** require mandatory certification:\n{list}"),
+        "hi": ("**{code} — {title}** के उत्पादों के लिए अनिवार्य प्रमाणन:\n{list}"),
+        "te": ("**{code} — {title}** కింద ఉత్పత్తులకు తప్పనిసరి ధృవీకరణ:\n{list}"),
     },
     "version": {
-        "en": ("**{code}** — the edition we hold is {version}.{amd}\n\n{example}"
-               "\n\n_Always verify against the official BIS catalogue._"),
-        "hi": ("**{code}** — हमारे पास दर्ज संस्करण {version} है।{amd}\n\n{example}"
-               "\n\n_आधिकारिक BIS सूची से जाँच अवश्य करें।_"),
-        "te": ("**{code}** — మా వద్ద ఉన్న ఎడిషన్ {version}.{amd}\n\n{example}"
-               "\n\n_అధికారిక BIS జాబితాతో సరిచూసుకోండి._"),
+        "en": ("**{code}** — current edition is {version}.{amd}\n\n{example}"),
+        "hi": ("**{code}** — वर्तमान संस्करण {version} है।{amd}\n\n{example}"),
+        "te": ("**{code}** — ప్రస్తుత ఎడిషన్ {version}.{amd}\n\n{example}"),
     },
     "help": {
-        "en": ("I explain Indian Standards in simple words. Try:\n"
+        "en": ("I can explain any Indian Standard in plain words. For example:\n"
                "• “What is IS 456?”\n• “Which standard for drinking water pipes?”\n"
-               "• “Does a pressure cooker need ISI?”\n• “Latest version of IS 1786?”"),
-        "hi": ("मैं भारतीय मानकों को आसान भाषा में समझाता/समझाती हूँ। आज़माएँ:\n"
-               "• “IS 456 क्या है?”\n• “पीने के पानी के पाइप के लिए कौन सा मानक?”\n"
-               "• “प्रेशर कुकर पर ISI अनिवार्य है?”\n• “IS 1786 का नवीनतम संस्करण?”"),
-        "te": ("భారతీయ ప్రమదాలను సులభ భాషలో వివరిస్తాను. ప్రయత్నించండి:\n"
+               "• “Does a pressure cooker need ISI mark?”\n• “Latest version of IS 1786?”"),
+        "hi": ("मैं किसी भी भारतीय मानक को आसान भाषा में समझा सकता हूँ। उदाहरण:\n"
+               "• “IS 456 क्या है?”\n• “पीने के पानी के पाइप के लिए मानक?”\n"
+               "• “प्रेशर कुकर पर ISI अनिवार्य है?”\n• “IS 1786 का नया संस्करण?”"),
+        "te": ("నేను భారతీయ ప్రమదాలను సులభ భాషలో వివరిస్తాను. ఉదాహరణకు:\n"
                "• “IS 456 అంటే ఏమిటి?”\n• “తాగునీటి పైపులకు ఏ ప్రమద?”\n"
                "• “ప్రెషర్ కుక్కర్‌కి ISI తప్పనిసరా?”\n• “IS 1786 తాజా ఎడిషన్?”"),
     },
-}
-
-_HELP_DISCLAIMER = {
-    "en": "_Always verify against the official BIS catalogue before citing in a tender._",
-    "hi": "_टेंडर में उद्धृत करने से पहले आधिकारिक BIS सूची से जाँच अवश्य करें।_",
-    "te": "_టెండర్‌లో ఉదహరించే ముందు అధికారిక BIS జాబితాతో సరిచూసుకోండి._",
 }
 
 
@@ -220,9 +195,9 @@ def _allied_line(std: dict, lang: str) -> str:
     allied = std.get("allied", []) or []
     if not allied:
         return ""
-    lead = {"en": "Cite alongside: ", "hi": "साथ में उद्धृत करें: ", "te": "వీటితో పాటు ఉదహరించండి: "}[lang]
+    lead = {"en": "Allied standards: ", "hi": "संबद्ध मानक: ", "te": "అనుబంధ ప్రమదాలు: "}[lang]
     refs = ", ".join(a["code"] for a in allied[:5])
-    return f"{lead}{refs}.\n\n"
+    return f"{lead}{refs}."
 
 
 class StandardsAssistant:
@@ -231,7 +206,7 @@ class StandardsAssistant:
     def __init__(self, retriever):
         self.retriever = retriever
         self.llm_enabled = bool(os.environ.get("BIS_LLM_API_KEY"))
-        self.llm_model = os.environ.get("BIS_LLM_MODEL", "gemini-2.0-flash")
+        self.llm_model = os.environ.get("BIS_LLM_MODEL", "gemini-2.5-flash")
 
     # ------------------------------------------------------------------ public
     def answer(self, message: str, lang: str | None = None,
@@ -240,25 +215,35 @@ class StandardsAssistant:
         lang_key = _norm_lang(lang, message)
         intent, payload = self._route(message)
 
-        if intent == "explain":
-            reply, sources = self._explain(payload, lang_key)
-        elif intent == "certification":
-            reply, sources = self._certification(payload, lang_key)
-        elif intent == "version":
-            reply, sources = self._version(payload, lang_key)
-        elif intent == "recommend":
-            reply, sources = self._recommend(payload, lang_key)
-        else:
-            reply, sources = self._help(lang_key)
+        # Retrieve relevant catalogue standards as grounded context
+        hits = self.retriever.search_all(payload or message, top_k=3)
+        sources = [h["standard"]["code"] for h in hits if "standard" in h]
 
-        # LLM mode only upgrades template answers; it never replaces the rails.
-        if self.llm_enabled and intent in {"explain", "recommend"}:
+        # 1. LLM mode (Active when BIS_LLM_API_KEY is configured):
+        if self.llm_enabled:
             llm_text = self._llm_reply(message, lang_key, sources, history)
             if llm_text:
-                mode = "llm"
-                reply = llm_text + "\n\n" + _HELP_DISCLAIMER[lang_key]
-                return {"reply": reply, "sources": sources, "mode": mode,
+                return {"reply": llm_text, "sources": sources, "mode": "llm",
                         "intent": intent, "lang": lang_key}
+
+        # 2. Template / Grounded mode fallback:
+        if intent == "explain":
+            reply, src = self._explain(payload, lang_key)
+        elif intent == "certification":
+            reply, src = self._certification(payload, lang_key)
+        elif intent == "version":
+            reply, src = self._version(payload, lang_key)
+        elif intent == "recommend":
+            reply, src = self._recommend(payload, lang_key)
+        else:
+            if hits:
+                best = hits[0]["standard"]
+                reply, src = self._explain(best["code"], lang_key)
+            else:
+                reply, src = self._help(lang_key)
+        
+        if src:
+            sources = src
 
         return {"reply": reply, "sources": sources, "mode": "template",
                 "intent": intent, "lang": lang_key}
@@ -277,16 +262,11 @@ class StandardsAssistant:
             return "recommend", self._topic_after(message)
         if code_match:
             return "explain", code_match.group(0)
-        return "help", ""
+        return "general", message
 
     @staticmethod
     def _topic_after(message: str) -> str:
-        """Extract the product topic from a recommendation question.
-
-        Word order differs by language: English puts the topic AFTER the
-        marker ('standard for water pipes'); Hindi/Telugu put it BEFORE
-        ('पानी के पाइप के लिए', 'నీటి పైపులకు కోసం').
-        """
+        """Extract the product topic from a recommendation question."""
         before = re.search(r"(.+?)\s*(?:के\s*लिए|కోసం)", message)
         if before:
             return before.group(1).strip(" ?.!।")
@@ -300,6 +280,9 @@ class StandardsAssistant:
     # ---------------------------------------------------------------- builders
     def _explain(self, code: str, lang: str) -> tuple[str, list[str]]:
         std = get_by_code(code)
+        if not std:
+            hits = self.retriever.search_all(code, top_k=1)
+            std = hits[0]["standard"] if hits else None
         if not std:
             return self._help(lang)
         simple = _SIMPLE.get(std["code"], {}).get(lang) or _SIMPLE.get(std["code"], {}).get("en")
@@ -331,8 +314,7 @@ class StandardsAssistant:
             hits = self.retriever.search_all(code_or_topic or "", top_k=1)
             std = hits[0]["standard"] if hits else None
         if std is None or not std.get("certifications"):
-            reply = self._help(lang)
-            return reply, ([std["code"]] if std else [])
+            return self._help(lang)
         items = "\n".join(f"• {c['scheme']} ({c['authority']})" for c in std["certifications"])
         reply = _T["cert"][lang].format(code=std["code"], title=std["title"], list=items)
         return reply, [std["code"]]
@@ -354,38 +336,62 @@ class StandardsAssistant:
         return reply, [std["code"]]
 
     def _help(self, lang: str) -> tuple[str, list[str]]:
-        return _T["help"][lang] + "\n\n" + _HELP_DISCLAIMER[lang], []
+        return _T["help"][lang], []
 
     # -------------------------------------------------------------- LLM (opt.)
     def _llm_reply(self, message: str, lang: str, sources: list[str],
                    history: list[dict] | None) -> str | None:
-        """Optional LLM pass. Returns None on ANY failure (caller falls back)."""
+        """Plain-language LLM generation via Gemini. Returns None on failure."""
         api_key = os.environ.get("BIS_LLM_API_KEY")
         if not api_key:
             return None
-        try:
-            from google import genai  # type: ignore
-        except ImportError:
-            return None
+
         context = []
-        for code in sources[:3]:
+        for code in (sources or [])[:4]:
             std = get_by_code(code)
             if std:
-                context.append(f"{std['code']}: {std['title']} "
-                               f"({std.get('version', '—')}); certs: "
-                               f"{[c['scheme'] for c in std.get('certifications', [])]}")
+                certs = [c["scheme"] for c in std.get("certifications", [])]
+                allied = [a["code"] for a in std.get("allied", [])[:3]]
+                context.append(f"- {std['code']}: {std['title']} (Version: {std.get('version', '—')}; Certifications: {certs}; Allied: {allied})")
+
         lang_name = {"en": "English", "hi": "Hindi (Devanagari script)",
-                     "te": "Telugu (Telugu script)"}[lang]
+                     "te": "Telugu (Telugu script)"}.get(lang, "English")
+
         prompt = (
-            "You are a procurement assistant for Indian Standards (BIS). Explain in "
-            f"{lang_name}, in simple language for a government official. You may cite "
-            "ONLY these verified standards: " + ("; ".join(context) or "(none)") + ". "
-            "Do not invent any other IS code. Keep it under 120 words.\n\n"
-            f"Question: {message}")
+            "You are a helpful, clear, and direct standards assistant for Indian Standards (Bureau of Indian Standards / BIS).\n"
+            f"Target Language: {lang_name}\n\n"
+            "Guidelines:\n"
+            "1. Give plain, straightforward, and direct answers in easy-to-understand language.\n"
+            "2. Explain what the standard is for, relevant specifications, materials, or certification requirements (such as ISI mark, CRS, BEE, etc.).\n"
+            "3. Cite verified Indian Standards (IS codes) clearly.\n"
+            "4. Keep the explanation natural, concise, and easy for any person or procurement officer to understand.\n\n"
+        )
+        if context:
+            prompt += "Reference Catalogue Standards:\n" + "\n".join(context) + "\n\n"
+        
+        prompt += f"User Question: {message}\n\nPlain Answer:"
+
+        # Try google.generativeai
         try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(self.llm_model)
+            resp = model.generate_content(prompt)
+            text = (getattr(resp, "text", "") or "").strip()
+            if text:
+                return text
+        except Exception:
+            pass
+
+        # Try google.genai client fallback
+        try:
+            from google import genai
             client = genai.Client(api_key=api_key)
             resp = client.models.generate_content(model=self.llm_model, contents=prompt)
             text = (getattr(resp, "text", "") or "").strip()
-            return text or None
+            if text:
+                return text
         except Exception:
-            return None
+            pass
+
+        return None

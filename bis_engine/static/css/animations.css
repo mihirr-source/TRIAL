@@ -1,0 +1,206 @@
+/* =====================================================================
+   BIS Standards Recommendation Engine — Animations Stylesheet (animations.css)
+   ===================================================================== */
+
+/* Theme smooth color transition during toggle */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 250ms ease, border-color 250ms ease, color 250ms ease, fill 250ms ease, stroke 250ms ease, box-shadow 250ms ease !important;
+  transition-delay: 0s !important;
+}
+
+/* Hero Background Cross-Fade & Gentle Ken-Burns Zoom */
+@keyframes heroBgZoom {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  33% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  41% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+.hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.5s ease-in-out, transform 8s ease-out;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+/* Scroll Reveal (IntersectionObserver) */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays */
+.stagger-1 { transition-delay: 60ms; }
+.stagger-2 { transition-delay: 120ms; }
+.stagger-3 { transition-delay: 180ms; }
+.stagger-4 { transition-delay: 240ms; }
+.stagger-5 { transition-delay: 300ms; }
+
+/* Micro-interactions & Card Hover Lift */
+.card-hover {
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
+.btn-press {
+  transition: transform var(--transition-fast), filter var(--transition-fast), background-color var(--transition-fast);
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Skeleton Loading Pulse */
+@keyframes pulseSkeleton {
+  0% {
+    background-color: var(--bg-subtle);
+  }
+  50% {
+    background-color: var(--bg-hover);
+  }
+  100% {
+    background-color: var(--bg-subtle);
+  }
+}
+
+.skeleton-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: var(--radius-xs);
+  animation: pulseSkeleton 1.6s infinite ease-in-out;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-line.title {
+  height: 22px;
+  width: 65%;
+  margin-bottom: 1.1rem;
+}
+
+.skeleton-line.subtitle {
+  width: 90%;
+}
+
+.skeleton-line.short {
+  width: 45%;
+}
+
+/* Toast Animations */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+}
+
+.animate-toast-in {
+  animation: toastIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-toast-out {
+  animation: toastOut 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shake Animation for Form Validation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.shake {
+  animation: shake 380ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Fade in simple */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 350ms ease forwards;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal.is-visible,
+  .hero-slide,
+  .card-hover,
+  .card-hover:hover,
+  .btn-press,
+  .btn-press:active,
+  .shake,
+  .animate-toast-in,
+  .animate-toast-out,
+  .animate-fade-in {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

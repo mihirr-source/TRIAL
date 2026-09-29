@@ -27,6 +27,25 @@ Open http://localhost:8002 · full documentation in [`bis_engine/README.md`](bis
 | Specification clause generator + report export | `POST /api/spec-clauses`, `POST /api/analyze/export` |
 | Plain-language assistant (offline template mode + optional LLM) | `/assistant`, `POST /api/assistant` |
 | Offline snapshot import (CSV) | `python -m bis_engine.data.importers.bis_snapshot` |
+| User authentication & access gate (SQLite + bcrypt + session cookies) | `bis_engine/auth.py`, `/login`, `/api/auth/*` |
+
+## Authentication Setup & Testing
+
+1. **Environment Variables**: Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Set `SECRET_KEY` to a random secret for production token signing.
+2. **First User Creation**: Navigate to [http://localhost:8002/login](http://localhost:8002/login) and switch to the **Register** tab, or call `POST /api/auth/register`:
+   ```bash
+   curl -X POST http://localhost:8002/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{"email":"admin@example.gov.in","name":"Admin Officer","password":"SecurePassword123"}'
+   ```
+3. **Running the Test Suite**:
+   ```bash
+   pytest
+   ```
 
 **Data status:** curated seed catalogue (84 standards across 11 sectors, 600+ multilingual aliases),
 hand-built in September 2026 — *not* a live mirror of the BIS catalogue. Every

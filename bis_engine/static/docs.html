@@ -3,35 +3,129 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>API Docs — BIS Standards Assistant</title>
+  <title>API Reference — BIS Standards Engine</title>
   <meta name="description" content="REST API reference: search, tender analysis (text & file), specification clauses, report export, assistant, catalogue and certification endpoints.">
+
+  <!-- Anti-flash inline script -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem("bis_theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="site-header">
-    <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
-      <nav class="main-nav" aria-label="Main">
-        <a href="/" data-i18n="nav.home">Home</a>
-        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
-        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
-        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
-        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
-        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
-      </nav>
+
+  <header class="site-header scrolled" id="site-header">
+    <div class="header-container">
+      <div class="header-left">
+        <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          ☰
+        </button>
+        <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+          <span class="brand-shield">IS</span>
+          <span data-i18n="brand">BIS Standards Engine</span>
+        </a>
+      </div>
+
+      <div class="header-actions">
+        <!-- User Profile & Logout Action -->
+        <div id="user-profile-badge" class="user-badge" style="display:inline-flex;">
+          <span class="user-avatar" id="nav-user-avatar">👤</span>
+          <span class="user-name-text" id="nav-user-name">User</span>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
+            <span>⏻</span> Logout
+          </button>
+        </div>
+
+        <!-- Language Switcher Dropdown -->
+        <div class="lang-dropdown-container">
+          <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
+            🌐 <span id="current-lang-label" style="margin-left:4px; font-weight:600;">English</span> ▾
+          </button>
+          <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
+            <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
+            <button class="lang-option" type="button" data-lang="hi" role="menuitem">हिन्दी</button>
+            <button class="lang-option" type="button" data-lang="te" role="menuitem">తెలుగు</button>
+          </div>
+        </div>
+
+        <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
+          <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="main" class="wrap">
-    <h1 data-i18n="docs.title">API Reference</h1>
-    <p class="muted" data-i18n="docs.sub">All endpoints are JSON over HTTP. Interactive OpenAPI docs:
-       <a href="/docs">/docs</a> (Swagger UI) · <a href="/redoc">/redoc</a></p>
+  <!-- Slide-out Left Navigation Drawer & Backdrop -->
+  <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+  <aside class="nav-drawer" id="main-nav" aria-label="Main Navigation">
+    <div class="drawer-header">
+      <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+        <span class="brand-shield">IS</span>
+        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">BIS Standards</span>
+      </a>
+      <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
+    </div>
+    <div class="drawer-body">
+      <a class="nav-link" href="/" data-i18n="nav.home"><span>🏠</span> Home</a>
+      <a class="nav-link" href="/standards" data-i18n="nav.standards"><span>🔍</span> Explore Standards</a>
+      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer"><span>📋</span> Tender Analyzer</a>
+      <a class="nav-link" href="/alerts" data-i18n="nav.alerts"><span>🔔</span> Compliance Alerts</a>
+      <a class="nav-link" href="/assistant" data-i18n="nav.assistant"><span>🤖</span> AI Assistant</a>
+      <a class="nav-link" href="/docs-page" data-i18n="nav.docs" aria-current="page"><span>📖</span> API Docs</a>
+
+      <!-- Mobile / Drawer Language Selector Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Language / भाषा / భాష</span>
+        <div class="mobile-lang-pills">
+          <button type="button" class="mobile-lang-pill active" data-lang="en">English</button>
+          <button type="button" class="mobile-lang-pill" data-lang="hi">हिन्दी</button>
+          <button type="button" class="mobile-lang-pill" data-lang="te">తెలుగు</button>
+        </div>
+      </div>
+
+      <!-- Drawer User Account / Logout Section -->
+      <div class="mobile-nav-section" id="mobile-auth-section"></div>
+    </div>
+  </aside>
+
+  <main id="main" class="wrap animate-fade-in" style="padding-top: 6rem;">
+    <div class="section-header">
+      <h1 class="section-title" data-i18n="docs.title">API Reference</h1>
+      <div class="section-accent-line"></div>
+      <p class="section-subtitle" data-i18n="docs.sub">All endpoints are JSON over HTTP. Interactive OpenAPI docs:
+         <a href="/docs" style="font-weight:700; text-decoration:underline;">/docs (Swagger UI)</a> · 
+         <a href="/redoc" style="font-weight:700; text-decoration:underline;">/redoc</a></p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0"><span class="pill version">AUTH</span> Authentication Endpoints</h2>
+      <p class="small muted">Session management via signed HttpOnly cookies:</p>
+      <ul style="margin-left:1.5rem;margin-top:.5rem" class="small">
+        <li><code>POST /api/auth/register</code> — Register new account <code>{"email", "name", "password"}</code></li>
+        <li><code>POST /api/auth/login</code> — Log in with <code>{"email", "password"}</code></li>
+        <li><code>POST /api/auth/logout</code> — Log out and clear session cookie</li>
+        <li><code>GET /api/auth/me</code> — Get current authenticated user profile</li>
+      </ul>
+    </div>
 
     <div class="card">
       <h2 style="margin-top:0"><span class="pill version">GET</span> /api/health</h2>
       <p class="small muted">Service status, catalogue version, sync mode, retrieval mode and index stats.</p>
-      <pre class="kbd" style="white-space:pre-wrap">{ "status": "ok", "catalog_version": "2026.09-seed-2",
+      <pre class="kbd" style="white-space:pre-wrap; background:var(--bg-surface-alt); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); margin-top:0.5rem;">{ "status": "ok", "catalog_version": "2026.09-seed-2",
   "retrieval_mode": "lexical",   // or "hybrid" with embeddings installed
   "sync": { "mode": "seed", "last_synced": "2026-09-29",
             "snapshot_records": 0 },   // "seed+snapshot" after an import
@@ -43,92 +137,33 @@
       <p class="small muted">Hybrid semantic + alias search. Multilingual queries supported
         (English, Hindi, Tamil, Telugu vocabularies). Returns <code>primary</code> plus ranked
         <code>alternatives</code> with confidence scores and matched aliases.</p>
-      <pre class="kbd" style="white-space:pre-wrap">curl "http://localhost:8002/api/search?q=cooling+unit+for+office"</pre>
     </div>
 
     <div class="card">
       <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze</h2>
-      <p class="small muted">Full tender analysis. Body: <code>{"text": "…"}</code> (10–20,000 chars).
-        Returns primaries with confidence, missing allied/normative standards, mandatory
-        certification alerts, obsolete/unknown code flags, and a RAG health-check summary.</p>
-      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Supply of packaged drinking water in 20 L jars. TMT bars per IS 1786:2008."}'</pre>
+      <p class="small muted">Analyze tender specification text (JSON payload: <code>{"text": "…"}</code>). Returns structured report with mandatory certifications, outdated code alerts, and missing normative references.</p>
     </div>
 
     <div class="card">
       <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze/file</h2>
-      <p class="small muted">Tender-document intake: multipart upload of a <strong>PDF or DOCX</strong>
-        (≤ 10 MB, ≤ 50 PDF pages). Text is extracted and the same analysis pipeline runs.
-        Scanned/image-only PDFs are rejected with a clear message (no OCR).</p>
-      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/analyze/file -F "file=@tender.pdf"</pre>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/spec-clauses</h2>
-      <p class="small muted">Draft tender clauses per identified primary: correct code + latest
-        known edition + amendments, allied standards to cite, and the mandatory certification
-        sentence. Copy-paste into a specification — then verify.</p>
-      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/spec-clauses \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Split air conditioners for the training hall."}'</pre>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/analyze/export?format=markdown|json</h2>
-      <p class="small muted">Download the analysis report as a Markdown tender-review document
-        (attachment) or JSON.</p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">POST</span> /api/assistant</h2>
-      <p class="small muted">Plain-language assistant. Body:
-        <code>{"message": "What is IS 456?", "lang": "en|hi|te"}</code>.
-        Template mode (default) answers only from the catalogue; with
-        <code>BIS_LLM_API_KEY</code> set, an LLM rephrases the same grounded sources in the
-        requested language and the response reports <code>mode: "llm"</code>. Every reply
-        cites only catalogue-backed codes.</p>
-      <pre class="kbd" style="white-space:pre-wrap">curl -X POST http://localhost:8002/api/assistant \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Does a pressure cooker need ISI mark?", "lang": "en"}'</pre>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/standards[?sector=electronics]</h2>
-      <p class="small muted">Browse the catalogue; filter by sector key
-        (construction, cement, electronics, appliances, water, food, safety,
-        steel, pumps, furniture, medical).</p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/standards/{code}</h2>
-      <p class="small muted">One standard's detail: version, amendments, aliases, allied
-        standards, certifications, spec pitfalls. Loose matching: <code>IS 13252</code>
-        resolves to <code>IS 13252 (Part 1)</code>.</p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0"><span class="pill version">GET</span> /api/certifications</h2>
-      <p class="small muted">All mandatory certification schemes mapped in the catalogue
-        with the standards they apply to.</p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0">Offline catalogue import</h2>
-      <p class="small muted">The supported data path is an offline CSV snapshot — no live crawling:</p>
-      <pre class="kbd" style="white-space:pre-wrap">python -m bis_engine.data.importers.bis_snapshot --input snapshot.csv
-# template: bis_engine/data/snapshots/template.csv</pre>
-    </div>
-
-    <div class="alert-banner warn">
-      <strong>Data status:</strong> the engine runs on a curated seed catalogue for demo
-      purposes. Before production use in any procurement workflow, replace it with a
-      licensed/live BIS data feed and legal review of every recommendation.
+      <p class="small muted">Analyze tender PDF or DOCX file (multipart form data). Performs OCR / text extraction and standard verification.</p>
     </div>
   </main>
 
-  <footer class="site-footer">Demo · seed catalogue · <a href="/docs">OpenAPI</a></footer>
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</p>
+    </div>
+  </footer>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <script src="/static/js/theme.js"></script>
   <script src="/static/js/common.js"></script>
   <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/navbar.js"></script>
+  <script src="/static/js/components.js"></script>
+  <script src="/static/js/chat.js"></script>
 </body>
 </html>

@@ -3,51 +3,142 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Assistant — BIS Standards Assistant</title>
+  <title>AI Assistant — BIS Standards Engine</title>
   <meta name="description" content="Ask about Indian Standards in plain language — the assistant answers only from the standards catalogue, in English, Hindi or Telugu.">
+
+  <!-- Anti-flash inline script -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem("bis_theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/animations.css">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
-  <header class="site-header">
-    <div class="inner">
-      <a class="brand" href="/"><span class="shield">IS</span> <span data-i18n="brand">BIS Standards Assistant</span></a>
-      <nav class="main-nav" aria-label="Main">
-        <a href="/" data-i18n="nav.home">Home</a>
-        <a href="/standards" data-i18n="nav.standards">Explore Standards</a>
-        <a href="/analyzer" data-i18n="nav.analyzer">Tender Analyzer</a>
-        <a href="/alerts" data-i18n="nav.alerts">Compliance Alerts</a>
-        <a href="/assistant" data-i18n="nav.assistant">AI Assistant</a>
-        <a href="/docs-page" data-i18n="nav.docs">API Docs</a>
-      </nav>
+
+  <header class="site-header scrolled" id="site-header">
+    <div class="header-container">
+      <div class="header-left">
+        <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          ☰
+        </button>
+        <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+          <span class="brand-shield">IS</span>
+          <span data-i18n="brand">BIS Standards Engine</span>
+        </a>
+      </div>
+
+      <div class="header-actions">
+        <!-- User Profile & Logout Action -->
+        <div id="user-profile-badge" class="user-badge" style="display:inline-flex;">
+          <span class="user-avatar" id="nav-user-avatar">👤</span>
+          <span class="user-name-text" id="nav-user-name">User</span>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
+            <span>⏻</span> Logout
+          </button>
+        </div>
+
+        <!-- Language Switcher Dropdown -->
+        <div class="lang-dropdown-container">
+          <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
+            🌐 <span id="current-lang-label" style="margin-left:4px; font-weight:600;">English</span> ▾
+          </button>
+          <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
+            <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
+            <button class="lang-option" type="button" data-lang="hi" role="menuitem">हिन्दी</button>
+            <button class="lang-option" type="button" data-lang="te" role="menuitem">తెలుగు</button>
+          </div>
+        </div>
+
+        <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
+          <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="main" class="wrap">
-    <h1 data-i18n="asst.title">AI Assistant</h1>
-    <p class="muted" data-i18n="asst.sub">Ask about Indian Standards in simple words — English, हिन्दी or తెలుగు.
-       The assistant answers only from the standards catalogue and never invents codes.</p>
+  <!-- Slide-out Left Navigation Drawer & Backdrop -->
+  <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+  <aside class="nav-drawer" id="main-nav" aria-label="Main Navigation">
+    <div class="drawer-header">
+      <a class="brand" href="/" aria-label="BIS Standards Engine Home">
+        <span class="brand-shield">IS</span>
+        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">BIS Standards</span>
+      </a>
+      <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
+    </div>
+    <div class="drawer-body">
+      <a class="nav-link" href="/" data-i18n="nav.home"><span>🏠</span> Home</a>
+      <a class="nav-link" href="/standards" data-i18n="nav.standards"><span>🔍</span> Explore Standards</a>
+      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer"><span>📋</span> Tender Analyzer</a>
+      <a class="nav-link" href="/alerts" data-i18n="nav.alerts"><span>🔔</span> Compliance Alerts</a>
+      <a class="nav-link" href="/assistant" data-i18n="nav.assistant" aria-current="page"><span>🤖</span> AI Assistant</a>
+      <a class="nav-link" href="/docs-page" data-i18n="nav.docs"><span>📖</span> API Docs</a>
+
+      <!-- Mobile / Drawer Language Selector Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Language / भाषा / భాష</span>
+        <div class="mobile-lang-pills">
+          <button type="button" class="mobile-lang-pill active" data-lang="en">English</button>
+          <button type="button" class="mobile-lang-pill" data-lang="hi">हिन्दी</button>
+          <button type="button" class="mobile-lang-pill" data-lang="te">తెలుగు</button>
+        </div>
+      </div>
+
+      <!-- Drawer User Account / Logout Section -->
+      <div class="mobile-nav-section" id="mobile-auth-section"></div>
+    </div>
+  </aside>
+
+  <main id="main" class="wrap animate-fade-in" style="padding-top: 6rem;">
+    <div class="section-header">
+      <h1 class="section-title" data-i18n="asst.title">AI Assistant</h1>
+      <div class="section-accent-line"></div>
+      <p class="section-subtitle" data-i18n="asst.sub">Ask about Indian Standards in simple words — English, हिन्दी or తెలుగు. The assistant answers only from the standards catalogue and never invents codes.</p>
+    </div>
 
     <div class="card" id="chat-page">
       <div id="chat-log" class="chat-log" aria-live="polite"></div>
-      <div class="chips" id="chat-suggest">
+      <div class="chips" id="chat-suggest" style="margin-top:1rem;">
         <button class="chip" type="button" data-i18n="asst.suggest1">What is IS 456?</button>
         <button class="chip" type="button" data-i18n="asst.suggest2">Which standard for drinking water pipes?</button>
         <button class="chip" type="button" data-i18n="asst.suggest3">Does a pressure cooker need ISI mark?</button>
         <button class="chip" type="button" data-i18n="asst.suggest4">Latest version of IS 1786?</button>
       </div>
-      <form id="chat-form" class="searchbar" style="margin-top:1rem">
+      <form id="chat-form" class="chat-form" style="margin-top:1.25rem;">
         <input id="chat-input" type="text" autocomplete="off" data-i18n-ph="asst.ph"
                placeholder="Ask anything… e.g. “Which standard for drinking water pipes?”">
-        <button type="submit" data-i18n="asst.send">Send</button>
+        <button type="submit" data-i18n="asst.send" class="btn-press">Send</button>
       </form>
     </div>
   </main>
 
-  <footer class="site-footer"><span data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</span></footer>
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p data-i18n="footer.demo">MVP demo · seed catalogue · verify against official BIS.</p>
+    </div>
+  </footer>
 
+  <div id="toast-container" aria-live="polite"></div>
+
+  <script src="/static/js/theme.js"></script>
   <script src="/static/js/common.js"></script>
   <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/navbar.js"></script>
+  <script src="/static/js/components.js"></script>
   <script src="/static/js/chat.js"></script>
 </body>
 </html>

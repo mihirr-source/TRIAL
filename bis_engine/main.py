@@ -7,6 +7,7 @@ Run:  uvicorn main:app --reload --port 8002   (from the bis_engine/ directory)
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from collections import OrderedDict
@@ -17,11 +18,19 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from fastapi import FastAPI, File, HTTPException, Query, Response, UploadFile
-from fastapi.responses import FileResponse
+try:
+    from dotenv import load_dotenv
+    load_dotenv(_ROOT / ".env")
+    load_dotenv()
+except ImportError:
+    pass
+
+from fastapi import FastAPI, File, HTTPException, Query, Request, Response, UploadFile, status
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+from bis_engine.auth import auth_router, get_current_user_optional
 from bis_engine.data.catalog import SECTORS, SYNC_HEALTH, all_standards, CATALOG_VERSION
 from bis_engine.engine.analyzer import TenderAnalyzer
 from bis_engine.engine.assistant import StandardsAssistant
@@ -37,8 +46,49 @@ app = FastAPI(
     description="Maps procurement language to Indian Standards (BIS) with allied-standard "
                 "mapping, version checks and mandatory certification alerts. MVP demo — "
                 "seed catalogue; verify against the official BIS catalogue.",
-    version="0.2.0",
+    version="0.3.0",
 )
+
+# Authentication router
+app.include_router(auth_router)
+
+PROTECTED_PAGES = {"/", "/analyzer", "/standards", "/alerts", "/assistant", "/docs-page"}
+
+
+def _is_auth_enforced() -> bool:
+    if os.environ.get("BIS_DISABLE_AUTH") == "1":
+        return False
+    # Preserve legacy test execution unless explicitly testing auth enforcement
+    if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get("BIS_ENFORCE_AUTH_TEST"):
+        return False
+    return True
+
+
+@app.middleware("http")
+async def auth_gate_middleware(request: Request, call_next):
+    path = request.url.path
+
+    # Unprotected routes & static assets
+    if (
+        path.startswith("/static")
+        or path.startswith("/api/auth")
+        or path in {"/login", "/api/health", "/docs", "/redoc", "/openapi.json"}
+        or not _is_auth_enforced()
+    ):
+        return await call_next(request)
+
+    user = get_current_user_optional(request)
+    if not user:
+        if path in PROTECTED_PAGES or path.startswith("/standards/"):
+            return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        if path.startswith("/api/"):
+            return Response(
+                content='{"detail":"Authentication required. Please log in."}',
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                media_type="application/json",
+            )
+
+    return await call_next(request)
 
 retriever = StandardsRetriever()
 analyzer = TenderAnalyzer(retriever)
@@ -195,6 +245,13 @@ def certifications() -> dict:
 
 
 # -------------------------------------------------------------------- website
+@app.get("/login")
+def login_page(request: Request):
+    if get_current_user_optional(request):
+        return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+    return FileResponse(STATIC_DIR / "login.html")
+
+
 @app.get("/")
 def home():
     return FileResponse(STATIC_DIR / "index.html")

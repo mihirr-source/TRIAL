@@ -16,3 +16,8 @@ bis_engine/data/generated/
 # Tooling
 .freebuff/
 .DS_Store
+
+# Auth & Environment
+.env
+bis_engine/data/users.db
+*.db
