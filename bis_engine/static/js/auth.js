@@ -74,21 +74,21 @@
       const initial = (user.name || user.email || "U").trim().charAt(0).toUpperCase();
       const displayName = user.name || user.email.split("@")[0];
 
-      // 1. Desktop Header User Badge & Logout
+      // 1. Desktop Header User Badge & Compact Logout Icon
       if (actionsContainer) {
         const userWrap = document.createElement("div");
         userWrap.id = "user-profile-badge";
         userWrap.className = "user-badge";
-        userWrap.setAttribute("title", user.email);
+        userWrap.setAttribute("title", `${user.name || displayName} (${user.email})`);
         userWrap.innerHTML = `
-          <span class="user-avatar">${escapeHtml(initial)}</span>
+          <span class="user-avatar" title="${escapeHtml(displayName)}">${escapeHtml(initial)}</span>
           <span class="user-name-text">${escapeHtml(displayName)}</span>
-          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
-            <span>⏻</span> Logout
+          <button id="btn-logout-nav" class="btn-logout icon-logout-btn" type="button" title="Logout" aria-label="Logout">
+            <span class="logout-icon" aria-hidden="true">⏻</span>
           </button>
         `;
-        // Insert as first element in header-actions
-        actionsContainer.insertBefore(userWrap, actionsContainer.firstChild);
+        // Append at rightmost corner
+        actionsContainer.appendChild(userWrap);
 
         const logoutBtn = document.getElementById("btn-logout-nav");
         if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
@@ -114,14 +114,14 @@
         if (mobileLogoutBtn) mobileLogoutBtn.addEventListener("click", doLogout);
       }
     } else {
-      // Unauthenticated state -> Show Sign In button
+      // Unauthenticated state -> Show Sign In button at rightmost corner
       if (actionsContainer && location.pathname !== "/login") {
         const signinLink = document.createElement("a");
         signinLink.id = "nav-signin-link";
         signinLink.href = "/login";
         signinLink.className = "btn-nav-signin";
-        signinLink.innerHTML = `Sign In`;
-        actionsContainer.insertBefore(signinLink, actionsContainer.firstChild);
+        signinLink.textContent = "Sign In";
+        actionsContainer.appendChild(signinLink);
       }
 
       if (mobileAuthSection && location.pathname !== "/login") {

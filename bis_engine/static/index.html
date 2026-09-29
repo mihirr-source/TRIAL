@@ -15,27 +15,28 @@
     })();
   </script>
 
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Space Grotesk, JetBrains Mono, Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Core Theme & Layout Stylesheets -->
   <link rel="stylesheet" href="/static/css/theme.css">
   <link rel="stylesheet" href="/static/css/layout.css">
   <link rel="stylesheet" href="/static/css/components.css">
   <link rel="stylesheet" href="/static/css/animations.css">
+  <link rel="stylesheet" href="/static/css/footer-reveal.css">
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
 
   <!-- =====================================================================
-       1. NAVBAR
+       1. NAVBAR (Clean Bar with Leftmost Hamburger Menu)
        ===================================================================== -->
   <header class="site-header" id="site-header">
     <div class="header-container">
-      <!-- Left side: Hamburger Button + Brand Wordmark -->
+      <!-- Left: Hamburger Menu & Brand Logo -->
       <div class="header-left">
         <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
           ☰
@@ -46,34 +47,26 @@
         </a>
       </div>
 
-      <!-- Compact Search Bar (Sticky Mode) -->
-      <form class="nav-compact-search" id="nav-compact-search-form" role="search">
-        <input type="search" id="nav-compact-query" placeholder="Search Indian Standards…" aria-label="Compact search">
-        <select id="nav-compact-sector" aria-label="Sector filter">
-          <option value="all">All Sectors</option>
-          <option value="civil">Civil Engineering</option>
-          <option value="electrotechnical">Electrotechnical</option>
-          <option value="mechanical">Mechanical</option>
-          <option value="chemical">Chemical</option>
-        </select>
-        <button type="submit">Search</button>
-      </form>
-
-      <!-- Right Header Controls -->
+      <!-- Right: Action Controls -->
       <div class="header-actions">
+        <!-- Command Palette Trigger Button -->
+        <button class="btn-cmd-trigger btn-cmd-palette-trigger" type="button" aria-label="Search Standards (Cmd+K)">
+          <span>SEARCH</span> <kbd>⌘K</kbd>
+        </button>
+
         <!-- User Profile & Logout Action -->
         <div id="user-profile-badge" class="user-badge" style="display:inline-flex;">
           <span class="user-avatar" id="nav-user-avatar">👤</span>
           <span class="user-name-text" id="nav-user-name">User</span>
           <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
-            <span>⏻</span> Logout
+            LOGOUT
           </button>
         </div>
 
         <!-- Language Switcher Dropdown -->
         <div class="lang-dropdown-container">
           <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
-            🌐 <span id="current-lang-label" style="margin-left:4px; font-weight:600;">English</span> ▾
+            🌐 <span id="current-lang-label">EN</span> ▾
           </button>
           <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
             <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
@@ -84,15 +77,15 @@
 
         <!-- Theme Toggle Button -->
         <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
-          <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Slide-out Left Navigation Drawer & Backdrop -->
+  <!-- Slide-out Left Navigation Drawer & Backdrop (All Nav Options) -->
   <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
-  <aside class="nav-drawer" id="main-nav" aria-label="Main Navigation">
+  <aside class="nav-drawer" id="main-nav" aria-label="Mobile & Desktop Drawer Navigation">
     <div class="drawer-header">
       <a class="brand" href="/" aria-label="BIS Standards Engine Home">
         <span class="brand-shield">IS</span>
@@ -101,401 +94,282 @@
       <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
     </div>
     <div class="drawer-body">
-      <a class="nav-link" href="/" data-i18n="nav.home"><span>🏠</span> Home</a>
-      <a class="nav-link" href="/standards" data-i18n="nav.standards"><span>🔍</span> Explore Standards</a>
-      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer"><span>📋</span> Tender Analyzer</a>
-      <a class="nav-link" href="/alerts" data-i18n="nav.alerts"><span>🔔</span> Compliance Alerts</a>
-      <a class="nav-link" href="/assistant" data-i18n="nav.assistant"><span>🤖</span> AI Assistant</a>
-      <a class="nav-link" href="/docs-page" data-i18n="nav.docs"><span>📖</span> API Docs</a>
+      <a class="nav-link" href="/" data-i18n="nav.home">SEARCH PORTAL</a>
+      <a class="nav-link" href="/standards" data-i18n="nav.standards">EXPLORE STANDARDS</a>
+      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer">TENDER ANALYZER</a>
+      <a class="nav-link" href="/alerts" data-i18n="nav.alerts">COMPLIANCE ALERTS</a>
+      <a class="nav-link" href="/assistant" data-i18n="nav.assistant">AI ASSISTANT</a>
+      <a class="nav-link" href="/docs-page" data-i18n="nav.docs">API DOCUMENTATION</a>
 
-      <!-- Mobile / Drawer Language Selector Section -->
+      <!-- Drawer Theme Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Appearance / मोड</span>
+        <button class="mobile-theme-toggle theme-toggle-btn" type="button" aria-label="Toggle Dark and Light Theme">
+          <span>☀️ / 🌙 TOGGLE THEME</span>
+        </button>
+      </div>
+
+      <!-- Drawer Language Section -->
       <div class="mobile-nav-section">
         <span class="mobile-section-label">Language / भाषा / భాష</span>
         <div class="mobile-lang-pills">
-          <button type="button" class="mobile-lang-pill active" data-lang="en">English</button>
-          <button type="button" class="mobile-lang-pill" data-lang="hi">हिन्दी</button>
-          <button type="button" class="mobile-lang-pill" data-lang="te">తెలుగు</button>
+          <button type="button" class="mobile-lang-pill active" data-lang="en">EN</button>
+          <button type="button" class="mobile-lang-pill" data-lang="hi">HI</button>
+          <button type="button" class="mobile-lang-pill" data-lang="te">TE</button>
         </div>
       </div>
 
-      <!-- Drawer User Account / Logout Section -->
+      <!-- Drawer Auth Section -->
       <div class="mobile-nav-section" id="mobile-auth-section"></div>
     </div>
   </aside>
 
-  <!-- =====================================================================
-       2. HERO SECTION
-       ===================================================================== -->
-  <section class="hero-section" id="hero-section">
-    <!-- Generative Geometric Slideshow Backgrounds -->
-    <div class="hero-background-slideshow">
-      <div class="hero-slide active" style="background: radial-gradient(circle at 20% 30%, #1e1b4b 0%, #0f172a 70%, #090d16 100%);"></div>
-      <div class="hero-slide" style="background: radial-gradient(circle at 80% 40%, #2e1065 0%, #0f172a 75%, #020617 100%);"></div>
-      <div class="hero-slide" style="background: radial-gradient(circle at 50% 20%, #172554 0%, #0f172a 70%, #030712 100%);"></div>
-    </div>
-    <div class="hero-overlay"></div>
-
-    <div class="hero-content">
-      <div class="hero-brand-badge animate-fade-in">
-        <span>🇮🇳 Official Standards Discovery Portal</span>
+  <!-- Command Palette Modal (Cmd+K) -->
+  <div class="cmd-palette-modal" id="cmd-palette-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Command Palette Search">
+    <div class="cmd-palette-box">
+      <div class="cmd-palette-header">
+        <span class="mono-label" style="color:var(--accent)">>_</span>
+        <input class="cmd-palette-input" id="cmd-palette-input" type="search" placeholder="Type standard code or keyword (e.g. IS 456, cement, water pipes)..." autocomplete="off">
+        <button class="cmd-palette-close" id="cmd-palette-close" type="button">ESC</button>
       </div>
-      <h1 class="hero-title animate-fade-in" data-i18n="home.hero.title">
-        Find the right Indian Standard, instantly.
-      </h1>
-      <p class="hero-tagline animate-fade-in" data-i18n="home.hero.sub">
-        Describe a product in plain language. The engine maps your intent to BIS codes, bundles allied normative test standards, and flags mandatory QCO certifications.
-      </p>
-
-      <!-- Main Wide Search Bar -->
-      <form class="hero-search-wrapper animate-fade-in" id="search-form" role="search">
-        <span class="hero-search-icon" aria-hidden="true">🔍</span>
-        <label class="visually-hidden" for="q">Search standards</label>
-        <input class="hero-search-input" id="q" name="q" type="search" autocomplete="off" data-i18n-ph="home.search.ph" placeholder="e.g. cooling units for office, drinking water pipes, TMT bars, helmets…">
-        
-        <select class="hero-sector-dropdown" id="hero-sector" aria-label="Filter by Sector">
-          <option value="all">All Sectors</option>
-          <option value="civil">Civil & Structural</option>
-          <option value="electrotechnical">Electrotechnical</option>
-          <option value="mechanical">Mechanical & Thermal</option>
-          <option value="chemical">Chemical & Water</option>
-        </select>
-        
-        <button class="hero-search-btn btn-press" type="submit" data-i18n="home.search.btn">
-          Search
-        </button>
-      </form>
-
-      <!-- Trending Searches Pill Chips -->
-      <div class="trending-searches-row animate-fade-in" id="chips">
-        <span class="trending-label">Trending Searches:</span>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip1">cooling unit for office</button>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip2">drinking water pipes</button>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip3">TMT bars for slab</button>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip4">पानी के पाइप</button>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip5">fire extinguishers for server room</button>
-        <button class="trending-chip chip" type="button" data-i18n="home.chip6">sockets and switches</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Overlapping Floating Quote / Info Card -->
-  <div class="container">
-    <div class="hero-floating-card scroll-reveal">
-      <div class="quote-icon" aria-hidden="true">“</div>
-      <div class="quote-content">
-        <div class="quote-text">
-          Precision standard recommendations designed to empower tender creators, procurement officers, and engineering teams across India with zero ambiguity.
-        </div>
-        <div class="quote-author" id="sync-chip" data-i18n="home.syncchip">
-          Seed Catalogue Demo · Bureau of Indian Standards Intelligence
+      <div class="cmd-palette-results" id="cmd-palette-results">
+        <div class="cmd-palette-empty">
+          <span class="mono-label">TYPE 2+ CHARACTERS TO SEARCH INDIAN STANDARDS</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- =====================================================================
-       3. MAIN CONTENT & SEARCH RESULTS
-       ===================================================================== -->
-  <main id="main" class="wrap">
-    <!-- Live Results Section -->
-    <section id="results" aria-live="polite"></section>
+  <div class="page-wrap">
+    <!-- =====================================================================
+         2. HOMEPAGE HERO (Solid Plain Yellow + Translucent Search Panel)
+         ===================================================================== -->
+    <section class="hero-section" id="hero-section">
+      <div class="hero-content-wrapper">
+        <!-- Big Watermark Logo at the Back of the Transparent Box -->
+        <div class="hero-bg-logo-watermark" aria-hidden="true">
+          <svg viewBox="0 0 200 200" class="hero-bg-watermark-svg" width="380" height="380">
+            <!-- Outer Cog/Gear/Chakra Ring -->
+            <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="2.5" opacity="0.3" stroke-dasharray="6 4"/>
+            <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
+            <!-- Radiating Rays -->
+            <g opacity="0.25" stroke="currentColor" stroke-width="1.5">
+              <line x1="100" y1="18" x2="100" y2="36"/><line x1="100" y1="164" x2="100" y2="182"/>
+              <line x1="18" y1="100" x2="36" y2="100"/><line x1="164" y1="100" x2="182" y2="100"/>
+              <line x1="42" y1="42" x2="55" y2="55"/><line x1="145" y1="145" x2="158" y2="158"/>
+              <line x1="158" y1="42" x2="145" y2="55"/><line x1="55" y1="145" x2="42" y2="158"/>
+            </g>
+            <!-- Central Shield & Iconic IS Monogram -->
+            <path d="M100 38 L152 64 V116 C152 148 100 172 100 172 C100 172 48 148 48 116 V64 Z" fill="none" stroke="currentColor" stroke-width="3.5" opacity="0.45"/>
+            <path d="M100 48 L142 69 V112 C142 138 100 158 100 158 C100 158 58 138 58 112 V69 Z" fill="currentColor" opacity="0.08"/>
+            <!-- Bold Stylized "IS" Standard Wordmark -->
+            <text x="100" y="122" font-family="'Space Grotesk', sans-serif" font-size="52" font-weight="900" fill="currentColor" opacity="0.4" text-anchor="middle" letter-spacing="2">IS</text>
+          </svg>
+        </div>
 
-    <!-- Deep-Blue Promo Banner -->
-    <section class="promo-banner scroll-reveal" style="margin-top: 3.5rem;">
-      <div class="promo-pattern" aria-hidden="true"></div>
-      <div class="promo-content">
-        <h3>Need to verify an entire Tender Specification?</h3>
-        <p>Upload a draft tender PDF or DOCX to automatically audit against mandatory certification orders (QCO) and outdated IS codes before publishing.</p>
+        <!-- Centered Translucent Search Panel -->
+        <div class="hero-black-panel reveal-on-scroll">
+          <h1 class="hero-title" data-i18n="home.hero.title">
+            Find the right Indian Standard. <span class="highlight">Instantly.</span>
+          </h1>
+
+          <p class="hero-tagline" data-i18n="home.hero.sub">
+            Describe a product in plain procurement language. The neural retrieval engine maps your intent to IS codes, bundles allied test standards, and flags mandatory QCO certifications.
+          </p>
+
+          <!-- Main Search Box Form -->
+          <form class="hero-search-form" id="search-form" role="search">
+            <input class="hero-search-input" id="q" name="q" type="search" autocomplete="off" data-i18n-ph="home.search.ph" placeholder="e.g. cooling units for office, drinking water pipes, TMT bars…">
+            
+            <select class="hero-sector-select" id="hero-sector" aria-label="Filter by Sector">
+              <option value="all">ALL SECTORS</option>
+              <option value="civil">CIVIL & STRUCTURAL</option>
+              <option value="electrotechnical">ELECTROTECHNICAL</option>
+              <option value="mechanical">MECHANICAL & THERMAL</option>
+              <option value="chemical">CHEMICAL & WATER</option>
+            </select>
+            
+            <button class="hero-search-btn" type="submit" data-i18n="home.search.btn">
+              SEARCH →
+            </button>
+          </form>
+
+          <!-- Monospace Trending Chips -->
+          <div class="trending-searches-box" id="chips">
+            <span class="trending-label">TRENDING:</span>
+            <button class="trending-chip chip" type="button" data-i18n="home.chip1">cooling unit for office</button>
+            <button class="trending-chip chip" type="button" data-i18n="home.chip2">drinking water pipes</button>
+            <button class="trending-chip chip" type="button" data-i18n="home.chip3">TMT bars for slab</button>
+            <button class="trending-chip chip" type="button" data-i18n="home.chip4">पानी के पाइप</button>
+            <button class="trending-chip chip" type="button" data-i18n="home.chip5">fire extinguishers</button>
+          </div>
+        </div>
       </div>
-      <a href="/analyzer" class="promo-btn btn-press">Check Now →</a>
     </section>
 
-    <!-- Two-Column Section: Latest Updates & Spotlight -->
-    <div class="two-col-grid" style="margin-top: 2rem;">
-      <!-- Column 1: Latest Updates / Notices -->
-      <section class="scroll-reveal">
-        <div class="section-header">
-          <h2 class="section-title">Latest Updates & Notices</h2>
-          <div class="section-accent-line"></div>
-          <p class="section-subtitle">Recent gazette notifications, Quality Control Orders, and catalogue amendments.</p>
-        </div>
+    <!-- =====================================================================
+         3. BLUEPRINT CENTER COLUMN & SECTIONS
+         ===================================================================== -->
+    <div class="blueprint-wrapper">
+      <main id="main" class="wrap">
+        <!-- Live Results Section (populated when query runs) -->
+        <section id="results" aria-live="polite" style="margin-bottom: 2rem;"></section>
 
-        <div class="update-card card-hover">
-          <div class="update-icon">📋</div>
-          <div class="update-body">
-            <h4>QCO Notification: Electrical Accessories & Switches</h4>
-            <p>Mandatory ISI mark compliance under Scheme-I enforced for all domestic plug and socket outlets.</p>
-          </div>
-        </div>
-
-        <div class="update-card card-hover">
-          <div class="update-icon">🏗️</div>
-          <div class="update-body">
-            <h4>Revised Test Standards for High Strength Deformed Steel</h4>
-            <p>IS 1786 specifications amended with supplementary bend test guidelines for seismic zone procurement.</p>
-          </div>
-        </div>
-
-        <div class="update-card card-hover">
-          <div class="update-icon">💧</div>
-          <div class="update-body">
-            <h4>Packaged Drinking Water & Treatment Norms</h4>
-            <p>Updated microbiological testing thresholds effective across all commercial water processing plants.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Column 2: Spotlight List -->
-      <section class="scroll-reveal stagger-2">
-        <div class="section-header">
-          <h2 class="section-title">Spotlight Standards</h2>
-          <div class="section-accent-line"></div>
-          <p class="section-subtitle">High-frequency procurement benchmarks active across public departments.</p>
-        </div>
-
-        <div class="spotlight-list">
-          <div class="spotlight-item card-hover">
-            <div class="spotlight-date-badge">
-              <div class="spotlight-month">SEP</div>
-              <div class="spotlight-year">2026</div>
-            </div>
-            <div class="spotlight-info">
-              <h4>IS 456: Plain and Reinforced Concrete Code</h4>
-              <p>General structural safety, mix design guidelines, and load durability standards.</p>
-            </div>
+        <!-- Section 01 // CORE CAPABILITIES -->
+        <section class="section-block" style="border-top:none;">
+          <div class="section-header reveal-on-scroll">
+            <h2 class="section-title">
+              Intelligent Standards Engine for <span class="highlight">Procurement & Tenders</span>
+            </h2>
+            <p class="section-subtitle">
+              Eliminate ambiguity in public procurement, tender specifications, and engineering compliance through automated semantic standard matching.
+            </p>
           </div>
 
-          <div class="spotlight-item card-hover">
-            <div class="spotlight-date-badge">
-              <div class="spotlight-month">AUG</div>
-              <div class="spotlight-year">2026</div>
-            </div>
-            <div class="spotlight-info">
-              <h4>IS 1391: Room Air Conditioners Specification</h4>
-              <p>Energy efficiency rating and performance test codes for split & window units.</p>
-            </div>
+          <div class="three-col-grid">
+            <!-- Card 1 -->
+            <article class="brutalist-card reveal-on-scroll">
+              <h3 class="card-title">Semantic Standard Match</h3>
+              <p class="card-desc">
+                Describe products in plain procurement language. Maps intent directly to official IS codes.
+              </p>
+              <div class="card-allied-row">
+                <span class="card-allied-pill">MULTILINGUAL</span>
+                <span class="card-allied-pill">ALIAS MATCHER</span>
+              </div>
+            </article>
+
+            <!-- Card 2 -->
+            <article class="brutalist-card reveal-on-scroll">
+              <h3 class="card-title">Allied Standard Bundling</h3>
+              <p class="card-desc">
+                Traverses normative reference graphs to assemble full testing and material standard bundles.
+              </p>
+              <div class="card-allied-row">
+                <span class="card-allied-pill">TEST METHODS</span>
+                <span class="card-allied-pill">RAW MATERIALS</span>
+              </div>
+            </article>
+
+            <!-- Card 3 -->
+            <article class="brutalist-card reveal-on-scroll">
+              <h3 class="card-title">Mandatory QCO Alerts</h3>
+              <p class="card-desc">
+                Automated flags for Quality Control Orders and Scheme-I mandatory ISI certifications.
+              </p>
+              <div class="card-allied-row">
+                <span class="card-allied-pill">SCHEME-I</span>
+                <span class="card-allied-pill">GAZETTE ALERTS</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Section 02 // CALL TO ACTION -->
+        <section class="section-block" style="text-align:center; padding: 4.5rem 1.5rem 3rem;">
+          <div class="section-header reveal-on-scroll" style="max-width:720px; margin:0 auto 2rem;">
+            <h2 class="section-title" style="font-size:clamp(1.85rem, 3.5vw, 2.75rem);">
+              Audit Entire Tender Specifications in Seconds
+            </h2>
+            <p class="section-subtitle" style="margin:0 auto;">
+              Upload draft tender documents in PDF or DOCX format to detect obsolete codes, missing normative test standards, and compliance loopholes.
+            </p>
           </div>
 
-          <div class="spotlight-item card-hover">
-            <div class="spotlight-date-badge">
-              <div class="spotlight-month">JUL</div>
-              <div class="spotlight-year">2026</div>
-            </div>
-            <div class="spotlight-info">
-              <h4>IS 4985: Unplasticized PVC Pipes for Potable Water</h4>
-              <p>Dimensional tolerances and pressure resistance requirements for water supply tenders.</p>
-            </div>
+          <div class="reveal-on-scroll" style="margin-top:1.75rem;">
+            <a href="/analyzer" class="btn-primary-auth" style="display:inline-flex; width:auto; padding:0.95rem 2.5rem; font-size:0.95rem; text-decoration:none;">
+              LAUNCH TENDER ANALYZER →
+            </a>
+            <p class="mono-label" style="margin-top:1rem; color:var(--text-dim);">
+              COMPATIBLE WITH GeM · NIC E-PROCUREMENT · CPP PORTAL FORMATS
+            </p>
           </div>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <!-- =====================================================================
-       4. CRIMSON HIGHLIGHT SECTION
-       ===================================================================== -->
-  <section class="crimson-section">
-    <div class="container">
-      <div class="section-header centered scroll-reveal">
-        <h2 class="section-title">Critical Procurement Safeguards</h2>
-        <div class="section-accent-line"></div>
-        <p class="section-subtitle">Ensure technical specifications adhere to national quality and safety directives.</p>
-      </div>
-
-      <div class="three-col-grid" style="margin-top: 2.5rem;">
-        <!-- Card 1 -->
-        <article class="highlight-card scroll-reveal stagger-1">
-          <div class="highlight-card-banner">
-            <span class="highlight-badge badge-new">New</span>
-          </div>
-          <div class="highlight-card-body">
-            <h4>Mandatory QCO Tracker</h4>
-            <p>Instantly check whether a product requires mandatory certification under BIS Scheme-I or CRS before issuing RFPs.</p>
-            <a href="/alerts" class="highlight-action-link">View Mandated Products →</a>
-          </div>
-        </article>
-
-        <!-- Card 2 -->
-        <article class="highlight-card scroll-reveal stagger-2">
-          <div class="highlight-card-banner" style="background: linear-gradient(135deg, #0f2b48, #0b1120);">
-            <span class="highlight-badge badge-update">Update</span>
-          </div>
-          <div class="highlight-card-body">
-            <h4>Allied Standard Bundling</h4>
-            <p>Automatically discover normative references, test methods, and raw material codes that must accompany the primary IS code.</p>
-            <a href="/standards" class="highlight-action-link">Explore Sector Catalogue →</a>
-          </div>
-        </article>
-
-        <!-- Card 3 -->
-        <article class="highlight-card scroll-reveal stagger-3">
-          <div class="highlight-card-banner" style="background: linear-gradient(135deg, #3b0764, #1e1b4b);">
-            <span class="highlight-badge badge-alert">Alert</span>
-          </div>
-          <div class="highlight-card-body">
-            <h4>Spec Pitfall Detector</h4>
-            <p>Guard tenders against obsolete codes, non-standard unit specifications, and missing third-party test obligations.</p>
-            <a href="/analyzer" class="highlight-action-link">Analyze Tender Clauses →</a>
-          </div>
-        </article>
-      </div>
-
-      <div class="crimson-cta-wrap scroll-reveal">
-        <a href="/standards" class="btn-crimson-cta btn-press">View All Standards & Categories</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       5. FLOATING SIDE ACTION BAR
-       ===================================================================== -->
-  <aside class="floating-side-bar" aria-label="Quick Actions">
-    <button class="side-action-btn" id="side-btn-feedback" type="button" aria-label="Provide Feedback">
-      💬
-      <span class="side-tooltip">Feedback</span>
-    </button>
-    <button class="side-action-btn" id="side-btn-assistant" type="button" aria-label="AI Standards Assistant">
-      🤖
-      <span class="side-tooltip">AI Assistant</span>
-    </button>
-    <button class="side-action-btn" id="side-btn-history" type="button" aria-label="Standards Catalogue">
-      📚
-      <span class="side-tooltip">Catalogue</span>
-    </button>
-    <button class="side-action-btn" id="side-btn-share" type="button" aria-label="Share Link">
-      🔗
-      <span class="side-tooltip">Share Page</span>
-    </button>
-    <button class="side-action-btn theme-toggle-btn" id="side-btn-theme" type="button" aria-label="Toggle Theme">
-      🌓
-      <span class="side-tooltip">Toggle Theme</span>
-    </button>
-  </aside>
-
-  <!-- =====================================================================
-       6. COOKIE / NOTICE BAR
-       ===================================================================== -->
-  <div class="cookie-notice-bar" id="cookie-notice-bar" role="region" aria-label="Cookie and Privacy Consent">
-    <div class="cookie-text">
-      <strong>Privacy & Standards Intelligence:</strong> We use essential cookies to maintain your session preferences and multilingual configuration. No commercial tracking cookies are utilized.
-    </div>
-    <div class="cookie-actions">
-      <button class="btn-cookie-outline btn-press" id="btn-cookie-customize" type="button">Customize</button>
-      <button class="btn-cookie-outline btn-press" id="btn-cookie-decline" type="button">Decline optional</button>
-      <button class="btn-cookie-accept btn-press" id="btn-cookie-accept" type="button">Accept all</button>
+        </section>
+      </main>
     </div>
   </div>
 
   <!-- =====================================================================
-       7. SITE FOOTER
+       4. REVEAL FOOTER (Fixed Sticky Under-Page Reveal)
        ===================================================================== -->
-  <footer class="site-footer">
-    <div class="footer-container">
-      <!-- Quick-link / Partner logos banner -->
-      <div class="footer-top-logos">
-        <div class="partner-logo-item">
-          <span class="brand-shield" style="width:28px; height:28px; font-size:0.75rem;">IS</span>
-          <span>BIS Standards Engine</span>
-        </div>
-        <div class="partner-logo-item" style="opacity:0.8; font-size:0.9rem;">
-          <span>National Standards Intelligence Initiative</span>
-        </div>
-        <div class="partner-logo-item" style="opacity:0.8; font-size:0.9rem;">
-          <span>Government E-Marketplace Compatible</span>
-        </div>
-      </div>
-
-      <!-- Multi-column link lists -->
-      <div class="footer-columns-grid">
-        <div class="footer-col">
-          <h5>About the Engine</h5>
-          <p style="font-size:0.88rem; line-height:1.6; margin-bottom:1rem; opacity:0.8;">
-            An intelligent semantic discovery framework bridging natural language procurement requirements with official Indian Standards and compliance directives.
+  <footer class="reveal-footer" id="reveal-footer" inert aria-hidden="true">
+    <div class="reveal-footer-container">
+      <div class="reveal-footer-grid">
+        <!-- Col 1: Brand & Description -->
+        <div class="reveal-footer-col reveal-footer-brand">
+          <div class="reveal-footer-brand-title">BIS STANDARDS ENGINE</div>
+          <p class="reveal-footer-brand-desc">
+            Official standards discovery framework bridging natural language procurement with Bureau of Indian Standards specifications and Quality Control Orders.
           </p>
-          <div id="stats" style="font-size:0.8rem; color:var(--text-dim);"></div>
+          <span class="reveal-footer-tag">v0.3.0 · VERIFIED PLATFORM</span>
         </div>
 
-        <div class="footer-col">
-          <h5>Categories</h5>
-          <ul>
-            <li><a href="/standards">Civil Engineering</a></li>
-            <li><a href="/standards">Electrotechnical</a></li>
-            <li><a href="/standards">Mechanical Systems</a></li>
-            <li><a href="/standards">Chemical Standards</a></li>
-            <li><a href="/standards">Textiles & Safety</a></li>
+        <!-- Col 2: Navigation -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">NAVIGATION</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/">SEARCH PORTAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">CATALOGUE INDEX</a></li>
+            <li><a class="reveal-footer-link" href="/analyzer">TENDER ANALYZER</a></li>
+            <li><a class="reveal-footer-link" href="/alerts">COMPLIANCE ALERTS</a></li>
+            <li><a class="reveal-footer-link" href="/assistant">AI ASSISTANT</a></li>
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h5>Explore</h5>
-          <ul>
-            <li><a href="/analyzer">Tender Spec Analyzer</a></li>
-            <li><a href="/alerts">Compliance Alerts</a></li>
-            <li><a href="/assistant">Interactive AI Assistant</a></li>
-            <li><a href="/docs-page">API Documentation</a></li>
-            <li><a href="/standards">Standards Index</a></li>
+        <!-- Col 3: Sectors -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">SECTORS</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/standards">CIVIL ENGINEERING</a></li>
+            <li><a class="reveal-footer-link" href="/standards">ELECTROTECHNICAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">MECHANICAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">CHEMICAL & WATER</a></li>
+            <li><a class="reveal-footer-link" href="/standards">SAFETY & TEXTILES</a></li>
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h5>Governance</h5>
-          <ul>
-            <li><a href="/docs-page">API Reference</a></li>
-            <li><a href="#main">Disclaimer</a></li>
-            <li><a href="#main">Terms of Use</a></li>
-            <li><a href="#main">Privacy Policy</a></li>
-            <li><a href="#main">Feedback</a></li>
+        <!-- Col 4: Documentation -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">DEVELOPERS</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/docs-page">API REFERENCE</a></li>
+            <li><a class="reveal-footer-link" href="/api/health">SYSTEM HEALTH</a></li>
+            <li><a class="reveal-footer-link" href="/docs">SWAGGER OPENAPI</a></li>
+            <li><a class="reveal-footer-link" href="/redoc">REDOC SPECS</a></li>
           </ul>
-        </div>
-
-        <div class="footer-col">
-          <h5>Open on Mobile</h5>
-          <div class="mobile-app-block">
-            <p style="font-size:0.8rem; margin-bottom:0.5rem;">Scan to open on smartphone</p>
-            <div class="qr-code-placeholder" aria-label="QR Code">
-              <svg viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
-                <rect x="10" y="10" width="25" height="25" fill="#0f172a"/>
-                <rect x="15" y="15" width="15" height="15" fill="#ffffff"/>
-                <rect x="18" y="18" width="9" height="9" fill="#0f172a"/>
-                <rect x="65" y="10" width="25" height="25" fill="#0f172a"/>
-                <rect x="70" y="15" width="15" height="15" fill="#ffffff"/>
-                <rect x="73" y="18" width="9" height="9" fill="#0f172a"/>
-                <rect x="10" y="65" width="25" height="25" fill="#0f172a"/>
-                <rect x="15" y="70" width="15" height="15" fill="#ffffff"/>
-                <rect x="18" y="73" width="9" height="9" fill="#0f172a"/>
-                <rect x="45" y="15" width="10" height="20" fill="#0f172a"/>
-                <rect x="45" y="45" width="20" height="10" fill="#0f172a"/>
-                <rect x="65" y="65" width="25" height="25" fill="#0f172a"/>
-              </svg>
-            </div>
-            <span style="font-size:0.75rem; color:var(--text-dim);">PWA Supported</span>
-          </div>
         </div>
       </div>
 
-      <div class="footer-bottom">
-        <div>
-          © 2026 BIS Standards Recommendation Engine. Demonstration Prototype. Verify against official BIS gazette.
-        </div>
-        <div>
-          <a href="/docs-page" style="color:inherit; text-decoration:underline;">System Health & API</a>
+      <!-- Footer Bottom Bar -->
+      <div class="reveal-footer-bottom">
+        <span>© 2026 Bureau of Indian Standards · Recommendation Engine Demo</span>
+        <div class="reveal-footer-bottom-links">
+          <a class="reveal-footer-bottom-link" href="/docs-page">API</a>
+          <a class="reveal-footer-bottom-link" href="/standards">STANDARDS</a>
+          <a class="reveal-footer-bottom-link" href="/">HOME</a>
         </div>
       </div>
     </div>
   </footer>
 
+  <!-- Floating AI Assistant Chatbot Button -->
+  <a href="/assistant" class="floating-assistant-btn" id="floating-assistant-btn" aria-label="Open AI Assistant" title="Open AI Standards Assistant">
+    <svg class="floating-assistant-svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+    <span class="floating-assistant-label">AI ASSISTANT</span>
+    <span class="floating-assistant-badge">ASK</span>
+  </a>
+
   <!-- Toast Container -->
   <div id="toast-container" aria-live="polite"></div>
 
-  <!-- Core JavaScript Modules -->
+  <!-- JavaScript Modules -->
   <script src="/static/js/theme.js"></script>
   <script src="/static/js/common.js"></script>
   <script src="/static/js/i18n.js"></script>
-  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/reveal.js"></script>
   <script src="/static/js/navbar.js"></script>
-  <script src="/static/js/hero.js"></script>
-  <script src="/static/js/components.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/footer-reveal.js"></script>
   <script src="/static/js/home.js"></script>
-  <script src="/static/js/chat.js"></script>
 </body>
 </html>

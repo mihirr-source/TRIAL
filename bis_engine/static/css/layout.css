@@ -1,6 +1,32 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Layout Stylesheet (layout.css)
+   BIS Standards Recommendation Engine — Technical Brutalist Layout (layout.css)
    ===================================================================== */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Blueprint Center Column Guide Lines */
+.blueprint-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  border-left: 1px dashed var(--grid-guide);
+  border-right: 1px dashed var(--grid-guide);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
 .container {
   width: 100%;
@@ -13,13 +39,15 @@
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 2.5rem 1.5rem 5rem;
   flex: 1;
 }
 
+/* Section Blocks */
 .section-block {
-  padding: 4.5rem 0;
+  padding: 5rem 0;
   position: relative;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-block.alt-bg {
@@ -30,101 +58,264 @@
   background-color: var(--bg-surface);
 }
 
-/* Section Header with Red Accent Line */
+/* Numbered Section Header (e.g. 01 // ARCHITECTURE) */
 .section-header {
-  margin-bottom: 2.5rem;
-  text-align: left;
+  margin-bottom: 3rem;
+  position: relative;
 }
 
-.section-header.centered {
-  text-align: center;
+.section-header-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section-index {
+  color: var(--accent);
+  background: var(--bg-surface-2);
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+}
+
+[data-theme="light"] .section-index {
+  color: #0a0a0a;
+  background: var(--accent);
+  border-color: #0a0a0a;
+}
+
+.section-label {
+  color: var(--text-dim);
 }
 
 .section-title {
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-family: var(--font-headline);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
   color: var(--text-main);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.5rem;
-  position: relative;
-  display: inline-block;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
 }
 
-.section-accent-line {
-  width: 48px;
-  height: 4px;
-  background: var(--primary);
-  border-radius: 2px;
-  margin-top: 0.4rem;
-  margin-bottom: 0.6rem;
+.section-title .highlight {
+  color: var(--accent);
+  background: transparent;
 }
 
-.section-header.centered .section-accent-line {
-  margin-left: auto;
-  margin-right: auto;
+[data-theme="light"] .section-title .highlight {
+  color: #0a0a0a;
+  background: var(--accent);
+  padding: 0 0.2em;
 }
 
 .section-subtitle {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: var(--text-muted);
-  max-width: 600px;
+  max-width: 680px;
+  margin: 0;
+  line-height: 1.6;
 }
 
-/* Two-Column Grid */
+/* Two & Three Column Grids */
 .two-col-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: start;
+  gap: 1.75rem;
+  align-items: stretch;
 }
 
-/* Three-Column Grid */
 .three-col-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
-/* Skip to Content */
+.four-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+/* Bento-Style Architecture Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+}
+
+.bento-col-4 { grid-column: span 4; }
+.bento-col-6 { grid-column: span 6; }
+.bento-col-8 { grid-column: span 8; }
+.bento-col-12 { grid-column: span 12; }
+
+/* Cards with Rich Depth (No Border) */
+.brutalist-card {
+  position: relative;
+  background: var(--bg-card);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 2rem 1.85rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.brutalist-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 48px -10px rgba(0, 0, 0, 0.75), 0 0 28px rgba(247, 223, 30, 0.16);
+}
+
+[data-theme="light"] .brutalist-card {
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 14px -2px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .brutalist-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 44px -8px rgba(0, 0, 0, 0.14), 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Corner Plus (+) Decorations disabled */
+.brutalist-card::before,
+.brutalist-card::after {
+  display: none;
+}
+
+/* Stats Hairline Ribbon / Strip */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-strip-item {
+  padding: 1.5rem 1.25rem;
+  border-right: 1px solid var(--border);
+  text-align: left;
+}
+
+.stats-strip-item:last-child {
+  border-right: none;
+}
+
+.stats-number {
+  font-family: var(--font-mono);
+  font-size: clamp(1.85rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.25rem;
+}
+
+.stats-number .accent-char {
+  color: var(--accent);
+}
+
+.stats-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+/* Skip Link */
 .skip-link {
   position: absolute;
   top: -100px;
   left: 1rem;
-  background: var(--primary);
-  color: var(--text-white);
+  background: var(--accent);
+  color: var(--accent-ink);
   padding: 0.6rem 1.2rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   z-index: 10000;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   transition: top var(--transition-fast);
+  border: 1px solid var(--accent-ink);
 }
 
 .skip-link:focus {
   top: 1rem;
 }
 
-/* Responsive Grid Rules */
+/* Responsive Rules */
 @media (max-width: 1024px) {
   .three-col-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .four-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-strip-item:nth-child(2) {
+    border-right: none;
+  }
+
+  .stats-strip-item:nth-child(-n+2) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bento-col-4,
+  .bento-col-6,
+  .bento-col-8 {
+    grid-column: span 12;
+  }
 }
 
 @media (max-width: 768px) {
-  .two-col-grid {
+  .two-col-grid,
+  .three-col-grid,
+  .four-col-grid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.25rem;
   }
 
-  .three-col-grid {
-    grid-template-columns: 1fr;
+  .blueprint-wrapper {
+    border-left: none;
+    border-right: none;
   }
 
   .section-block {
-    padding: 3rem 0;
+    padding: 3.5rem 0;
   }
   
   .wrap {
-    padding: 1.5rem 1rem 3rem;
+    padding: 1.5rem 1rem 3.5rem;
+  }
+
+  .stats-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-strip-item {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stats-strip-item:last-child {
+    border-bottom: none;
   }
 }

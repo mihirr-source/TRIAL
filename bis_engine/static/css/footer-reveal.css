@@ -1,0 +1,278 @@
+/* =====================================================================
+   BIS Standards Recommendation Engine — Footer Reveal (footer-reveal.css)
+   Sticky Under-Page Curtain Peel Reveal Effect
+   ===================================================================== */
+
+/* 1. Page Wrap Container that sits on top */
+.page-wrap {
+  position: relative;
+  z-index: 2;
+  background-color: var(--bg-app);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  margin-bottom: var(--footer-height, 380px);
+  min-height: 100vh;
+  transition: background-color var(--transition-normal);
+}
+
+[data-theme="light"] .page-wrap {
+  background-color: var(--bg-app);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* 2. Section Marker just before the footer reveal zone */
+.footer-reveal-marker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px dashed var(--grid-guide);
+  background: var(--bg-surface-alt);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+[data-theme="light"] .footer-reveal-marker {
+  color: #0a0a0a;
+  background: var(--bg-surface-alt);
+  border-top-color: var(--border);
+}
+
+.footer-reveal-marker-track {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-reveal-marker-line {
+  height: 1px;
+  width: 48px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+/* 3. Reveal Footer — Fixed to bottom of viewport BEHIND page-wrap */
+.reveal-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  width: 100%;
+  background: var(--accent);
+  color: #0a0a0a;
+  border-top: 3px solid #0a0a0a;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 3.5rem 1.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.reveal-footer.is-active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.reveal-footer-container {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.reveal-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* 4. Column Animation driven by Scroll Progress */
+.reveal-footer-col {
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(8px);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out, filter 0.3s ease-out;
+  will-change: opacity, transform, filter;
+}
+
+/* When progress reaches visibility thresholds */
+.reveal-footer[data-reveal-state="revealed"] .reveal-footer-col {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0px);
+}
+
+/* 5. Typography & Links inside the Yellow Footer */
+.reveal-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reveal-footer-brand-title {
+  font-family: var(--font-headline);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0a0a0a;
+  letter-spacing: -0.02em;
+}
+
+.reveal-footer-brand-desc {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #262626;
+  max-width: 340px;
+}
+
+.reveal-footer-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0a0a0a;
+  background: rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  width: fit-content;
+  letter-spacing: 0.06em;
+}
+
+.reveal-footer-col-title {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid rgba(10, 10, 10, 0.25);
+}
+
+.reveal-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.reveal-footer-link {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.reveal-footer-link:hover {
+  color: #000000;
+  font-weight: 800;
+  transform: translateX(4px);
+}
+
+.reveal-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(10, 10, 10, 0.2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #333333;
+}
+
+.reveal-footer-bottom-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.reveal-footer-bottom-link {
+  color: #1a1a1a;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.reveal-footer-bottom-link:hover {
+  text-decoration: underline;
+}
+
+/* 6. High-Z-Index for Global Overlays & Modals */
+.site-header {
+  z-index: 1000;
+}
+
+.cmd-palette-modal {
+  z-index: 2500;
+}
+
+.floating-assistant-btn {
+  z-index: 1200;
+}
+
+#toast-container {
+  z-index: 3000;
+}
+
+/* 7. Fallback & Responsive Handling */
+@media (max-width: 900px) {
+  .reveal-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .reveal-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .reveal-footer-bottom {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+}
+
+/* On very short viewports or small devices, fallback to standard static footer */
+@media (max-height: 540px), (max-width: 480px) {
+  .page-wrap {
+    margin-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .reveal-footer {
+    position: static !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .reveal-footer-col {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Prefers-reduced-motion handling */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-footer-col {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
