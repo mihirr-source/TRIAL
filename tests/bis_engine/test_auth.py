@@ -1,4 +1,4 @@
-"""Authentication tests for BIS Standards Recommendation Engine.
+"""Authentication tests for PARAKH Standards Recommendation Engine.
 
 Covers:
 - Password hashing & verification

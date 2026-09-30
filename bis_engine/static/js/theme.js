@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Theme Controller (theme.js)
+   PARAKH Standards Recommendation Engine — Theme Controller (theme.js)
    Handles System Preference, User Override, Anti-flash state & UI toggles
    ===================================================================== */
 "use strict";

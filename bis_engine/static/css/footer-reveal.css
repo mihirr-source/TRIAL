@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Footer Reveal (footer-reveal.css)
+   PARAKH Standards Recommendation Engine — Footer Reveal (footer-reveal.css)
    Sticky Under-Page Curtain Peel Reveal Effect
    ===================================================================== */
 
@@ -188,6 +188,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 1.5rem;
+  padding-right: 14rem; /* Keeps right zone clear for the floating AI assistant button */
   border-top: 1px solid rgba(10, 10, 10, 0.2);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -232,6 +233,10 @@
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
   }
+
+  .reveal-footer-bottom {
+    padding-right: 12rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -244,6 +249,8 @@
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+    padding-right: 0;
+    padding-bottom: 5.5rem; /* Large bottom clearance on mobile for floating AI button */
   }
 }
 

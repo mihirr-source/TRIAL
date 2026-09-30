@@ -1,4 +1,4 @@
-"""Authentication and user management for BIS Standards Recommendation Engine.
+"""Authentication and user management for PARAKH Standards Recommendation Engine.
 
 Provides:
 - SQLite persistence (bis_engine/data/users.db)
@@ -52,34 +52,82 @@ EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 # --------------------------------------------------------------------- database
 def get_db_path() -> Path:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    return DEFAULT_DB_PATH
+    custom = os.environ.get("BIS_DB_PATH")
+    if custom:
+        p = Path(custom)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        return p
+
+    # On Vercel / AWS Lambda / Serverless read-only filesystems, use /tmp
+    is_serverless = bool(
+        os.environ.get("VERCEL")
+        or os.environ.get("VERCEL_ENV")
+        or os.environ.get("NOW_REGION")
+        or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+        or os.environ.get("LAMBDA_TASK_ROOT")
+        or os.environ.get("K_SERVICE")
+    )
+    if is_serverless:
+        tmp_dir = Path("/tmp")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        return tmp_dir / "users.db"
+
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        test_path = DATA_DIR / ".write_test"
+        with open(test_path, "w") as f:
+            f.write("ok")
+        test_path.unlink(missing_ok=True)
+        return DEFAULT_DB_PATH
+    except (OSError, PermissionError):
+        tmp_dir = Path("/tmp")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        return tmp_dir / "users.db"
 
 
 def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
     path = db_path or get_db_path()
-    conn = sqlite3.connect(str(path))
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect(str(path))
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL COLLATE NOCASE,
+                name TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        return conn
+    except (sqlite3.OperationalError, PermissionError, OSError):
+        # Fallback to /tmp if current path was read-only
+        tmp_path = Path("/tmp") / "users.db"
+        tmp_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(tmp_path))
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL COLLATE NOCASE,
+                name TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        return conn
 
 
 def init_db(db_path: Optional[Path] = None) -> None:
-    conn = get_db(db_path)
     try:
-        with conn:
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    email TEXT UNIQUE NOT NULL COLLATE NOCASE,
-                    name TEXT NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-            )
-    finally:
+        conn = get_db(db_path)
         conn.close()
+    except Exception:
+        pass
 
 
 # Ensure DB tables exist on import
@@ -307,9 +355,17 @@ def set_auth_cookie(response: Response, user: dict[str, Any]) -> None:
 
 @auth_router.post("/register")
 def register(req: RegisterRequest, response: Response) -> dict[str, Any]:
-    user = create_user(email=req.email, name=req.name, password=req.password)
-    set_auth_cookie(response, user)
-    return {"status": "ok", "user": user, "message": "Account created successfully."}
+    try:
+        user = create_user(email=req.email, name=req.name, password=req.password)
+        set_auth_cookie(response, user)
+        return {"status": "ok", "user": user, "message": "Account created successfully."}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(exc)}",
+        )
 
 
 @auth_router.post("/login")
@@ -319,18 +375,26 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
     
     _check_rate_limit(rate_key)
     
-    user_row = get_user_by_email(req.email)
-    if not user_row or not verify_password(req.password, user_row["password_hash"]):
-        _record_failed_attempt(rate_key)
+    try:
+        user_row = get_user_by_email(req.email)
+        if not user_row or not verify_password(req.password, user_row["password_hash"]):
+            _record_failed_attempt(rate_key)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid email or password.",
+            )
+            
+        _clear_failed_attempts(rate_key)
+        user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"]}
+        set_auth_cookie(response, user)
+        return {"status": "ok", "user": user, "message": "Logged in successfully."}
+    except HTTPException:
+        raise
+    except Exception as exc:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(exc)}",
         )
-        
-    _clear_failed_attempts(rate_key)
-    user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"]}
-    set_auth_cookie(response, user)
-    return {"status": "ok", "user": user, "message": "Logged in successfully."}
 
 
 @auth_router.post("/logout")

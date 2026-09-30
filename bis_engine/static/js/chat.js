@@ -99,7 +99,7 @@
       welcome.innerHTML = `
         <div class="msg-avatar assistant-avatar" aria-hidden="true">🤖</div>
         <div class="msg-content">
-          <p><strong>Namaste! I am your AI Standards Assistant.</strong></p>
+          <p><strong>Namaste! I am your PARAKH AI Assistant.</strong></p>
           <p>You can ask me questions about Indian Standards (BIS), required test methods, or mandatory certification schemes (ISI mark, CRS, BEE star labelling) in English, हिन्दी, or తెలుగు.</p>
         </div>
       `;
@@ -115,7 +115,7 @@
   launcher.id = "chat-launcher";
   launcher.className = "chat-launcher";
   launcher.type = "button";
-  launcher.setAttribute("aria-label", "AI Assistant");
+  launcher.setAttribute("aria-label", "PARAKH AI Assistant");
   launcher.innerHTML = `💬`;
 
   const panel = document.createElement("div");
@@ -123,12 +123,12 @@
   panel.className = "chat-panel";
   panel.hidden = true;
   panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "AI Assistant Widget");
+  panel.setAttribute("aria-label", "PARAKH AI Assistant Widget");
   panel.innerHTML = `
     <div class="chat-head">
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <span style="font-size:1.1rem;">🤖</span>
-        <strong data-i18n="nav.assistant">AI Standards Assistant</strong>
+        <strong data-i18n="nav.assistant">PARAKH AI Assistant</strong>
       </div>
       <button class="chat-close" type="button" aria-label="Close">✕</button>
     </div>

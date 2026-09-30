@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Components Module (components.js)
+   PARAKH Standards Recommendation Engine — Components Module (components.js)
    Manages Cookie Consent, Floating Side Actions, and Scroll Animations
    ===================================================================== */
 "use strict";

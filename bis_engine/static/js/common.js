@@ -1,4 +1,4 @@
-/* BIS Standards Assistant — shared UI helpers */
+/* PARAKH Standards Engine — shared UI helpers */
 "use strict";
 
 const $ = (sel, root) => (root || document).querySelector(sel);

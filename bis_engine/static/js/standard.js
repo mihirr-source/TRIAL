@@ -5,7 +5,7 @@
   const code = decodeURIComponent(location.pathname.split("/").pop() || "");
 
   fetchJSON(`/api/standards/${encodeURIComponent(code)}`).then(std => {
-    document.title = `${std.code} — BIS Standards Assistant`;
+    document.title = `${std.code} — PARAKH Standards Engine`;
     const sectorName = std.sector ? (std.sector.charAt(0).toUpperCase() + std.sector.slice(1)) : "—";
     const aliasList = Object.entries(std.aliases || {})
       .map(([lang, words]) => `<li><strong>${escapeHtml(lang)}:</strong> ${words.map(escapeHtml).join(", ")}</li>`)

@@ -1,4 +1,4 @@
-# AI-Powered Standards Recommendation Engine
+# PARAKH — AI-Powered Standards Recommendation Engine
 
 An NLP decision-support engine that maps everyday, multilingual procurement
 language to **Indian Standards (BIS codes)** — including the allied/normative

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#0A0A0A"/>
+  <!-- Precision Shield Contour -->
+  <path d="M16 4.5L7 8.5V16C7 21.5 10.8 26.2 16 27.5C21.2 26.2 25 21.5 25 16V8.5L16 4.5Z" stroke="#333333" stroke-width="1.2" fill="#141414"/>
+  <!-- Stylized Geometric P for PARAKH in Pure Accent Yellow -->
+  <path d="M11 9.5H16.2C18.3 9.5 20 11.2 20 13.3C20 15.4 18.3 17.1 16.2 17.1H11V22.5" stroke="#FFE600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Verification / Compliance Check Accent Mark -->
+  <path d="M14.5 19.5L17 22L22 17" stroke="#FFE600" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

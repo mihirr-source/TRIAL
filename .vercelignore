@@ -1,0 +1,12 @@
+.git
+.pytest_cache
+.env
+.env.example
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+tests/
+start_server.bat
+start_server.ps1

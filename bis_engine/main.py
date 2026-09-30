@@ -1,4 +1,4 @@
-"""BIS Standards Recommendation Engine — FastAPI app.
+"""PARAKH — AI-Powered Standards Recommendation Engine — FastAPI app.
 
 Serves both the JSON API (under /api) and the static demo website (static/).
 
@@ -42,7 +42,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(
-    title="AI-Powered Standards Recommendation Engine",
+    title="PARAKH — AI-Powered Standards Recommendation Engine",
     description="Maps procurement language to Indian Standards (BIS) with allied-standard "
                 "mapping, version checks and mandatory certification alerts. MVP demo — "
                 "seed catalogue; verify against the official BIS catalogue.",
@@ -62,6 +62,17 @@ def _is_auth_enforced() -> bool:
     if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get("BIS_ENFORCE_AUTH_TEST"):
         return False
     return True
+
+
+@app.middleware("http")
+async def no_cache_middleware(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/static") or path in PROTECTED_PAGES or path == "/login":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 
 @app.middleware("http")

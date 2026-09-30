@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Monospace Numeric Counters
+   PARAKH Standards Recommendation Engine — Monospace Numeric Counters
    Animates numeric values when scrolled into viewport using requestAnimationFrame
    ===================================================================== */
 "use strict";

@@ -1,4 +1,4 @@
-"""Tests for the BIS Standards Recommendation Engine MVP.
+"""Tests for the PARAKH Standards Recommendation Engine MVP.
 
 Run from project root:  python -m pytest tests/bis_engine/ -v
 """

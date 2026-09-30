@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Scroll Reveals & Command Palette
+   PARAKH Standards Recommendation Engine — Scroll Reveals & Command Palette
    ===================================================================== */
 "use strict";
 

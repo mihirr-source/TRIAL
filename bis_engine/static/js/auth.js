@@ -74,20 +74,22 @@
       const initial = (user.name || user.email || "U").trim().charAt(0).toUpperCase();
       const displayName = user.name || user.email.split("@")[0];
 
-      // 1. Desktop Header User Badge & Compact Logout Icon
+      // 1. Desktop Header User Badge & Distinct Logout Button
       if (actionsContainer) {
         const userWrap = document.createElement("div");
         userWrap.id = "user-profile-badge";
-        userWrap.className = "user-badge";
-        userWrap.setAttribute("title", `${user.name || displayName} (${user.email})`);
+        userWrap.className = "user-nav-wrapper";
         userWrap.innerHTML = `
-          <span class="user-avatar" title="${escapeHtml(displayName)}">${escapeHtml(initial)}</span>
-          <span class="user-name-text">${escapeHtml(displayName)}</span>
-          <button id="btn-logout-nav" class="btn-logout icon-logout-btn" type="button" title="Logout" aria-label="Logout">
+          <div class="user-badge" title="${escapeHtml(user.name || displayName)} (${escapeHtml(user.email)})">
+            <span class="user-avatar">${escapeHtml(initial)}</span>
+            <span class="user-name-text">${escapeHtml(displayName)}</span>
+          </div>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Log Out" aria-label="Log Out">
             <span class="logout-icon" aria-hidden="true">⏻</span>
+            <span class="logout-label">LOGOUT</span>
           </button>
         `;
-        // Append at rightmost corner
+        // Append at rightmost position in header actions
         actionsContainer.appendChild(userWrap);
 
         const logoutBtn = document.getElementById("btn-logout-nav");
@@ -99,13 +101,13 @@
         mobileAuthSection.innerHTML = `
           <div class="mobile-user-card">
             <div style="display:flex; align-items:center; gap:0.75rem;">
-              <span class="user-avatar" style="width:32px; height:32px; font-size:0.9rem;">${escapeHtml(initial)}</span>
-              <div>
-                <div style="font-weight:700; color:var(--text-main);">${escapeHtml(displayName)}</div>
-                <div style="font-size:0.78rem; color:var(--text-muted);">${escapeHtml(user.email)}</div>
+              <span class="user-avatar" style="width:34px; height:34px; font-size:0.95rem;">${escapeHtml(initial)}</span>
+              <div style="overflow:hidden;">
+                <div style="font-weight:700; color:var(--text-main); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${escapeHtml(displayName)}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${escapeHtml(user.email)}</div>
               </div>
             </div>
-            <button id="btn-logout-mobile" class="btn-logout-mobile" type="button">
+            <button id="btn-logout-mobile" class="btn-logout-mobile" type="button" aria-label="Log Out">
               ⏻ Logout
             </button>
           </div>
@@ -279,10 +281,30 @@
           body: JSON.stringify(payload),
         });
 
-        const data = await res.json();
+        let data = {};
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          // Response body was not JSON (e.g. 500 HTML or raw text)
+        }
 
         if (!res.ok) {
-          throw new Error(data.detail || "Authentication request failed.");
+          let errorMsg = (data && data.detail) ? data.detail : null;
+          if (!errorMsg) {
+            if (res.status === 401) {
+              errorMsg = isLoginMode ? "Invalid email or password." : "Authentication failed.";
+            } else if (res.status === 400) {
+              errorMsg = "Invalid request or account already exists.";
+            } else if (res.status === 429) {
+              errorMsg = "Too many attempts. Please wait a moment and try again.";
+            } else if (res.status >= 500) {
+              errorMsg = "Server error occurred. Please try again shortly.";
+            } else {
+              errorMsg = (text && text.length < 120 && !text.includes("<")) ? text : "Authentication request failed.";
+            }
+          }
+          throw new Error(errorMsg);
         }
 
         const successMsg = isLoginMode ? t("auth.login_success") : t("auth.register_success");

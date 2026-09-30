@@ -1,4 +1,4 @@
-"""BIS Standards Recommendation Engine — MVP package.
+"""PARAKH — AI-Powered Standards Recommendation Engine — MVP package.
 
 Decision-support engine that maps everyday / multilingual procurement language
 to Indian Standards (BIS codes), including allied/normative standards, latest

@@ -21,3 +21,4 @@ bis_engine/data/generated/
 .env
 bis_engine/data/users.db
 *.db
+.vercel

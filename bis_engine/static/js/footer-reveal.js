@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Footer Reveal Script (footer-reveal.js)
+   PARAKH Standards Recommendation Engine — Footer Reveal Script (footer-reveal.js)
    Controls height measurement, scroll progress computation, and staggered
    blur/opacity/translate animations for the sticky under-page footer reveal.
    ===================================================================== */

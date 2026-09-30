@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Interactive Hero ASCII Canvas
+   PARAKH Standards Recommendation Engine — Interactive Hero ASCII Canvas
    Renders an interactive matrix of ASCII characters and chromatic color
    blobs that dynamically react to cursor movement and viewport resize.
    ===================================================================== */

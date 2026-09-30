@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Hero Module (hero.js)
+   PARAKH Standards Recommendation Engine — Hero Module (hero.js)
    Controls background slideshow cross-fade, sector filters & trending chips
    ===================================================================== */
 "use strict";

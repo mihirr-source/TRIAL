@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Standard Detail — BIS Standards Engine</title>
+  <title>Standard Detail — PARAKH Standards Engine</title>
   <meta name="description" content="Standard details: current version, allied normative standards and mandatory certifications.">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 
   <!-- Anti-flash inline script -->
   <script>
@@ -38,9 +39,15 @@
         <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
           ☰
         </button>
-        <a class="brand" href="/" aria-label="BIS Standards Engine Home">
-          <span class="brand-shield">IS</span>
-          <span data-i18n="brand">BIS Standards Engine</span>
+        <a class="brand" href="/" aria-label="PARAKH Home">
+          <span class="brand-shield" aria-hidden="true">
+            <svg class="brand-shield-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.5L4.5 5.8V12C4.5 16.6 7.7 20.8 12 22C16.3 20.8 19.5 16.6 19.5 12V5.8L12 2.5Z" fill="#141414" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              <path d="M8.5 7.5H13C14.7 7.5 16 8.8 16 10.5C16 12.2 14.7 13.5 13 13.5H8.5V17.5" stroke="var(--accent, #FFE600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15L14.2 17.2L18.2 13.2" stroke="var(--accent, #FFE600)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span data-i18n="brand">PARAKH</span>
         </a>
       </div>
 
@@ -60,14 +67,6 @@
           <span>SEARCH</span> <kbd>⌘K</kbd>
         </button>
 
-        <div id="user-profile-badge" class="user-badge" style="display:inline-flex;">
-          <span class="user-avatar" id="nav-user-avatar">👤</span>
-          <span class="user-name-text" id="nav-user-name">User</span>
-          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
-            LOGOUT
-          </button>
-        </div>
-
         <div class="lang-dropdown-container">
           <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
             🌐 <span id="current-lang-label">EN</span> ▾
@@ -82,6 +81,17 @@
         <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
           <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
+
+        <div id="user-profile-badge" class="user-nav-wrapper" style="display:inline-flex;">
+          <div class="user-badge">
+            <span class="user-avatar" id="nav-user-avatar">👤</span>
+            <span class="user-name-text" id="nav-user-name">User</span>
+          </div>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
+            <span class="logout-icon" aria-hidden="true">⏻</span>
+            <span class="logout-label">LOGOUT</span>
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -90,9 +100,15 @@
   <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
   <aside class="nav-drawer" id="main-nav" aria-label="Mobile Navigation">
     <div class="drawer-header">
-      <a class="brand" href="/" aria-label="BIS Standards Engine Home">
-        <span class="brand-shield">IS</span>
-        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">BIS Standards</span>
+      <a class="brand" href="/" aria-label="PARAKH Home">
+        <span class="brand-shield" aria-hidden="true">
+          <svg class="brand-shield-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.5L4.5 5.8V12C4.5 16.6 7.7 20.8 12 22C16.3 20.8 19.5 16.6 19.5 12V5.8L12 2.5Z" fill="#141414" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M8.5 7.5H13C14.7 7.5 16 8.8 16 10.5C16 12.2 14.7 13.5 13 13.5H8.5V17.5" stroke="var(--accent, #FFE600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15L14.2 17.2L18.2 13.2" stroke="var(--accent, #FFE600)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">PARAKH</span>
       </a>
       <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
     </div>
@@ -156,7 +172,7 @@
       <div class="footer-container">
         <div class="footer-grid">
           <div>
-            <div class="footer-brand-title">BIS STANDARDS ENGINE</div>
+            <div class="footer-brand-title">PARAKH · STANDARDS ENGINE</div>
             <p class="footer-brand-desc" data-i18n="footer.demo">
               MVP demo · seed catalogue · verify against official BIS gazette.
             </p>
@@ -191,7 +207,7 @@
   </div>
 
   <!-- Floating AI Assistant Chatbot Button -->
-  <a href="/assistant" class="floating-assistant-btn" id="floating-assistant-btn" aria-label="Open AI Assistant" title="Open AI Standards Assistant">
+  <a href="/assistant" class="floating-assistant-btn" id="floating-assistant-btn" aria-label="Open PARAKH AI Assistant" title="Open PARAKH AI Assistant">
     <svg class="floating-assistant-svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
     <span class="floating-assistant-label">AI ASSISTANT</span>
     <span class="floating-assistant-badge">ASK</span>

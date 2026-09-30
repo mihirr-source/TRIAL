@@ -1,5 +1,5 @@
 /* =====================================================================
-   BIS Standards Recommendation Engine — Navbar Module (navbar.js)
+   PARAKH Standards Recommendation Engine — Navbar Module (navbar.js)
    Controls scroll transitions, sticky compact search, language dropdown,
    and responsive mobile navigation.
    ===================================================================== */
