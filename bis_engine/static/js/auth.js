@@ -1,10 +1,25 @@
 /* =====================================================================
    Authentication Client Module (auth.js)
-   Handles Login, Supabase Registration, OTP Verification, Input Validation & Auth State
+   Full Supabase GoTrue Auth Integration with Session Persistence & OTP Verification
    ===================================================================== */
 "use strict";
 
 (function () {
+  const SUPABASE_URL = "https://tkvmuphnvdmjfjnroquo.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_eKG4f5g9VFA0ccO2ykDzsw_WV1bcys9";
+
+  let sbClient = null;
+  function getSupabase() {
+    if (!sbClient && window.supabase && typeof window.supabase.createClient === "function") {
+      try {
+        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (e) {
+        console.warn("Supabase init warning:", e);
+      }
+    }
+    return sbClient;
+  }
+
   // Global Toast Function
   function showToast(message, type = "info", duration = 3500) {
     let container = document.getElementById("toast-container");
@@ -31,6 +46,10 @@
   // Logout Handler
   async function doLogout() {
     try {
+      const sb = getSupabase();
+      if (sb) {
+        await sb.auth.signOut().catch(() => {});
+      }
       await fetch("/api/auth/logout", { method: "POST" });
       showToast("Logged out successfully.", "info");
       setTimeout(() => location.replace("/login"), 300);
@@ -42,6 +61,27 @@
   // Header User Badge & Logout Wireup
   async function checkUserState() {
     try {
+      // 1. Check Supabase client session if available
+      const sb = getSupabase();
+      if (sb) {
+        const { data } = await sb.auth.getSession().catch(() => ({ data: null }));
+        if (data && data.session && data.session.user) {
+          const u = data.session.user;
+          const userMeta = u.user_metadata || {};
+          const userObj = {
+            id: u.id,
+            email: u.email,
+            name: userMeta.name || u.email.split("@")[0],
+          };
+          renderNavbarUser(userObj);
+          if (location.pathname === "/login") {
+            location.replace("/");
+          }
+          return;
+        }
+      }
+
+      // 2. Check backend session
       const res = await fetch("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
@@ -154,7 +194,6 @@
     const nameInput = document.getElementById("name");
 
     const otpInput = document.getElementById("otp-code");
-    const otpError = document.getElementById("otp-error");
     const otpEmailLabel = document.getElementById("otp-email-label");
     const verifyOtpBtn = document.getElementById("verify-otp-btn");
     const verifySpinner = document.getElementById("verify-spinner");
@@ -208,7 +247,7 @@
       const titleEl = document.getElementById("auth-card-title");
       const subEl = document.getElementById("auth-card-sub");
       if (titleEl) titleEl.textContent = "Verify Your Email";
-      if (subEl) subEl.textContent = "Enter the 6-digit confirmation code sent by Supabase.";
+      if (subEl) subEl.textContent = "Enter the 6-digit confirmation code sent to your email.";
       if (otpEmailLabel) otpEmailLabel.textContent = email;
       if (otpInput) {
         otpInput.value = "";
@@ -240,7 +279,6 @@
       clearErrors();
       let valid = true;
 
-      // Email validation
       const email = emailInput.value.trim();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email || !emailRegex.test(email)) {
@@ -248,14 +286,12 @@
         valid = false;
       }
 
-      // Password validation
       const password = pwdInput.value;
       if (!password || password.length < 8) {
         showError(pwdInput, "password-error", t("auth.pass_min_error", "Password must be at least 8 characters long."));
         valid = false;
       }
 
-      // Name validation for registration
       if (!isLoginMode) {
         const name = nameInput.value.trim();
         if (!name || name.length < 2) {
@@ -295,63 +331,123 @@
       submitBtn.disabled = true;
       submitSpinner.style.display = "inline-block";
 
-      const endpoint = isLoginMode ? "/api/auth/login" : "/api/auth/register";
-      const payload = {
-        email: emailInput.value.trim(),
-        password: pwdInput.value,
-      };
-      if (!isLoginMode) {
-        payload.name = nameInput.value.trim();
-      }
+      const email = emailInput.value.trim();
+      const password = pwdInput.value;
+      const name = isLoginMode ? "" : nameInput.value.trim();
 
       try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const sb = getSupabase();
 
-        let data = {};
-        const text = await res.text();
-        try {
-          data = JSON.parse(text);
-        } catch {
-          // Non-JSON response
-        }
+        if (isLoginMode) {
+          // --- LOGIN FLOW ---
+          let loginSucceeded = false;
 
-        if (!res.ok) {
-          let errorMsg = (data && data.detail) ? data.detail : null;
-          if (!errorMsg) {
-            if (res.status === 401) {
-              errorMsg = isLoginMode ? "Invalid email or password." : "Authentication failed.";
-            } else if (res.status === 400) {
-              errorMsg = "Invalid request or account already exists.";
-            } else if (res.status === 429) {
-              errorMsg = "Too many attempts. Please wait a moment and try again.";
-            } else if (res.status >= 500) {
-              errorMsg = "Server error occurred. Please try again shortly.";
-            } else {
-              errorMsg = (text && text.length < 120 && !text.includes("<")) ? text : "Authentication request failed.";
+          // 1. Try Supabase Client Login
+          if (sb) {
+            try {
+              const { data, error } = await sb.auth.signInWithPassword({ email, password });
+              if (!error && data && data.user) {
+                const displayName = (data.user.user_metadata && data.user.user_metadata.name) || email.split("@")[0];
+                await fetch("/api/auth/session", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: email, name: displayName, user_id: data.user.id }),
+                });
+                loginSucceeded = true;
+              } else if (error && (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed")) {
+                showToast("Email is not confirmed yet. Please enter the verification code sent to your email.", "info", 5000);
+                showOtpView(email);
+                return;
+              }
+            } catch {}
+          }
+
+          // 2. Try Backend Login if client login didn't complete
+          if (!loginSucceeded) {
+            const res = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              throw new Error(data.detail || "Invalid email or password.");
+            }
+            if (data.requires_otp || data.status === "pending_verification") {
+              showToast(data.message || "Verification code sent to your email.", "info", 5000);
+              showOtpView(email);
+              return;
             }
           }
-          throw new Error(errorMsg);
+
+          showToast(t("auth.login_success", "Signed in successfully."), "success");
+          card.style.opacity = "0.7";
+          card.style.transform = "scale(0.98)";
+          setTimeout(() => location.replace("/"), 350);
+
+        } else {
+          // --- REGISTER FLOW ---
+          let registerSucceeded = false;
+
+          // 1. Try Supabase Client Signup
+          if (sb) {
+            try {
+              const { data, error } = await sb.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { name: name } },
+              });
+
+              if (error) {
+                if (error.message && (error.message.includes("already registered") || error.message.includes("User already exists"))) {
+                  throw new Error("An account with this email address already exists. Please sign in.");
+                }
+              } else if (data) {
+                if (data.session) {
+                  // Direct session created
+                  await fetch("/api/auth/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, name: name, user_id: data.user ? data.user.id : email }),
+                  });
+                  registerSucceeded = true;
+                } else if (data.user) {
+                  // Supabase sent verification OTP / confirmation email
+                  showToast("Verification code sent to your email. Enter it below to complete registration.", "info", 5000);
+                  showOtpView(email);
+                  return;
+                }
+              }
+            } catch (sbErr) {
+              if (sbErr.message && sbErr.message.includes("already")) {
+                throw sbErr;
+              }
+            }
+          }
+
+          // 2. Backend Register
+          if (!registerSucceeded) {
+            const res = await fetch("/api/auth/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password, name }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              throw new Error(data.detail || "Registration failed. Please check your details.");
+            }
+            if (data.requires_otp || data.status === "pending_verification") {
+              showToast(data.message || "Verification code sent to your email.", "info", 5000);
+              showOtpView(email);
+              return;
+            }
+          }
+
+          showToast(t("auth.register_success", "Account created successfully."), "success");
+          card.style.opacity = "0.7";
+          card.style.transform = "scale(0.98)";
+          setTimeout(() => location.replace("/"), 350);
         }
-
-        // If Supabase requires OTP / email confirmation
-        if (data.requires_otp || data.status === "pending_verification") {
-          showToast(data.message || "Verification code sent to your email.", "info", 5000);
-          showOtpView(payload.email);
-          return;
-        }
-
-        const successMsg = isLoginMode ? t("auth.login_success", "Signed in successfully.") : t("auth.register_success", "Account created successfully.");
-        showToast(successMsg, "success");
-
-        card.style.opacity = "0.7";
-        card.style.transform = "scale(0.98)";
-        setTimeout(() => {
-          location.replace("/");
-        }, 350);
 
       } catch (err) {
         card.classList.remove("shake");
@@ -379,32 +475,50 @@
         verifySpinner.style.display = "inline-block";
 
         try {
-          const res = await fetch("/api/auth/verify-otp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: pendingEmail,
-              token: otpCode,
-              type: "signup",
-            }),
-          });
+          const sb = getSupabase();
+          let verified = false;
 
-          let data = {};
-          const text = await res.text();
-          try {
-            data = JSON.parse(text);
-          } catch {}
+          // 1. Try Supabase Client Verify
+          if (sb) {
+            try {
+              const { data, error } = await sb.auth.verifyOtp({
+                email: pendingEmail,
+                token: otpCode,
+                type: "signup",
+              });
+              if (!error && data && data.user) {
+                const displayName = (data.user.user_metadata && data.user.user_metadata.name) || pendingEmail.split("@")[0];
+                await fetch("/api/auth/session", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: pendingEmail, name: displayName, user_id: data.user.id }),
+                });
+                verified = true;
+              }
+            } catch {}
+          }
 
-          if (!res.ok) {
-            throw new Error((data && data.detail) || "Invalid or expired verification code.");
+          // 2. Try Backend Verify
+          if (!verified) {
+            const res = await fetch("/api/auth/verify-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: pendingEmail,
+                token: otpCode,
+                type: "signup",
+              }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              throw new Error((data && data.detail) || "Invalid or expired verification code.");
+            }
           }
 
           showToast("Account verified successfully! Logging in...", "success");
           card.style.opacity = "0.7";
           card.style.transform = "scale(0.98)";
-          setTimeout(() => {
-            location.replace("/");
-          }, 400);
+          setTimeout(() => location.replace("/"), 400);
 
         } catch (err) {
           card.classList.remove("shake");

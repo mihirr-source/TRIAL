@@ -556,6 +556,24 @@ def logout(response: Response) -> dict[str, str]:
     return {"status": "ok", "message": "Logged out successfully."}
 
 
+class SessionSyncRequest(BaseModel):
+    email: str = Field(...)
+    name: Optional[str] = None
+    user_id: Optional[str] = None
+
+
+@auth_router.post("/session")
+def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
+    """Sync authenticated Supabase user session to signed HTTP cookie."""
+    user = {
+        "id": req.user_id or req.email,
+        "email": req.email,
+        "name": req.name or req.email.split("@")[0],
+    }
+    set_auth_cookie(response, user)
+    return {"status": "ok", "user": user}
+
+
 @auth_router.get("/me")
 def me(current_user: dict[str, Any] = Depends(get_current_user)) -> dict[str, Any]:
     return {"authenticated": True, "user": current_user}
