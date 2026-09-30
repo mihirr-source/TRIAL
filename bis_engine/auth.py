@@ -2,7 +2,7 @@
 
 Provides:
 - Supabase GoTrue Auth Integration (Signup, Login, OTP Verification, Resend)
-- Self-contained HMAC-SHA256 signed session tokens (works seamlessly on Vercel Serverless)
+- Self-contained HMAC-SHA256 signed session tokens (persists across all Vercel Serverless instances)
 - SQLite local database fallback
 - Input validation & rate limiting
 - FastAPI auth routes (/api/auth/*)
@@ -380,8 +380,6 @@ def get_current_user_optional(request: Request) -> Optional[dict[str, Any]]:
     if not payload or "sub" not in payload:
         return None
         
-    # The HMAC-SHA256 signature is cryptographically verified and self-contained.
-    # Return user details directly from token so sessions persist across all serverless instances.
     user_id = payload.get("sub")
     email = payload.get("email", "")
     name = payload.get("name") or (email.split("@")[0] if email else "User")
@@ -419,59 +417,9 @@ def set_auth_cookie(response: Response, user: dict[str, Any]) -> None:
 
 @auth_router.post("/register")
 def register(req: RegisterRequest, response: Response) -> dict[str, Any]:
-    # Check if user already exists locally
-    existing = get_user_by_email(req.email)
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An account with this email address already exists. Please sign in.",
-        )
-
-    # 1. Try Supabase Auth Signup
-    if SUPABASE_URL and SUPABASE_ANON_KEY:
-        code, resp = _supabase_request(
-            "/auth/v1/signup",
-            {"email": req.email, "password": req.password, "data": {"name": req.name}},
-        )
-        if code in (200, 201):
-            user_id = resp.get("id") or (resp.get("user", {}).get("id"))
-            # If Supabase immediately returned session/token (autoconfirm enabled)
-            if resp.get("access_token") or resp.get("session"):
-                user = {"id": user_id, "email": req.email, "name": req.name}
-                set_auth_cookie(response, user)
-                try:
-                    create_user(email=req.email, name=req.name, password=req.password)
-                except Exception:
-                    pass
-                return {"status": "ok", "user": user, "message": "Account created successfully."}
-            else:
-                # Email / OTP verification required
-                return {
-                    "status": "pending_verification",
-                    "requires_otp": True,
-                    "email": req.email,
-                    "name": req.name,
-                    "message": "A 6-digit confirmation code has been sent to your email. Enter it below to complete registration.",
-                }
-        elif code == 400 and ("already registered" in str(resp).lower() or "already exists" in str(resp).lower() or resp.get("error_code") == "user_already_exists"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="An account with this email address already exists. Please sign in.",
-            )
-        elif code == 429:
-            # Over rate limit on Supabase mailer -> Fallback to local session
-            try:
-                user = create_user(email=req.email, name=req.name, password=req.password)
-                set_auth_cookie(response, user)
-                return {"status": "ok", "user": user, "message": "Account created successfully."}
-            except HTTPException:
-                raise
-
-    # 2. Local Fallback Signup
+    # 1. Create user in local persistent DB (validates uniqueness and hashes password with bcrypt)
     try:
         user = create_user(email=req.email, name=req.name, password=req.password)
-        set_auth_cookie(response, user)
-        return {"status": "ok", "user": user, "message": "Account created successfully."}
     except HTTPException:
         raise
     except Exception as exc:
@@ -479,6 +427,31 @@ def register(req: RegisterRequest, response: Response) -> dict[str, Any]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(exc)}",
         )
+
+    # 2. Sync to Supabase Auth if configured
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        code, resp = _supabase_request(
+            "/auth/v1/signup",
+            {"email": req.email, "password": req.password, "data": {"name": req.name}},
+        )
+        if code in (200, 201):
+            user_id = resp.get("id") or (resp.get("user", {}).get("id")) or user["id"]
+            user["id"] = user_id
+            if resp.get("access_token") or resp.get("session"):
+                set_auth_cookie(response, user)
+                return {"status": "ok", "user": user, "message": "Account created successfully."}
+            else:
+                set_auth_cookie(response, user)
+                return {
+                    "status": "pending_verification",
+                    "requires_otp": True,
+                    "email": req.email,
+                    "name": req.name,
+                    "message": "Verification code sent to your email. Enter it below or continue.",
+                }
+
+    set_auth_cookie(response, user)
+    return {"status": "ok", "user": user, "message": "Account created successfully."}
 
 
 @auth_router.post("/verify-otp")
@@ -510,7 +483,6 @@ def verify_otp(req: VerifyOtpRequest, response: Response) -> dict[str, Any]:
             detail=f"Verification failed: {last_error}",
         )
     else:
-        # If Supabase not configured, accept OTP and sign in
         user = {"id": req.email, "email": req.email, "name": req.email.split("@")[0]}
         set_auth_cookie(response, user)
         return {"status": "ok", "user": user, "message": "Verified successfully."}
@@ -562,15 +534,8 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
             user = {"id": user_id, "email": req.email, "name": display_name}
             set_auth_cookie(response, user)
             return {"status": "ok", "user": user, "message": "Logged in successfully."}
-        elif code == 400 and resp.get("error_code") == "email_not_confirmed":
-            return {
-                "status": "pending_verification",
-                "requires_otp": True,
-                "email": req.email,
-                "message": "Email not confirmed yet. Please enter the verification code sent to your email.",
-            }
 
-    # 2. Local Fallback Login
+    # 2. Local Database Login
     user_row = get_user_by_email(req.email)
     if user_row and verify_password(req.password, user_row["password_hash"]):
         _clear_failed_attempts(rate_key)
