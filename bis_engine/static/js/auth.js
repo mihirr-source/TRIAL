@@ -1,6 +1,6 @@
 /* =====================================================================
    Authentication Client Module (auth.js)
-   Handles Login, Registration, Input Validation, UI Feedback & Auth State
+   Handles Login, Supabase Registration, OTP Verification, Input Validation & Auth State
    ===================================================================== */
 "use strict";
 
@@ -47,7 +47,6 @@
         const data = await res.json();
         if (data.authenticated && data.user) {
           renderNavbarUser(data.user);
-          // If on login page and already authenticated, redirect to home
           if (location.pathname === "/login") {
             location.replace("/");
           }
@@ -89,7 +88,6 @@
             <span class="logout-label">LOGOUT</span>
           </button>
         `;
-        // Append at rightmost position in header actions
         actionsContainer.appendChild(userWrap);
 
         const logoutBtn = document.getElementById("btn-logout-nav");
@@ -134,14 +132,17 @@
     }
   }
 
-  // Login / Register Page Logic
+  // Login / Register / OTP Page Logic
   function initAuthPage() {
     const card = document.getElementById("auth-card");
     const form = document.getElementById("auth-form");
+    const otpForm = document.getElementById("otp-form");
     if (!form || !card) return;
 
     const tabLogin = document.getElementById("tab-login");
     const tabRegister = document.getElementById("tab-register");
+    const authTabs = document.querySelector(".auth-tabs");
+    const authFooter = document.getElementById("auth-footer");
     const nameGroup = document.getElementById("name-group");
     const submitBtn = document.getElementById("submit-btn");
     const submitText = document.getElementById("submit-text");
@@ -152,10 +153,24 @@
     const emailInput = document.getElementById("email");
     const nameInput = document.getElementById("name");
 
+    const otpInput = document.getElementById("otp-code");
+    const otpError = document.getElementById("otp-error");
+    const otpEmailLabel = document.getElementById("otp-email-label");
+    const verifyOtpBtn = document.getElementById("verify-otp-btn");
+    const verifySpinner = document.getElementById("verify-spinner");
+    const resendOtpBtn = document.getElementById("resend-otp-btn");
+    const cancelOtpBtn = document.getElementById("cancel-otp-btn");
+
     let isLoginMode = true;
+    let pendingEmail = "";
 
     function setMode(login) {
       isLoginMode = login;
+      if (otpForm) otpForm.style.display = "none";
+      if (form) form.style.display = "block";
+      if (authTabs) authTabs.style.display = "flex";
+      if (authFooter) authFooter.style.display = "block";
+
       if (tabLogin && tabRegister) {
         tabLogin.classList.toggle("active", isLoginMode);
         tabRegister.classList.toggle("active", !isLoginMode);
@@ -168,22 +183,37 @@
       const subEl = document.getElementById("auth-card-sub");
       
       if (titleEl) {
-        titleEl.textContent = isLoginMode ? t("auth.login_title") : t("auth.register_title");
-        titleEl.setAttribute("data-i18n", isLoginMode ? "auth.login_title" : "auth.register_title");
+        titleEl.textContent = isLoginMode ? t("auth.login_title", "Sign In") : t("auth.register_title", "Create an Account");
       }
       if (subEl) {
-        subEl.textContent = isLoginMode ? t("auth.login_sub") : t("auth.register_sub");
-        subEl.setAttribute("data-i18n", isLoginMode ? "auth.login_sub" : "auth.register_sub");
+        subEl.textContent = isLoginMode ? t("auth.login_sub", "Sign in to access procurement standards and tools") : t("auth.register_sub", "Sign up to access procurement standards and tools");
       }
       if (submitText) {
-        submitText.textContent = isLoginMode ? t("auth.signin_btn") : t("auth.signup_btn");
-        submitText.setAttribute("data-i18n", isLoginMode ? "auth.signin_btn" : "auth.signup_btn");
+        submitText.textContent = isLoginMode ? t("auth.signin_btn", "Sign In") : t("auth.signup_btn", "Create Account");
       }
       if (switchLink) {
-        switchLink.textContent = isLoginMode ? t("auth.need_account") : t("auth.have_account");
-        switchLink.setAttribute("data-i18n", isLoginMode ? "auth.need_account" : "auth.have_account");
+        switchLink.textContent = isLoginMode ? t("auth.need_account", "Don't have an account? Create one") : t("auth.have_account", "Already have an account? Sign in");
       }
 
+      clearErrors();
+    }
+
+    function showOtpView(email) {
+      pendingEmail = email;
+      if (form) form.style.display = "none";
+      if (authTabs) authTabs.style.display = "none";
+      if (authFooter) authFooter.style.display = "none";
+      if (otpForm) otpForm.style.display = "block";
+
+      const titleEl = document.getElementById("auth-card-title");
+      const subEl = document.getElementById("auth-card-sub");
+      if (titleEl) titleEl.textContent = "Verify Your Email";
+      if (subEl) subEl.textContent = "Enter the 6-digit confirmation code sent by Supabase.";
+      if (otpEmailLabel) otpEmailLabel.textContent = email;
+      if (otpInput) {
+        otpInput.value = "";
+        setTimeout(() => otpInput.focus(), 150);
+      }
       clearErrors();
     }
 
@@ -252,7 +282,7 @@
     if (tabRegister) tabRegister.addEventListener("click", () => setMode(false));
     if (switchLink) switchLink.addEventListener("click", () => setMode(!isLoginMode));
 
-    // Form Submission
+    // Form Submission (Login & Register)
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!validate()) {
@@ -286,7 +316,7 @@
         try {
           data = JSON.parse(text);
         } catch {
-          // Response body was not JSON (e.g. 500 HTML or raw text)
+          // Non-JSON response
         }
 
         if (!res.ok) {
@@ -307,10 +337,16 @@
           throw new Error(errorMsg);
         }
 
-        const successMsg = isLoginMode ? t("auth.login_success") : t("auth.register_success");
+        // If Supabase requires OTP / email confirmation
+        if (data.requires_otp || data.status === "pending_verification") {
+          showToast(data.message || "Verification code sent to your email.", "info", 5000);
+          showOtpView(payload.email);
+          return;
+        }
+
+        const successMsg = isLoginMode ? t("auth.login_success", "Signed in successfully.") : t("auth.register_success", "Account created successfully.");
         showToast(successMsg, "success");
 
-        // Smooth transition & redirect to home
         card.style.opacity = "0.7";
         card.style.transform = "scale(0.98)";
         setTimeout(() => {
@@ -328,6 +364,94 @@
         submitSpinner.style.display = "none";
       }
     });
+
+    // OTP Form Submission
+    if (otpForm) {
+      otpForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const otpCode = otpInput.value.trim();
+        if (!otpCode || otpCode.length < 4) {
+          showError(otpInput, "otp-error", "Please enter the verification code sent to your email.");
+          return;
+        }
+
+        verifyOtpBtn.disabled = true;
+        verifySpinner.style.display = "inline-block";
+
+        try {
+          const res = await fetch("/api/auth/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: pendingEmail,
+              token: otpCode,
+              type: "signup",
+            }),
+          });
+
+          let data = {};
+          const text = await res.text();
+          try {
+            data = JSON.parse(text);
+          } catch {}
+
+          if (!res.ok) {
+            throw new Error((data && data.detail) || "Invalid or expired verification code.");
+          }
+
+          showToast("Account verified successfully! Logging in...", "success");
+          card.style.opacity = "0.7";
+          card.style.transform = "scale(0.98)";
+          setTimeout(() => {
+            location.replace("/");
+          }, 400);
+
+        } catch (err) {
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+          showToast(err.message, "error");
+          showError(otpInput, "otp-error", err.message);
+        } finally {
+          verifyOtpBtn.disabled = false;
+          verifySpinner.style.display = "none";
+        }
+      });
+    }
+
+    // Resend OTP Button
+    if (resendOtpBtn) {
+      resendOtpBtn.addEventListener("click", async () => {
+        if (!pendingEmail) return;
+        resendOtpBtn.disabled = true;
+        resendOtpBtn.textContent = "Sending...";
+        try {
+          const res = await fetch("/api/auth/resend-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingEmail }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            showToast("A new verification code has been sent to your email.", "success");
+          } else {
+            showToast(data.detail || "Could not resend code. Please try again in a moment.", "error");
+          }
+        } catch {
+          showToast("Could not resend code. Please try again later.", "error");
+        } finally {
+          setTimeout(() => {
+            resendOtpBtn.disabled = false;
+            resendOtpBtn.textContent = "Resend Code";
+          }, 3000);
+        }
+      });
+    }
+
+    // Cancel OTP Button
+    if (cancelOtpBtn) {
+      cancelOtpBtn.addEventListener("click", () => setMode(true));
+    }
 
     // Default mode: Login
     setMode(true);

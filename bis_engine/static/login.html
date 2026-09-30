@@ -140,8 +140,31 @@
           </button>
         </form>
 
+        <!-- OTP Verification Form (Supabase Email Confirmation) -->
+        <form id="otp-form" style="display: none;" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="otp-code">6-Digit Verification Code</label>
+            <p class="small muted" style="margin: 0.25rem 0 0.75rem; font-size: 0.8rem; line-height: 1.4;">Enter the confirmation code sent to <strong id="otp-email-label" style="color: var(--accent);"></strong></p>
+            <div class="input-wrapper">
+              <input class="form-input" id="otp-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="e.g. 123456" style="letter-spacing: 0.15em; font-family: var(--font-mono); font-size: 1.1rem; text-align: center;">
+            </div>
+            <div class="inline-error" id="otp-error"></div>
+          </div>
+
+          <button class="btn-primary-auth" id="verify-otp-btn" type="submit">
+            <span class="auth-spinner" id="verify-spinner" style="display: none;" aria-hidden="true"></span>
+            <span id="verify-btn-text">Verify & Continue</span>
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+            <button class="auth-switch-link" id="resend-otp-btn" type="button">Resend Code</button>
+            <button class="auth-switch-link" id="cancel-otp-btn" type="button">← Back to Sign In</button>
+          </div>
+        </form>
+
         <!-- Toggle Mode Link -->
-        <div class="auth-footer">
+        <div class="auth-footer" id="auth-footer">
           <button class="auth-switch-link" id="switch-auth-link" type="button" data-i18n="auth.need_account">Don't have an account? Create one</button>
         </div>
       </main>

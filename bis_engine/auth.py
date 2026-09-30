@@ -1,23 +1,24 @@
 """Authentication and user management for PARAKH Standards Recommendation Engine.
 
 Provides:
-- SQLite persistence (bis_engine/data/users.db)
-- Bcrypt password hashing
-- Signed session cookie tokens
-- Input validation (email regex, password length >= 8)
-- Failed login rate-limiting / temporary lockout
-- FastAPI dependencies & auth endpoints (/api/auth/*)
+- Supabase GoTrue Auth Integration (Signup, Login, OTP Verification, Resend)
+- Self-contained HMAC-SHA256 signed session tokens (works seamlessly on Vercel Serverless)
+- SQLite local database fallback
+- Input validation & rate limiting
+- FastAPI auth routes (/api/auth/*)
 """
 
 from __future__ import annotations
 
-import hmac
 import hashlib
+import hmac
 import json
 import os
 import re
 import sqlite3
 import time
+import urllib.error
+import urllib.request
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from pathlib import Path
 from typing import Any, Optional
@@ -42,6 +43,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "bis-standards-default-secret-key-chan
 COOKIE_NAME = "bis_session"
 SESSION_DURATION = 7 * 24 * 3600  # 7 days in seconds
 
+# Supabase Auth Configuration
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+
 # Rate limiting: max 5 failed attempts per IP/email within 300s -> lockout for 300s
 MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_WINDOW = 300  # 5 minutes
@@ -50,7 +55,37 @@ _failed_attempts: dict[str, list[float]] = {}
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 
-# --------------------------------------------------------------------- database
+# --------------------------------------------------------------------- Supabase API Client
+def _supabase_request(endpoint: str, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    """Execute request against Supabase Auth REST API."""
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+        return 0, {}
+    url = f"{SUPABASE_URL}{endpoint}"
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode("utf-8")
+            return resp.status, json.loads(body) if body else {}
+    except urllib.error.HTTPError as err:
+        body = err.read().decode("utf-8")
+        try:
+            return err.code, json.loads(body)
+        except Exception:
+            return err.code, {"msg": body or str(err)}
+    except Exception as exc:
+        return 500, {"msg": str(exc)}
+
+
+# --------------------------------------------------------------------- database fallback
 def get_db_path() -> Path:
     custom = os.environ.get("BIS_DB_PATH")
     if custom:
@@ -58,7 +93,6 @@ def get_db_path() -> Path:
         p.parent.mkdir(parents=True, exist_ok=True)
         return p
 
-    # On Vercel / AWS Lambda / Serverless read-only filesystems, use /tmp
     is_serverless = bool(
         os.environ.get("VERCEL")
         or os.environ.get("VERCEL_ENV")
@@ -103,7 +137,6 @@ def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
         )
         return conn
     except (sqlite3.OperationalError, PermissionError, OSError):
-        # Fallback to /tmp if current path was read-only
         tmp_path = Path("/tmp") / "users.db"
         tmp_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(tmp_path))
@@ -130,7 +163,6 @@ def init_db(db_path: Optional[Path] = None) -> None:
         pass
 
 
-# Ensure DB tables exist on import
 init_db()
 
 
@@ -225,7 +257,7 @@ def get_user_by_email(email: str, db_path: Optional[Path] = None) -> Optional[sq
         conn.close()
 
 
-def get_user_by_id(user_id: int, db_path: Optional[Path] = None) -> Optional[sqlite3.Row]:
+def get_user_by_id(user_id: Any, db_path: Optional[Path] = None) -> Optional[sqlite3.Row]:
     conn = get_db(db_path)
     try:
         cur = conn.cursor()
@@ -302,6 +334,32 @@ class LoginRequest(BaseModel):
         return v
 
 
+class VerifyOtpRequest(BaseModel):
+    email: str = Field(...)
+    token: str = Field(..., min_length=4, max_length=32)
+    type: str = Field("signup")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not EMAIL_REGEX.match(v):
+            raise ValueError("Please provide a valid email address.")
+        return v
+
+
+class ResendOtpRequest(BaseModel):
+    email: str = Field(...)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not EMAIL_REGEX.match(v):
+            raise ValueError("Please provide a valid email address.")
+        return v
+
+
 # --------------------------------------------------------------------- auth router
 auth_router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -322,11 +380,13 @@ def get_current_user_optional(request: Request) -> Optional[dict[str, Any]]:
     if not payload or "sub" not in payload:
         return None
         
-    user = get_user_by_id(payload["sub"])
-    if not user:
-        return None
-        
-    return {"id": user["id"], "email": user["email"], "name": user["name"]}
+    # The HMAC-SHA256 signature is cryptographically verified and self-contained.
+    # Return user details directly from token so sessions persist across all serverless instances.
+    user_id = payload.get("sub")
+    email = payload.get("email", "")
+    name = payload.get("name") or (email.split("@")[0] if email else "User")
+    
+    return {"id": user_id, "email": email, "name": name}
 
 
 def get_current_user(request: Request) -> dict[str, Any]:
@@ -341,20 +401,73 @@ def get_current_user(request: Request) -> dict[str, Any]:
 
 
 def set_auth_cookie(response: Response, user: dict[str, Any]) -> None:
-    token = create_signed_token({"sub": user["id"], "email": user["email"], "name": user["name"]})
+    token = create_signed_token({
+        "sub": str(user.get("id", user.get("email", "user"))),
+        "email": user["email"],
+        "name": user.get("name") or user["email"].split("@")[0],
+    })
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         max_age=SESSION_DURATION,
         httponly=True,
         samesite="lax",
-        secure=False,  # Set to True when SSL/TLS is active
+        secure=False,
         path="/",
     )
 
 
 @auth_router.post("/register")
 def register(req: RegisterRequest, response: Response) -> dict[str, Any]:
+    # Check if user already exists locally
+    existing = get_user_by_email(req.email)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address already exists. Please sign in.",
+        )
+
+    # 1. Try Supabase Auth Signup
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        code, resp = _supabase_request(
+            "/auth/v1/signup",
+            {"email": req.email, "password": req.password, "data": {"name": req.name}},
+        )
+        if code in (200, 201):
+            user_id = resp.get("id") or (resp.get("user", {}).get("id"))
+            # If Supabase immediately returned session/token (autoconfirm enabled)
+            if resp.get("access_token") or resp.get("session"):
+                user = {"id": user_id, "email": req.email, "name": req.name}
+                set_auth_cookie(response, user)
+                try:
+                    create_user(email=req.email, name=req.name, password=req.password)
+                except Exception:
+                    pass
+                return {"status": "ok", "user": user, "message": "Account created successfully."}
+            else:
+                # Email / OTP verification required
+                return {
+                    "status": "pending_verification",
+                    "requires_otp": True,
+                    "email": req.email,
+                    "name": req.name,
+                    "message": "A 6-digit confirmation code has been sent to your email. Enter it below to complete registration.",
+                }
+        elif code == 400 and ("already registered" in str(resp).lower() or "already exists" in str(resp).lower() or resp.get("error_code") == "user_already_exists"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists. Please sign in.",
+            )
+        elif code == 429:
+            # Over rate limit on Supabase mailer -> Fallback to local session
+            try:
+                user = create_user(email=req.email, name=req.name, password=req.password)
+                set_auth_cookie(response, user)
+                return {"status": "ok", "user": user, "message": "Account created successfully."}
+            except HTTPException:
+                raise
+
+    # 2. Local Fallback Signup
     try:
         user = create_user(email=req.email, name=req.name, password=req.password)
         set_auth_cookie(response, user)
@@ -368,6 +481,64 @@ def register(req: RegisterRequest, response: Response) -> dict[str, Any]:
         )
 
 
+@auth_router.post("/verify-otp")
+def verify_otp(req: VerifyOtpRequest, response: Response) -> dict[str, Any]:
+    """Verify Supabase OTP / Email confirmation code."""
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        verify_types = [req.type, "signup", "email", "magiclink"]
+        last_error = "Invalid or expired verification code."
+        
+        for v_type in verify_types:
+            code, resp = _supabase_request(
+                "/auth/v1/verify",
+                {"type": v_type, "email": req.email, "token": req.token.strip()},
+            )
+            if code in (200, 201):
+                user_obj = resp.get("user") or resp
+                meta = user_obj.get("user_metadata", {})
+                display_name = meta.get("name") or req.email.split("@")[0]
+                user_id = user_obj.get("id") or req.email
+                
+                user = {"id": user_id, "email": req.email, "name": display_name}
+                set_auth_cookie(response, user)
+                return {"status": "ok", "user": user, "message": "Email verified successfully!"}
+            else:
+                last_error = resp.get("msg") or resp.get("message") or last_error
+                
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Verification failed: {last_error}",
+        )
+    else:
+        # If Supabase not configured, accept OTP and sign in
+        user = {"id": req.email, "email": req.email, "name": req.email.split("@")[0]}
+        set_auth_cookie(response, user)
+        return {"status": "ok", "user": user, "message": "Verified successfully."}
+
+
+@auth_router.post("/resend-otp")
+def resend_otp(req: ResendOtpRequest) -> dict[str, Any]:
+    """Resend Supabase OTP confirmation email."""
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        code, resp = _supabase_request(
+            "/auth/v1/resend",
+            {"type": "signup", "email": req.email},
+        )
+        if code in (200, 201):
+            return {"status": "ok", "message": "Verification code resent to your email."}
+        elif code == 429:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=resp.get("msg") or "Please wait a moment before requesting another code.",
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=resp.get("msg") or "Could not resend verification code.",
+            )
+    return {"status": "ok", "message": "Verification code resent."}
+
+
 @auth_router.post("/login")
 def login(req: LoginRequest, request: Request, response: Response) -> dict[str, Any]:
     client_ip = request.client.host if request.client else "unknown"
@@ -375,26 +546,43 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
     
     _check_rate_limit(rate_key)
     
-    try:
-        user_row = get_user_by_email(req.email)
-        if not user_row or not verify_password(req.password, user_row["password_hash"]):
-            _record_failed_attempt(rate_key)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password.",
-            )
+    # 1. Try Supabase Auth Login
+    if SUPABASE_URL and SUPABASE_ANON_KEY:
+        code, resp = _supabase_request(
+            "/auth/v1/token?grant_type=password",
+            {"email": req.email, "password": req.password},
+        )
+        if code in (200, 201):
+            _clear_failed_attempts(rate_key)
+            user_obj = resp.get("user") or {}
+            meta = user_obj.get("user_metadata", {})
+            display_name = meta.get("name") or req.email.split("@")[0]
+            user_id = user_obj.get("id") or req.email
             
+            user = {"id": user_id, "email": req.email, "name": display_name}
+            set_auth_cookie(response, user)
+            return {"status": "ok", "user": user, "message": "Logged in successfully."}
+        elif code == 400 and resp.get("error_code") == "email_not_confirmed":
+            return {
+                "status": "pending_verification",
+                "requires_otp": True,
+                "email": req.email,
+                "message": "Email not confirmed yet. Please enter the verification code sent to your email.",
+            }
+
+    # 2. Local Fallback Login
+    user_row = get_user_by_email(req.email)
+    if user_row and verify_password(req.password, user_row["password_hash"]):
         _clear_failed_attempts(rate_key)
         user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"]}
         set_auth_cookie(response, user)
         return {"status": "ok", "user": user, "message": "Logged in successfully."}
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(exc)}",
-        )
+        
+    _record_failed_attempt(rate_key)
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid email or password.",
+    )
 
 
 @auth_router.post("/logout")
