@@ -21,7 +21,7 @@
   }
 
   // Global Toast Function
-  function showToast(message, type = "info", duration = 3500) {
+  function showToast(message, type = "info", duration = 4000) {
     let container = document.getElementById("toast-container");
     if (!container) {
       container = document.createElement("div");
@@ -202,9 +202,17 @@
 
     let isLoginMode = true;
     let pendingEmail = "";
+    let pendingName = "";
+    let pendingRegToken = "";
+    let cooldownTimer = null;
+    let cooldownSecondsLeft = 0;
 
     function setMode(login) {
       isLoginMode = login;
+      if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+      }
       if (otpForm) otpForm.style.display = "none";
       if (form) form.style.display = "block";
       if (authTabs) authTabs.style.display = "flex";
@@ -237,8 +245,37 @@
       clearErrors();
     }
 
-    function showOtpView(email) {
+    function startCooldown(seconds = 60) {
+      cooldownSecondsLeft = seconds;
+      if (cooldownTimer) clearInterval(cooldownTimer);
+
+      if (resendOtpBtn) {
+        resendOtpBtn.disabled = true;
+        resendOtpBtn.style.opacity = "0.6";
+        resendOtpBtn.textContent = `Resend Code in ${cooldownSecondsLeft}s`;
+      }
+
+      cooldownTimer = setInterval(() => {
+        cooldownSecondsLeft--;
+        if (cooldownSecondsLeft <= 0) {
+          clearInterval(cooldownTimer);
+          cooldownTimer = null;
+          if (resendOtpBtn) {
+            resendOtpBtn.disabled = false;
+            resendOtpBtn.style.opacity = "1";
+            resendOtpBtn.textContent = "Resend Code";
+          }
+        } else if (resendOtpBtn) {
+          resendOtpBtn.textContent = `Resend Code in ${cooldownSecondsLeft}s`;
+        }
+      }, 1000);
+    }
+
+    function showOtpView(email, name = "", regToken = "", cooldownSecs = 60) {
       pendingEmail = email;
+      pendingName = name;
+      pendingRegToken = regToken;
+
       if (form) form.style.display = "none";
       if (authTabs) authTabs.style.display = "none";
       if (authFooter) authFooter.style.display = "none";
@@ -254,6 +291,7 @@
         setTimeout(() => otpInput.focus(), 150);
       }
       clearErrors();
+      startCooldown(cooldownSecs);
     }
 
     function clearErrors() {
@@ -356,13 +394,13 @@
                 loginSucceeded = true;
               } else if (error && (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed")) {
                 showToast("Email is not confirmed yet. Please enter the verification code sent to your email.", "info", 5000);
-                showOtpView(email);
+                showOtpView(email, name);
                 return;
               }
             } catch {}
           }
 
-          // 2. Try Backend Login if client login didn't complete
+          // 2. Try Backend Login
           if (!loginSucceeded) {
             const res = await fetch("/api/auth/login", {
               method: "POST",
@@ -375,7 +413,7 @@
             }
             if (data.requires_otp || data.status === "pending_verification") {
               showToast(data.message || "Verification code sent to your email.", "info", 5000);
-              showOtpView(email);
+              showOtpView(email, name, data.reg_token || "", data.cooldown_seconds || 60);
               return;
             }
           }
@@ -387,60 +425,38 @@
 
         } else {
           // --- REGISTER FLOW ---
-          let registerSucceeded = false;
+          // Call backend register which performs duplicate check & sends OTP
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, name }),
+          });
+          const data = await res.json().catch(() => ({}));
 
-          // 1. Try Supabase Client Signup
-          if (sb) {
-            try {
-              const { data, error } = await sb.auth.signUp({
-                email: email,
-                password: password,
-                options: { data: { name: name } },
-              });
-
-              if (error) {
-                if (error.message && (error.message.includes("already registered") || error.message.includes("User already exists"))) {
-                  throw new Error("An account with this email address already exists. Please sign in.");
-                }
-              } else if (data) {
-                if (data.session) {
-                  // Direct session created
-                  await fetch("/api/auth/session", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email, name: name, user_id: data.user ? data.user.id : email }),
-                  });
-                  registerSucceeded = true;
-                } else if (data.user) {
-                  // Supabase sent verification OTP / confirmation email
-                  showToast("Verification code sent to your email. Enter it below to complete registration.", "info", 5000);
-                  showOtpView(email);
-                  return;
-                }
-              }
-            } catch (sbErr) {
-              if (sbErr.message && sbErr.message.includes("already")) {
-                throw sbErr;
-              }
-            }
-          }
-
-          // 2. Backend Register
-          if (!registerSucceeded) {
-            const res = await fetch("/api/auth/register", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password, name }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) {
-              throw new Error(data.detail || "Registration failed. Please check your details.");
-            }
-            if (data.requires_otp || data.status === "pending_verification") {
-              showToast(data.message || "Verification code sent to your email.", "info", 5000);
-              showOtpView(email);
+          if (!res.ok) {
+            const errorMsg = data.detail || "Registration failed. Please check your details.";
+            if (errorMsg.includes("already exists") || errorMsg.includes("already registered")) {
+              showError(emailInput, "email-error", "An account with this email address already exists. Please sign in.");
+              showToast("An account with this email address already exists. Please sign in.", "error", 5000);
+              // Provide an option to switch to login
               return;
             }
+            throw new Error(errorMsg);
+          }
+
+          // Trigger Supabase signup as well for email delivery if available
+          if (sb) {
+            sb.auth.signUp({
+              email: email,
+              password: password,
+              options: { data: { name: name } },
+            }).catch(() => {});
+          }
+
+          if (data.requires_otp || data.status === "pending_verification") {
+            showToast(data.message || `Verification code sent to ${email}.`, "info", 5000);
+            showOtpView(email, name, data.reg_token || "", data.cooldown_seconds || 60);
+            return;
           }
 
           showToast(t("auth.register_success", "Account created successfully."), "success");
@@ -454,7 +470,7 @@
         void card.offsetWidth;
         card.classList.add("shake");
         showToast(err.message, "error");
-        showError(pwdInput, "password-error", err.message);
+        showError(isLoginMode ? pwdInput : emailInput, isLoginMode ? "password-error" : "email-error", err.message);
       } finally {
         submitBtn.disabled = false;
         submitSpinner.style.display = "none";
@@ -506,6 +522,7 @@
               body: JSON.stringify({
                 email: pendingEmail,
                 token: otpCode,
+                reg_token: pendingRegToken,
                 type: "signup",
               }),
             });
@@ -533,36 +550,41 @@
       });
     }
 
-    // Resend OTP Button
+    // Resend OTP Button with Cooldown
     if (resendOtpBtn) {
       resendOtpBtn.addEventListener("click", async () => {
-        if (!pendingEmail) return;
+        if (!pendingEmail || cooldownSecondsLeft > 0) return;
         resendOtpBtn.disabled = true;
         resendOtpBtn.textContent = "Sending...";
         try {
           const res = await fetch("/api/auth/resend-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: pendingEmail }),
+            body: JSON.stringify({
+              email: pendingEmail,
+              name: pendingName,
+              reg_token: pendingRegToken,
+            }),
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok) {
-            showToast("A new verification code has been sent to your email.", "success");
+            if (data.reg_token) {
+              pendingRegToken = data.reg_token;
+            }
+            showToast(data.message || "A new verification code has been sent to your email.", "success");
+            startCooldown(data.cooldown_seconds || 60);
           } else {
             showToast(data.detail || "Could not resend code. Please try again in a moment.", "error");
+            startCooldown(30);
           }
         } catch {
           showToast("Could not resend code. Please try again later.", "error");
-        } finally {
-          setTimeout(() => {
-            resendOtpBtn.disabled = false;
-            resendOtpBtn.textContent = "Resend Code";
-          }, 3000);
+          startCooldown(15);
         }
       });
     }
 
-    // Cancel OTP Button
+    // Cancel OTP Button -> Return to Sign In
     if (cancelOtpBtn) {
       cancelOtpBtn.addEventListener("click", () => setMode(true));
     }

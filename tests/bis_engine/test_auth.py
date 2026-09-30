@@ -100,6 +100,26 @@ def test_signed_token_lifecycle():
     assert verify_signed_token(expired_token, secret=secret) is None
 
 
+def _register_and_verify(client: TestClient, email: str, name: str, password: str) -> dict:
+    """Helper to perform complete registration flow (register + verify OTP)."""
+    res = client.post(
+        "/api/auth/register",
+        json={"email": email, "name": name, "password": password},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "pending_verification"
+    assert data["requires_otp"] is True
+    
+    # Verify OTP
+    v_res = client.post(
+        "/api/auth/verify-otp",
+        json={"email": email, "token": data["otp_code_dev"], "reg_token": data["reg_token"]},
+    )
+    assert v_res.status_code == 200
+    return v_res.json()
+
+
 def test_register_endpoint_success(auth_client):
     res = auth_client.post(
         "/api/auth/register",
@@ -107,16 +127,26 @@ def test_register_endpoint_success(auth_client):
     )
     assert res.status_code == 200
     data = res.json()
-    assert data["status"] == "ok"
-    assert data["user"]["email"] == "tender.admin@nic.in"
-    assert COOKIE_NAME in res.cookies
+    assert data["status"] == "pending_verification"
+    assert data["requires_otp"] is True
+    assert data["email"] == "tender.admin@nic.in"
+    assert "reg_token" in data
+    assert data["cooldown_seconds"] == 60
+
+    # Complete OTP verification
+    v_res = auth_client.post(
+        "/api/auth/verify-otp",
+        json={"email": "tender.admin@nic.in", "token": data["otp_code_dev"], "reg_token": data["reg_token"]},
+    )
+    assert v_res.status_code == 200
+    assert v_res.json()["status"] == "ok"
+    assert v_res.json()["user"]["email"] == "tender.admin@nic.in"
+    assert COOKIE_NAME in v_res.cookies
 
 
 def test_register_duplicate_email_fails(auth_client):
-    auth_client.post(
-        "/api/auth/register",
-        json={"email": "duplicate@nic.in", "name": "User One", "password": "SecurePassword123"},
-    )
+    _register_and_verify(auth_client, "duplicate@nic.in", "User One", "SecurePassword123")
+    
     res = auth_client.post(
         "/api/auth/register",
         json={"email": "duplicate@nic.in", "name": "User Two", "password": "SecurePassword123"},
@@ -142,11 +172,8 @@ def test_register_validation_errors(auth_client):
 
 
 def test_login_and_logout_flow(auth_client):
-    # Register first
-    auth_client.post(
-        "/api/auth/register",
-        json={"email": "procurement@domain.org", "name": "Procurement Officer", "password": "Password123!"},
-    )
+    # Register & verify first
+    _register_and_verify(auth_client, "procurement@domain.org", "Procurement Officer", "Password123!")
 
     # Login
     res = auth_client.post(
@@ -167,10 +194,7 @@ def test_login_and_logout_flow(auth_client):
 
 
 def test_login_invalid_password(auth_client):
-    auth_client.post(
-        "/api/auth/register",
-        json={"email": "user@test.in", "name": "Test User", "password": "CorrectPassword123"},
-    )
+    _register_and_verify(auth_client, "user@test.in", "Test User", "CorrectPassword123")
 
     res = auth_client.post(
         "/api/auth/login",
@@ -211,13 +235,64 @@ def test_protected_routes_with_auth_enforced(auth_client, monkeypatch):
     assert "Authentication required" in api_res.json()["detail"]
 
     # Authenticate user and retry
-    auth_client.post(
-        "/api/auth/register",
-        json={"email": "authuser@nic.in", "name": "Auth User", "password": "Password123!"},
-    )
+    _register_and_verify(auth_client, "authuser@nic.in", "Auth User", "Password123!")
 
     auth_page_res = auth_client.get("/", follow_redirects=False)
     assert auth_page_res.status_code == 200
 
     auth_api_res = auth_client.get("/api/search?q=cement")
     assert auth_api_res.status_code == 200
+
+
+
+def test_otp_verification_flow(auth_client):
+    # 1. Register user -> initiates OTP flow
+    res = auth_client.post(
+        "/api/auth/register",
+        json={"email": "new.vendor@gov.in", "name": "Vendor User", "password": "VendorSecret123!"},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "pending_verification"
+    assert data["requires_otp"] is True
+    assert "reg_token" in data
+    reg_token = data["reg_token"]
+    otp_code = data.get("otp_code_dev")
+    assert otp_code is not None
+
+    # 2. Verify OTP with invalid token fails
+    bad_verify = auth_client.post(
+        "/api/auth/verify-otp",
+        json={"email": "new.vendor@gov.in", "token": "000000", "reg_token": reg_token},
+    )
+    assert bad_verify.status_code == 400
+    assert "Invalid or expired" in bad_verify.json()["detail"]
+
+    # 3. Verify OTP with correct code succeeds and commits user to DB
+    good_verify = auth_client.post(
+        "/api/auth/verify-otp",
+        json={"email": "new.vendor@gov.in", "token": otp_code, "reg_token": reg_token},
+    )
+    assert good_verify.status_code == 200
+    assert good_verify.json()["status"] == "ok"
+    assert COOKIE_NAME in good_verify.cookies
+
+    # 4. Duplicate registration attempt for verified user should immediately fail with 400
+    dup_res = auth_client.post(
+        "/api/auth/register",
+        json={"email": "new.vendor@gov.in", "name": "Vendor User", "password": "VendorSecret123!"},
+    )
+    assert dup_res.status_code == 400
+    assert "already exists" in dup_res.json()["detail"]
+
+    # 5. Logout and Login again with saved credentials
+    auth_client.post("/api/auth/logout")
+    login_res = auth_client.post(
+        "/api/auth/login",
+        json={"email": "new.vendor@gov.in", "password": "VendorSecret123!"},
+    )
+    assert login_res.status_code == 200
+    assert login_res.json()["status"] == "ok"
+    assert login_res.json()["user"]["email"] == "new.vendor@gov.in"
+
+
