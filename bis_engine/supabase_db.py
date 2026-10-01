@@ -111,6 +111,11 @@ def update_bid_status(bid_id: int, status: str) -> dict:
     return rows[0] if isinstance(rows, list) and rows else {}
 
 
+def update_bid(bid_id: int, data: dict) -> dict:
+    rows = _req("PATCH", f"bids?id=eq.{bid_id}", data) or []
+    return rows[0] if isinstance(rows, list) and rows else {}
+
+
 def get_bids_for_tender(tender_id: int) -> list:
     return _req("GET", f"bids?tender_id=eq.{tender_id}&order=compliance_score.desc") or []
 

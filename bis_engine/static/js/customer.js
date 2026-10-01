@@ -45,10 +45,11 @@
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.detail || "Failed to update status");
 
-        const msg = status === "confirmed" 
-          ? "✅ Bid Approved! The status is now CONFIRMED in the Vendor's Vault." 
+        const isApp = status === "approved" || status === "confirmed";
+        const msg = isApp 
+          ? "✅ Bid Approved! The status is now Approved in the Vendor's Vault." 
           : "❌ Bid marked as Rejected.";
-        toast(msg, status === "confirmed" ? "success" : "info");
+        toast(msg, isApp ? "success" : "info");
         closeModal();
         await loadTenders();
       } catch (err) {
@@ -67,15 +68,17 @@
       const scoreCol  = score >= 88 ? "var(--accent)" : (score >= 75 ? "#ff9800" : "#f44336");
       const fulfilled = bid.fulfilled_reqs || report.fulfilled_count || 0;
       const total     = bid.total_reqs || report.total_count || breakdown.length || 0;
-      const status    = bid.status || "pending";
+      const rawStatus = (bid.status || "pending").toLowerCase();
+      const isApproved = rawStatus === "approved" || rawStatus === "confirmed";
+      const isRejected = rawStatus === "rejected";
 
       let statusBadge = "";
-      if (status === "confirmed") {
-        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">✅ Approved & Confirmed</span>`;
-      } else if (status === "rejected") {
+      if (isApproved) {
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">✅ Approved</span>`;
+      } else if (isRejected) {
         statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Rejected</span>`;
       } else {
-        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending Decision</span>`;
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending</span>`;
       }
 
       let breakdownHtml = "";
@@ -105,14 +108,14 @@
 
       const actionButtonsHtml = `
         <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:1.2rem;">
-          ${status !== "confirmed" ? `
+          ${!isApproved ? `
             <button class="btn-primary btn-modal-approve" data-id="${bid.id}" style="padding:0.75rem 1.6rem; border-radius:8px; font-weight:700; background:#22c55e; border-color:#22c55e; color:#000; cursor:pointer;">
-              ✅ Approve Bid (Mark Confirmed)
+              ✅ Approve Bid
             </button>
           ` : `
-            <span style="color:#22c55e; font-weight:700; align-self:center;">✓ This bid has been approved & confirmed</span>
+            <span style="color:#22c55e; font-weight:700; align-self:center; font-size:0.95rem;">✓ This bid has been approved</span>
           `}
-          ${status !== "rejected" && status !== "confirmed" ? `
+          ${!isRejected && !isApproved ? `
             <button class="btn-secondary-auth btn-modal-reject" data-id="${bid.id}" style="padding:0.75rem 1.4rem; border-radius:8px; color:#f44336; border-color:rgba(244,67,54,0.4); cursor:pointer;">
               ❌ Reject Bid
             </button>
@@ -167,7 +170,7 @@
       // Wire Modal Approve / Reject buttons
       const btnApprove = modalContent.querySelector(".btn-modal-approve");
       if (btnApprove) {
-        btnApprove.addEventListener("click", () => setBidStatus(bid.id, "confirmed"));
+        btnApprove.addEventListener("click", () => setBidStatus(bid.id, "approved"));
       }
       const btnReject = modalContent.querySelector(".btn-modal-reject");
       if (btnReject) {
@@ -300,27 +303,30 @@
 
           let bidsHtml = "";
           if (bids.length > 0) {
-            // Sort bids: confirmed first, then highest score
+            // Sort bids: approved first, then highest score
             const sortedBids = [...bids].sort((a, b) => {
-              if (a.status === "confirmed" && b.status !== "confirmed") return -1;
-              if (b.status === "confirmed" && a.status !== "confirmed") return 1;
+              const aApp = (a.status === "approved" || a.status === "confirmed");
+              const bApp = (b.status === "approved" || b.status === "confirmed");
+              if (aApp && !bApp) return -1;
+              if (bApp && !aApp) return 1;
               return (b.compliance_score || 0) - (a.compliance_score || 0);
             });
 
             const rows = sortedBids.map((b, idx) => {
               const score = b.compliance_score || 0;
               const scoreCol = score >= 88 ? "var(--accent)" : (score >= 75 ? "#ff9800" : "#f44336");
-              const isConfirmed = b.status === "confirmed";
-              const isRejected = b.status === "rejected";
+              const rawStat = (b.status || "pending").toLowerCase();
+              const isApproved = rawStat === "approved" || rawStat === "confirmed";
+              const isRejected = rawStat === "rejected";
               
-              let statusLabel = `<span style="background:rgba(255,230,0,0.15); color:var(--accent); border:1px solid rgba(255,230,0,0.3); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">⏳ Pending Approval</span>`;
-              if (isConfirmed) {
-                statusLabel = `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">✅ APPROVED / CONFIRMED</span>`;
+              let statusLabel = `<span style="background:rgba(255,230,0,0.15); color:var(--accent); border:1px solid rgba(255,230,0,0.3); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">⏳ Pending</span>`;
+              if (isApproved) {
+                statusLabel = `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">✅ Approved</span>`;
               } else if (isRejected) {
                 statusLabel = `<span style="background:rgba(244,67,54,0.18); color:#f44336; border:1px solid rgba(244,67,54,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">❌ Rejected</span>`;
               }
 
-              const topBadge = (idx === 0 && !isConfirmed && !isRejected)
+              const topBadge = (idx === 0 && !isApproved && !isRejected)
                 ? `<span style="background:var(--accent);color:#000;padding:2px 7px;border-radius:4px;font-size:0.7rem;font-weight:800;letter-spacing:0.5px;margin-left:6px;">★ TOP AI MATCH</span>` 
                 : "";
               const enc = encodeURIComponent(JSON.stringify(b));
@@ -329,7 +335,7 @@
               const total = b.total_reqs || rep.total_count || reqs.length || 0;
 
               return `
-                <div class="bid-row" data-bid="${enc}" style="background:var(--bg-body);border:${isConfirmed ? '2px solid #22c55e' : '1px solid var(--border-color)'};padding:1.2rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;flex-wrap:wrap;gap:1rem;">
+                <div class="bid-row" data-bid="${enc}" style="background:var(--bg-body);border:${isApproved ? '2px solid #22c55e' : '1px solid var(--border-color)'};padding:1.2rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;flex-wrap:wrap;gap:1rem;">
                   <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;">
                     <div>
                       <div style="font-weight:700;color:var(--text-main);font-size:1.05rem;">
@@ -357,11 +363,13 @@
                     </div>
                   </div>
                   <div style="display:flex; gap:0.6rem; align-items:center;">
-                    ${!isConfirmed ? `
+                    ${!isApproved ? `
                       <button class="btn-primary btn-quick-approve" data-id="${b.id}" style="padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; background:#22c55e; border-color:#22c55e; color:#000; border-radius:6px; cursor:pointer;">
-                        Approve Bid
+                        Approve
                       </button>
-                    ` : ""}
+                    ` : `
+                      <span style="font-size:0.8rem; font-weight:700; color:#22c55e; padding:4px 8px; border:1px solid rgba(34,197,94,0.3); border-radius:6px; background:rgba(34,197,94,0.1);">✓ Approved</span>
+                    `}
                     <button class="btn-secondary-auth" style="padding:0.5rem 0.9rem;font-size:0.82rem;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-card);pointer-events:none;">
                       Review ↗
                     </button>
@@ -439,7 +447,7 @@
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
             const bidId = btn.getAttribute("data-id");
-            setBidStatus(bidId, "confirmed");
+            setBidStatus(bidId, "approved");
           });
         });
 

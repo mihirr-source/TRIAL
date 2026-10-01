@@ -188,7 +188,7 @@
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || `Error submitting bid (${res.status})`);
 
-          toast(`Bid Submitted! Status: PENDING customer approval. AI Score: ${data.score}%`, "success");
+          toast(`Bid Submitted! Placed in your vault as Pending. AI Score: ${data.score}%`, "success");
           closeBidWorkspace();
           
           // Switch to My Vault so vendor immediately sees their pending bid
@@ -214,15 +214,17 @@
       const breakdown = report.requirements_breakdown || [];
       const fulfilled = bid.fulfilled_reqs || report.fulfilled_count || 0;
       const total = bid.total_reqs || report.total_count || breakdown.length || 0;
-      const status = bid.status || "pending";
+      const rawStatus = (bid.status || "pending").toLowerCase();
+      const isApproved = rawStatus === "approved" || rawStatus === "confirmed";
+      const isRejected = rawStatus === "rejected";
 
       let statusBadge = "";
-      if (status === "confirmed") {
-        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem;">✅ CONFIRMED BY BUYER</span>`;
-      } else if (status === "rejected") {
+      if (isApproved) {
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem;">✅ Approved</span>`;
+      } else if (isRejected) {
         statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Not Selected</span>`;
       } else {
-        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending Customer Approval</span>`;
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending</span>`;
       }
 
       let breakdownHtml = "";
@@ -473,20 +475,20 @@
           card.style.padding = "1.8rem";
           card.style.borderRadius = "12px";
 
-          const status = b.status || "pending";
-          const isConfirmed = status === "confirmed";
-          const isRejected = status === "rejected";
+          const rawStatus = (b.status || "pending").toLowerCase();
+          const isApproved = rawStatus === "approved" || rawStatus === "confirmed";
+          const isRejected = rawStatus === "rejected";
 
           // Card border and status banner based on status
-          card.style.border = isConfirmed ? "2px solid #22c55e" : (isRejected ? "1px solid rgba(244,67,54,0.4)" : "1px solid var(--border-color)");
+          card.style.border = isApproved ? "2px solid #22c55e" : (isRejected ? "1px solid rgba(244,67,54,0.4)" : "1px solid var(--border-color)");
 
           let statusBadge = "";
-          if (isConfirmed) {
-            statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;">✅ CONFIRMED & AWARDED</span>`;
+          if (isApproved) {
+            statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;">✅ Approved</span>`;
           } else if (isRejected) {
             statusBadge = `<span style="background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">❌ Not Selected</span>`;
           } else {
-            statusBadge = `<span style="background: rgba(255, 230, 0, 0.18); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">⏳ PENDING CUSTOMER APPROVAL</span>`;
+            statusBadge = `<span style="background: rgba(255, 230, 0, 0.18); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">⏳ Pending</span>`;
           }
 
           const score = b.compliance_score || 0;
