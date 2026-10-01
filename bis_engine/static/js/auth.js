@@ -76,7 +76,7 @@
           renderNavbarUser(userObj);
           const isVendor = userObj.role === "vendor" || userObj.email.toLowerCase().includes("vendor") || userObj.email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
-          if (location.pathname === "/login" || location.pathname === "/") {
+          if (location.pathname === "/login") {
             location.replace(targetUrl);
           } else if (location.pathname === "/vendor" && !isVendor) {
             location.replace("/customer");
@@ -95,7 +95,7 @@
           renderNavbarUser(data.user);
           const isVendor = data.user.role === "vendor" || data.user.email.toLowerCase().includes("vendor") || data.user.email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
-          if (location.pathname === "/login" || location.pathname === "/") {
+          if (location.pathname === "/login") {
             location.replace(targetUrl);
           } else if (location.pathname === "/vendor" && !isVendor) {
             location.replace("/customer");
@@ -111,6 +111,37 @@
     }
   }
 
+  function updateDrawerPortalLink(user) {
+    const drawerBody = document.querySelector(".drawer-body");
+    if (!drawerBody) return;
+
+    const oldLink = document.getElementById("drawer-user-portal-link");
+    if (oldLink) oldLink.remove();
+
+    if (!user) return;
+
+    const isVendor = user.role === "vendor" || (user.email && (user.email.toLowerCase().includes("vendor") || user.email.toLowerCase().includes("supplier")));
+    const portalUrl = isVendor ? "/vendor" : "/customer";
+    const portalTitle = isVendor ? "🚀 VENDOR PORTAL" : "👤 CUSTOMER PORTAL";
+    const isCurrent = location.pathname === portalUrl;
+
+    const link = document.createElement("a");
+    link.id = "drawer-user-portal-link";
+    link.href = portalUrl;
+    link.className = `nav-link ${isCurrent ? "active" : ""}`;
+    link.style.color = "var(--accent)";
+    link.style.fontWeight = "800";
+    link.style.letterSpacing = "0.5px";
+    link.style.background = "rgba(255, 230, 0, 0.08)";
+    link.style.border = "1px solid rgba(255, 230, 0, 0.25)";
+    link.style.borderRadius = "8px";
+    link.style.padding = "0.75rem 1rem";
+    link.style.marginBottom = "0.6rem";
+    link.textContent = portalTitle;
+
+    drawerBody.prepend(link);
+  }
+
   function renderNavbarUser(user) {
     const actionsContainer = document.querySelector(".header-actions");
     const mobileAuthSection = document.getElementById("mobile-auth-section");
@@ -121,10 +152,14 @@
     const existingSignIn = document.getElementById("nav-signin-link");
     if (existingSignIn) existingSignIn.remove();
 
+    // Update Drawer Portal Link
+    updateDrawerPortalLink(user);
+
     if (user) {
       const initial = (user.name || user.email || "U").trim().charAt(0).toUpperCase();
       const displayName = user.name || user.email.split("@")[0];
       const isVendor = user.role === "vendor" || user.email.toLowerCase().includes("vendor") || user.email.toLowerCase().includes("supplier");
+      const portalUrl = isVendor ? "/vendor" : "/customer";
       const roleBadge = isVendor 
         ? `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.35); font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; margin-left:6px; letter-spacing:0.5px;">VENDOR</span>` 
         : `<span style="background:rgba(255,230,0,0.18); color:var(--accent); border:1px solid rgba(255,230,0,0.35); font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; margin-left:6px; letter-spacing:0.5px;">CUSTOMER</span>`;
@@ -135,11 +170,11 @@
         userWrap.id = "user-profile-badge";
         userWrap.className = "user-nav-wrapper";
         userWrap.innerHTML = `
-          <div class="user-badge" title="${escapeHtml(user.name || displayName)} (${escapeHtml(user.email)})">
+          <a href="${portalUrl}" class="user-badge" style="text-decoration:none; cursor:pointer;" title="Go to ${isVendor ? 'Vendor' : 'Customer'} Portal">
             <span class="user-avatar">${escapeHtml(initial)}</span>
             <span class="user-name-text">${escapeHtml(displayName)}</span>
             ${roleBadge}
-          </div>
+          </a>
           <button id="btn-logout-nav" class="btn-logout" type="button" title="Log Out" aria-label="Log Out">
             <span class="logout-icon" aria-hidden="true">⏻</span>
             <span class="logout-label">LOGOUT</span>
