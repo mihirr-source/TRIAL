@@ -1,6 +1,5 @@
 """
 Supabase REST API client for persistent tenders & bids storage.
-Replaces the ephemeral SQLite approach that breaks on Vercel serverless.
 """
 import json
 import urllib.request
@@ -37,12 +36,21 @@ def _req(method: str, path: str, data: Any = None) -> Any:
 
 # ── Tenders ─────────────────────────────────────────────────────────────────
 
-def create_tender(title: str, description: str, customer_email: str) -> dict:
-    rows = _req("POST", "tenders", {
+def create_tender(
+    title: str, 
+    description: str, 
+    customer_email: str,
+    budget: str = "",
+    category: str = "General Procurement"
+) -> dict:
+    payload = {
         "title": title,
         "description": description,
         "customer_email": customer_email,
-    })
+        "budget": budget or "",
+        "category": category or "General Procurement",
+    }
+    rows = _req("POST", "tenders", payload)
     return rows[0] if isinstance(rows, list) and rows else {}
 
 
@@ -64,15 +72,24 @@ def create_bid(
     spec_text: str,
     score: int,
     report_json: str,
+    bid_amount: float = 0,
+    delivery_days: int = 7,
+    fulfilled_reqs: int = 0,
+    total_reqs: int = 0,
 ) -> dict:
-    rows = _req("POST", "bids", {
+    payload = {
         "tender_id": tender_id,
         "vendor_email": vendor_email,
         "vendor_name": vendor_name,
         "spec_text": spec_text,
         "compliance_score": score,
         "compliance_report": report_json,
-    })
+        "bid_amount": bid_amount,
+        "delivery_days": delivery_days,
+        "fulfilled_reqs": fulfilled_reqs,
+        "total_reqs": total_reqs,
+    }
+    rows = _req("POST", "bids", payload)
     return rows[0] if isinstance(rows, list) and rows else {}
 
 
@@ -94,10 +111,9 @@ def has_bid(tender_id: int, vendor_email: str) -> bool:
 def get_vendor_vault(vendor_email: str) -> list:
     """Return vendor's submitted bids with joined tender info."""
     enc = urllib.parse.quote(vendor_email, safe="")
-    # PostgREST embedded resource syntax - uses FK relationship
     rows = _req(
         "GET",
-        f"bids?vendor_email=eq.{enc}&order=id.desc&select=*,tenders(id,title,description)"
+        f"bids?vendor_email=eq.{enc}&order=id.desc&select=*,tenders(id,title,description,budget)"
     ) or []
     result = []
     for row in rows:
@@ -105,6 +121,7 @@ def get_vendor_vault(vendor_email: str) -> list:
         nested = item.pop("tenders", {}) or {}
         item["tender_title"] = nested.get("title", "Unknown Tender")
         item["tender_description"] = nested.get("description", "")
+        item["tender_budget"] = nested.get("budget", "")
         result.append(item)
     return result
 
@@ -124,7 +141,12 @@ def seed_demo_if_needed(customer_email: str, demo_data: list) -> None:
             if not tid:
                 continue
             b = item["bid"]
-            create_bid(tid, b[0], b[1], b[2], b[3], b[4])
+            create_bid(
+                tid, b[0], b[1], b[2], b[3], b[4],
+                bid_amount=item.get("bid_amount", 125000),
+                delivery_days=item.get("delivery_days", 10),
+                fulfilled_reqs=item.get("fulfilled_reqs", 4),
+                total_reqs=item.get("total_reqs", 4)
+            )
     except Exception as e:
-        # Log but don't crash — the page still works without demo data
         print(f"[supabase_db] seed_demo_if_needed error: {e}")
