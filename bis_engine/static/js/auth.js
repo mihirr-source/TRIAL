@@ -115,6 +115,14 @@
     const drawerBody = document.querySelector(".drawer-body");
     if (!drawerBody) return;
 
+    // Remove any hardcoded bottom portal links to avoid duplicates
+    drawerBody.querySelectorAll('a[href="/customer"], a[href="/vendor"]').forEach(el => {
+      if (el.id !== "drawer-user-portal-link") el.remove();
+    });
+
+    // Remove API Docs from drawer navigation
+    drawerBody.querySelectorAll('a[href="/docs-page"]').forEach(el => el.remove());
+
     const oldLink = document.getElementById("drawer-user-portal-link");
     if (oldLink) oldLink.remove();
 
