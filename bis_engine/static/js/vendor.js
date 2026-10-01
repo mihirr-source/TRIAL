@@ -6,15 +6,117 @@
     const tabVault = document.getElementById("tab-my-vault");
     const feedContainer = document.getElementById("feed-container");
     const vaultContainer = document.getElementById("vault-container");
-    
-    // Modal
-    const modal = document.getElementById("submit-bid-modal");
-    const modalClose = document.getElementById("bid-modal-close");
-    const form = document.getElementById("submit-bid-form");
-    const modalTenderTitle = document.getElementById("modal-tender-title");
-    const modalTenderId = document.getElementById("modal-tender-id");
-    const btnSubmit = document.getElementById("btn-submit-bid");
+    const vaultCountBadge = document.getElementById("vault-count-badge");
+    const btnRefreshFeed = document.getElementById("btn-refresh-feed");
 
+    // Submit Bid Modal Elements
+    const submitModal = document.getElementById("submit-bid-modal");
+    const submitModalClose = document.getElementById("bid-modal-close");
+    const btnCancelModal = document.getElementById("btn-cancel-modal");
+    const submitForm = document.getElementById("submit-bid-form");
+    const modalTenderTitle = document.getElementById("modal-tender-title");
+    const modalTenderDesc = document.getElementById("modal-tender-desc");
+    const modalTenderId = document.getElementById("modal-tender-id");
+    const bidSpecText = document.getElementById("bid-spec-text");
+    const btnSubmit = document.getElementById("btn-submit-bid");
+    const btnAutofill = document.getElementById("btn-autofill-spec");
+
+    // Vault Detail Modal Elements
+    const vaultModal = document.getElementById("vault-detail-modal");
+    const vaultModalClose = document.getElementById("vault-modal-close");
+    const vaultModalBody = document.getElementById("vault-modal-body");
+
+    function escapeHtml(unsafe) {
+      if (unsafe == null) return "";
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function toast(msg, type = "info") {
+      if (window.showToast) window.showToast(msg, type);
+      else console.log(`[${type}] ${msg}`);
+    }
+
+    // Modal Control Functions
+    function openSubmitModal(tenderId, title, description) {
+      if (!submitModal) return;
+      modalTenderId.value = tenderId;
+      modalTenderTitle.textContent = title;
+      modalTenderDesc.textContent = description || "No detailed requirements provided.";
+      bidSpecText.value = "";
+      submitModal.style.display = "flex";
+      bidSpecText.focus();
+    }
+
+    function closeSubmitModal() {
+      if (submitModal) submitModal.style.display = "none";
+      if (submitForm) submitForm.reset();
+    }
+
+    function openVaultModal(bid) {
+      if (!vaultModal || !vaultModalBody) return;
+      const score = bid.compliance_score || 0;
+      const scoreCol = score >= 90 ? "var(--accent)" : (score >= 70 ? "#ff9800" : "#f44336");
+      const report = bid.compliance_report || {};
+      const strengths = report.strengths || [];
+      const issues = report.issues || [];
+
+      vaultModalBody.innerHTML = `
+        <span style="font-family:var(--font-mono);font-size:0.8rem;background:var(--bg-body);padding:4px 8px;border-radius:4px;color:var(--accent);font-weight:600;">BID EVALUATION REPORT</span>
+        <h2 style="margin-top:0.6rem;margin-bottom:0.4rem;font-size:1.4rem;color:var(--text-main);">${escapeHtml(bid.tender_title || "Tender")}</h2>
+        
+        <div style="display:flex;gap:1.5rem;margin:1.2rem 0;padding:1.5rem;background:var(--bg-body);border-radius:10px;border:1px solid var(--border-color);flex-wrap:wrap;">
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">AI Compliance</div>
+            <div style="font-size:3rem;font-weight:800;color:${scoreCol};line-height:1.1;margin-top:4px;">${score}<span style="font-size:1.4rem;">%</span></div>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Status: ${score >= 75 ? "✅ Qualified" : "⚠️ Needs Review"}</span>
+          </div>
+          <div style="flex:2;border-left:1px solid var(--border-color);padding-left:1.5rem;min-width:220px;">
+            <p style="color:var(--text-main);font-weight:600;margin-top:0;font-size:0.95rem;">${escapeHtml(report.summary || "AI specification analysis completed.")}</p>
+            ${strengths.length ? `<div style="margin-top:0.6rem;"><strong style="color:var(--accent);font-size:0.85rem;">Strengths:</strong><ul style="margin:0.3rem 0 0 1.2rem;padding:0;color:var(--text-muted);font-size:0.88rem;">${strengths.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ul></div>` : ""}
+            ${issues.length ? `<div style="margin-top:0.6rem;"><strong style="color:#f44336;font-size:0.85rem;">Issues / Gaps:</strong><ul style="margin:0.3rem 0 0 1.2rem;padding:0;color:var(--text-muted);font-size:0.88rem;">${issues.map(i=>`<li>${escapeHtml(i)}</li>`).join("")}</ul></div>` : ""}
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:0.5rem;color:var(--text-main);">Submitted Specification Text</h3>
+          <div style="background:var(--bg-input);padding:1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-muted);font-size:0.9rem;white-space:pre-wrap;max-height:160px;overflow-y:auto;line-height:1.5;">${escapeHtml(bid.spec_text || "")}</div>
+        </div>
+      `;
+
+      vaultModal.style.display = "flex";
+    }
+
+    function closeVaultModal() {
+      if (vaultModal) vaultModal.style.display = "none";
+    }
+
+    // Event Listeners for Modals
+    if (submitModalClose) submitModalClose.addEventListener("click", closeSubmitModal);
+    if (btnCancelModal) btnCancelModal.addEventListener("click", closeSubmitModal);
+    if (submitModal) submitModal.addEventListener("click", (e) => { if (e.target === submitModal) closeSubmitModal(); });
+
+    if (vaultModalClose) vaultModalClose.addEventListener("click", closeVaultModal);
+    if (vaultModal) vaultModal.addEventListener("click", (e) => { if (e.target === vaultModal) closeVaultModal(); });
+
+    // Auto-fill Sample Spec for easy 1-click testing
+    if (btnAutofill && bidSpecText) {
+      btnAutofill.addEventListener("click", () => {
+        const title = modalTenderTitle.textContent || "";
+        bidSpecText.value = `We propose to supply high-grade material strictly conforming to relevant Bureau of Indian Standards (BIS) specifications.
+- Product Certification: BIS ISI Mark certified under Mandatory QCO
+- Grade / Standard: Conforms fully to technical clauses and laboratory testing specifications
+- Testing & Inspection: Accompanied by official Manufacturer's Test Certificate (MTC)
+- Delivery Schedule: Direct dispatch within 7-10 business days with warranty coverage.`;
+        toast("Sample proposal specification auto-filled!", "info");
+      });
+    }
+
+    // Tabs Switching
     if (tabAll && tabVault) {
       tabAll.addEventListener("click", () => {
         tabAll.classList.add("active");
@@ -23,6 +125,7 @@
         vaultContainer.style.display = "none";
         loadTenders();
       });
+
       tabVault.addEventListener("click", () => {
         tabVault.classList.add("active");
         tabAll.classList.remove("active");
@@ -32,157 +135,251 @@
       });
     }
 
-    if (modalClose) {
-      modalClose.addEventListener("click", () => {
-        modal.style.display = "none";
+    if (btnRefreshFeed) {
+      btnRefreshFeed.addEventListener("click", () => {
+        if (tabAll.classList.contains("active")) {
+          loadTenders();
+        } else {
+          loadVault();
+        }
+        toast("Refreshing...", "info");
       });
     }
 
-    if (form) {
-      form.addEventListener("submit", async (e) => {
+    // Submit Bid Form Handling
+    if (submitForm) {
+      submitForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const specText = document.getElementById("bid-spec-text").value.trim();
+        const specText = bidSpecText.value.trim();
         const tenderId = parseInt(modalTenderId.value, 10);
-        
+
+        if (!tenderId || !specText) {
+          toast("Please enter your specification proposal.", "error");
+          return;
+        }
+
+        const origBtnText = btnSubmit.textContent;
         btnSubmit.disabled = true;
         btnSubmit.textContent = "Analyzing Compliance with AI...";
-        
+
         try {
           const res = await fetch("/api/bids/submit", {
             method: "POST",
+            credentials: "same-origin",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ tender_id: tenderId, spec_text: specText })
           });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.detail || "Failed to submit bid");
-          
-          window.showToast(`Bid submitted successfully! AI Score: ${data.score}%`, "success");
-          form.reset();
-          modal.style.display = "none";
-          loadTenders(); // refresh to show "Bid Submitted" button
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || `Server error (${res.status})`);
+
+          toast(`Bid submitted successfully! AI Score: ${data.score}%`, "success");
+          closeSubmitModal();
+          await loadTenders();
+          await updateVaultCount();
         } catch (err) {
-          window.showToast(err.message, "error");
+          toast(err.message, "error");
         } finally {
           btnSubmit.disabled = false;
-          btnSubmit.textContent = "Submit Bid for AI Evaluation";
+          btnSubmit.textContent = origBtnText;
         }
       });
     }
 
+    // Load Active Tenders
     async function loadTenders() {
+      feedContainer.innerHTML = `<div class="loader-pulse" style="margin: 3rem auto;"></div>`;
       try {
-        const res = await fetch("/api/bids/tenders");
-        if (!res.ok) throw new Error("Failed to load tenders");
-        const data = await res.json();
-        
+        const res = await fetch("/api/bids/tenders", { credentials: "same-origin" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Failed to load tenders");
+
         feedContainer.innerHTML = "";
-        
-        if (data.tenders.length === 0) {
-          feedContainer.innerHTML = `<div class="card" style="text-align: center; padding: 3rem; color: var(--text-muted);">No active tenders found.</div>`;
+        const tenders = data.tenders || [];
+
+        if (tenders.length === 0) {
+          feedContainer.innerHTML = `
+            <div class="card" style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📋</div>
+              <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">No Active Tenders Yet</h3>
+              <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto 1.5rem auto; font-size: 0.95rem;">
+                When buyers publish procurement tenders in the Customer Portal, they will appear here in real-time for you to bid on.
+              </p>
+            </div>
+          `;
           return;
         }
-        
-        data.tenders.forEach(t => {
+
+        tenders.forEach(t => {
           const card = document.createElement("div");
           card.className = "card";
           card.style.background = "var(--bg-card)";
           card.style.border = "1px solid var(--border-color)";
           card.style.padding = "2rem";
           card.style.borderRadius = "12px";
-          
-          const actionBtnHtml = t.has_bid 
-            ? `<button class="btn-secondary-auth" disabled style="background: var(--bg-body); cursor: not-allowed; color: var(--text-muted);">✓ Bid Submitted</button>`
-            : `<button class="btn-primary btn-place-bid" data-id="${t.id}" data-title="${escapeHtml(t.title)}" style="padding: 0.6rem 1.5rem;">Place Bid</button>`;
-          
+
+          const isBidSubmitted = Boolean(t.has_bid);
+          const actionBtnHtml = isBidSubmitted
+            ? `<div style="display:flex; align-items:center; gap:0.6rem;">
+                 <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">✓ Bid Submitted</span>
+                 <button class="btn-secondary-auth btn-view-vault" style="padding: 0.5rem 0.9rem; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); cursor: pointer;">View in Vault</button>
+               </div>`
+            : `<button class="btn-primary btn-place-bid" data-id="${t.id}" data-title="${escapeHtml(t.title)}" data-desc="${escapeHtml(t.description)}" style="padding: 0.7rem 1.6rem; border-radius: 8px; font-weight: 700; cursor: pointer;">Place Bid</button>`;
+
           card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
               <div>
-                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.4rem; color: var(--text-main);">${escapeHtml(t.title)}</h2>
-                <span style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-body); padding: 4px 8px; border-radius: 4px; color: var(--text-muted);">ID: TEND-${t.id} &bull; Buyer: ${escapeHtml(t.customer_email)}</span>
+                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.4rem; color: var(--text-main); font-weight: 700;">${escapeHtml(t.title)}</h2>
+                <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+                  <span style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-body); padding: 4px 8px; border-radius: 4px; color: var(--text-muted); border: 1px solid var(--border-color);">TEND-${t.id}</span>
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">Buyer: <strong style="color: var(--text-main);">${escapeHtml(t.customer_email)}</strong></span>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">&bull; Status: <span style="color: var(--accent); font-weight: 600;">ACTIVE</span></span>
+                </div>
               </div>
-              ${actionBtnHtml}
+              <div>${actionBtnHtml}</div>
             </div>
-            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">${escapeHtml(t.description)}</p>
+            <div style="background: var(--bg-body); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+              <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 600;">Requirements & Scope</div>
+              <p style="color: var(--text-main); font-size: 0.95rem; line-height: 1.6; margin: 0; white-space: pre-wrap;">${escapeHtml(t.description)}</p>
+            </div>
           `;
-          
+
           feedContainer.appendChild(card);
         });
-        
-        // Attach click listeners to bid buttons
-        document.querySelectorAll(".btn-place-bid").forEach(btn => {
+
+        // Wire up Place Bid buttons
+        feedContainer.querySelectorAll(".btn-place-bid").forEach(btn => {
           btn.addEventListener("click", () => {
-            modalTenderId.value = btn.getAttribute("data-id");
-            modalTenderTitle.textContent = btn.getAttribute("data-title");
-            modal.style.display = "flex";
+            const id = btn.getAttribute("data-id");
+            const title = btn.getAttribute("data-title");
+            const desc = btn.getAttribute("data-desc");
+            openSubmitModal(id, title, desc);
           });
         });
-        
+
+        // Wire up "View in Vault" shortcuts
+        feedContainer.querySelectorAll(".btn-view-vault").forEach(btn => {
+          btn.addEventListener("click", () => {
+            tabVault.click();
+          });
+        });
+
       } catch (err) {
-        feedContainer.innerHTML = `<div style="color: red; text-align: center;">Error loading tenders.</div>`;
+        feedContainer.innerHTML = `
+          <div style="color: #f44336; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+            <p style="font-weight: 600; margin-bottom: 0.5rem;">Failed to load tenders</p>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(err.message)}</span>
+          </div>
+        `;
       }
     }
-    
+
+    // Load Vendor Vault
     async function loadVault() {
+      vaultContainer.innerHTML = `<div class="loader-pulse" style="margin: 3rem auto;"></div>`;
       try {
-        vaultContainer.innerHTML = `<div class="loader-pulse" style="margin: 2rem auto;"></div>`;
-        const res = await fetch("/api/bids/vault");
-        if (!res.ok) throw new Error("Failed to load vault");
-        const data = await res.json();
-        
+        const res = await fetch("/api/bids/vault", { credentials: "same-origin" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Failed to load bid vault");
+
         vaultContainer.innerHTML = "";
-        
-        if (data.vault.length === 0) {
-          vaultContainer.innerHTML = `<div class="card" style="text-align: center; padding: 3rem; color: var(--text-muted);">You haven't submitted any bids yet.</div>`;
+        const vault = data.vault || [];
+
+        if (vaultCountBadge) {
+          vaultCountBadge.textContent = vault.length;
+          vaultCountBadge.style.display = vault.length > 0 ? "inline-block" : "none";
+        }
+
+        if (vault.length === 0) {
+          vaultContainer.innerHTML = `
+            <div class="card" style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🔒</div>
+              <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">Your Bid Vault is Empty</h3>
+              <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto 1.5rem auto; font-size: 0.95rem;">
+                You haven't submitted any bids yet. Head over to <strong>Active Tenders</strong> to place your first bid with instant AI compliance evaluation.
+              </p>
+              <button class="btn-primary" id="btn-goto-tenders" style="padding: 0.7rem 1.6rem; border-radius: 8px;">Browse Active Tenders</button>
+            </div>
+          `;
+          const btnGoto = document.getElementById("btn-goto-tenders");
+          if (btnGoto) btnGoto.addEventListener("click", () => tabAll.click());
           return;
         }
-        
-        data.vault.forEach(b => {
+
+        vault.forEach(b => {
           const card = document.createElement("div");
           card.className = "card";
-          card.style.background = "var(--bg-body)";
+          card.style.background = "var(--bg-card)";
           card.style.border = "1px solid var(--border-color)";
-          card.style.padding = "1.5rem";
+          card.style.padding = "1.8rem";
           card.style.borderRadius = "12px";
-          
-          const scoreColor = b.compliance_score >= 90 ? "var(--accent)" : (b.compliance_score >= 70 ? "#ff9800" : "#f44336");
+
+          const score = b.compliance_score || 0;
+          const scoreCol = score >= 90 ? "var(--accent)" : (score >= 70 ? "#ff9800" : "#f44336");
           const report = b.compliance_report || {};
-          
+          const encBid = encodeURIComponent(JSON.stringify(b));
+
           card.innerHTML = `
-            <div style="display: flex; gap: 2rem;">
-              <div style="flex: 1;">
-                <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">AI Compliance Score</div>
-                <div style="font-size: 2.5rem; font-weight: 800; color: ${scoreColor};">${b.compliance_score}<span style="font-size: 1.2rem;">%</span></div>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-body); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); text-align: center;">
+                <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">AI Compliance</div>
+                <div style="font-size: 2.8rem; font-weight: 800; color: ${scoreCol}; line-height: 1.1; margin: 0.3rem 0;">${score}<span style="font-size: 1.2rem;">%</span></div>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">${score >= 75 ? "✅ High Win Likelihood" : "⚠️ Specification Gaps"}</span>
               </div>
-              <div style="flex: 3; border-left: 1px solid var(--border-color); padding-left: 1.5rem;">
-                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--text-main);">Tender: ${escapeHtml(b.tender_title)}</h3>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">${escapeHtml(report.summary || "No summary available.")}</p>
-                <div style="font-size: 0.85rem; color: var(--text-main); background: var(--bg-card); padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color);">
-                  <strong>Your Spec Extract:</strong><br/>
-                  <span style="color: var(--text-muted);">${escapeHtml(b.spec_text.substring(0, 150))}${b.spec_text.length > 150 ? '...' : ''}</span>
+              <div style="flex: 3; min-width: 260px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; gap: 1rem;">
+                  <h3 style="margin: 0; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Tender: ${escapeHtml(b.tender_title)}</h3>
+                  <button class="btn-secondary-auth btn-view-analysis" data-bid="${encBid}" style="padding: 0.4rem 0.9rem; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); cursor: pointer; white-space: nowrap;">
+                    View Analysis ↗
+                  </button>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">${escapeHtml(report.summary || "Specification evaluated against BIS standards.")}</p>
+                <div style="font-size: 0.85rem; color: var(--text-main); background: var(--bg-body); padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <strong style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Your Proposal Extract:</strong>
+                  <div style="color: var(--text-main); margin-top: 4px; line-height: 1.4;">${escapeHtml(b.spec_text ? (b.spec_text.substring(0, 160) + (b.spec_text.length > 160 ? "…" : "")) : "")}</div>
                 </div>
               </div>
             </div>
           `;
-          
+
           vaultContainer.appendChild(card);
         });
-        
+
+        // Wire up View Analysis buttons
+        vaultContainer.querySelectorAll(".btn-view-analysis").forEach(btn => {
+          btn.addEventListener("click", () => {
+            try {
+              const bidData = JSON.parse(decodeURIComponent(btn.getAttribute("data-bid")));
+              openVaultModal(bidData);
+            } catch (e) {
+              console.error("Failed to parse bid data:", e);
+            }
+          });
+        });
+
       } catch (err) {
-        vaultContainer.innerHTML = `<div style="color: red; text-align: center;">Error loading vault.</div>`;
+        vaultContainer.innerHTML = `
+          <div style="color: #f44336; text-align: center; padding: 3rem; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+            <p style="font-weight: 600; margin-bottom: 0.5rem;">Failed to load vault</p>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(err.message)}</span>
+          </div>
+        `;
       }
     }
 
-    function escapeHtml(unsafe) {
-      if (!unsafe) return "";
-      return (unsafe + "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    async function updateVaultCount() {
+      try {
+        const res = await fetch("/api/bids/vault", { credentials: "same-origin" });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.vault && vaultCountBadge) {
+          vaultCountBadge.textContent = data.vault.length;
+          vaultCountBadge.style.display = data.vault.length > 0 ? "inline-block" : "none";
+        }
+      } catch (e) {}
     }
 
-    // Init
+    // Initialize
     loadTenders();
+    updateVaultCount();
   });
 })();

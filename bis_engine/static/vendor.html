@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PARAKH — AI-Powered Standards Recommendation Engine</title>
-  <meta name="description" content="PARAKH: Describe a product in plain language and find the right Indian Standards (BIS codes), allied normative standards, and mandatory certification alerts.">
+  <title>PARAKH — Vendor Portal & AI Bid Evaluation</title>
+  <meta name="description" content="PARAKH Vendor Portal: Browse active customer tenders, submit technical bids with instant AI standards compliance verification, and manage your bid vault.">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   
   <!-- Anti-flash inline script to apply saved theme immediately -->
@@ -33,7 +33,7 @@
   <a class="skip-link" href="#main">Skip to main content</a>
 
   <!-- =====================================================================
-       1. NAVBAR (Clean Bar with Leftmost Hamburger Menu)
+       1. NAVBAR
        ===================================================================== -->
   <header class="site-header" id="site-header">
     <div class="header-container">
@@ -78,11 +78,11 @@
           <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
 
-        <!-- User Profile & Logout Action (Rightmost) -->
+        <!-- User Profile & Logout Action -->
         <div id="user-profile-badge" class="user-nav-wrapper" style="display:inline-flex;">
           <div class="user-badge">
-            <span class="user-avatar" id="nav-user-avatar">👤</span>
-            <span class="user-name-text" id="nav-user-name">User</span>
+            <span class="user-avatar" id="nav-user-avatar">🏢</span>
+            <span class="user-name-text" id="nav-user-name">Vendor</span>
           </div>
           <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
             <span class="logout-icon" aria-hidden="true">⏻</span>
@@ -93,7 +93,7 @@
     </div>
   </header>
 
-  <!-- Slide-out Left Navigation Drawer & Backdrop (All Nav Options) -->
+  <!-- Slide-out Left Navigation Drawer & Backdrop -->
   <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
   <aside class="nav-drawer" id="main-nav" aria-label="Mobile & Desktop Drawer Navigation">
     <div class="drawer-header">
@@ -111,6 +111,8 @@
     </div>
     <div class="drawer-body">
       <a class="nav-link" href="/" data-i18n="nav.home">SEARCH PORTAL</a>
+      <a class="nav-link" href="/vendor">VENDOR PORTAL</a>
+      <a class="nav-link" href="/customer">CUSTOMER PORTAL</a>
       <a class="nav-link" href="/standards" data-i18n="nav.standards">EXPLORE STANDARDS</a>
       <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer">TENDER ANALYZER</a>
       <a class="nav-link" href="/alerts" data-i18n="nav.alerts">COMPLIANCE ALERTS</a>
@@ -134,9 +136,6 @@
           <button type="button" class="mobile-lang-pill" data-lang="te">TE</button>
         </div>
       </div>
-
-      <!-- Drawer Auth Section -->
-      <div class="mobile-nav-section" id="mobile-auth-section"></div>
     </div>
   </aside>
 
@@ -157,68 +156,91 @@
   </div>
 
   <div class="page-wrap">
-    <!-- =====================================================================
-         2. HOMEPAGE HERO (Solid Plain Yellow + Translucent Search Panel)
-         ===================================================================== -->
-    
-    <section class="hero-section" style="padding-top: 100px; min-height: 100vh; background: var(--bg-body); padding-bottom: 50px;">
-      <div class="content-container">
-        
-        <header style="margin-bottom: 2rem;">
-          <h1 class="hero-title" style="font-size: 2.5rem; text-align: left; margin: 0;">Vendor <span class="highlight">Portal</span></h1>
-          <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Find active tenders, submit your bids, and track compliance success.</p>
-        </header>
+    <main id="main">
+      <section class="hero-section" style="padding-top: 100px; min-height: 80vh; background: var(--bg-body); padding-bottom: 60px;">
+        <div class="content-container">
+          
+          <header style="margin-bottom: 2rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+              <div>
+                <h1 class="hero-title" style="font-size: 2.4rem; text-align: left; margin: 0;">Vendor <span class="highlight">Portal</span></h1>
+                <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Browse buyer tenders, submit technical bids with real-time AI compliance verification, and win more contracts.</p>
+              </div>
+              <button id="btn-refresh-feed" class="btn-secondary-auth" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+                🔄 Refresh Tenders
+              </button>
+            </div>
+          </header>
 
-        <!-- Mode Tabs for Vendor (All Tenders vs My Vault) -->
-        <div class="auth-tabs portal-tabs" role="tablist" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px; display: inline-flex; width: auto;">
-          <button class="auth-tab-btn active" id="tab-all-tenders" type="button" role="tab" style="padding: 0.5rem 1.5rem;">Active Tenders</button>
-          <button class="auth-tab-btn" id="tab-my-vault" type="button" role="tab" style="padding: 0.5rem 1.5rem;">My Bid Vault</button>
+          <!-- Mode Tabs (Active Tenders vs My Vault) -->
+          <div class="auth-tabs portal-tabs" role="tablist" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px; display: inline-flex; border-radius: 8px; width: auto;">
+            <button class="auth-tab-btn active" id="tab-all-tenders" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">Active Tenders</button>
+            <button class="auth-tab-btn" id="tab-my-vault" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">My Bid Vault <span id="vault-count-badge" style="display:none; background:var(--accent); color:#000; padding:2px 6px; border-radius:10px; font-size:0.75rem; margin-left:6px;">0</span></button>
+          </div>
+
+          <!-- Active Tenders Feed -->
+          <div id="feed-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="loader-pulse" style="margin: 3rem auto;"></div>
+          </div>
+
+          <!-- Vendor Vault (Hidden by default) -->
+          <div id="vault-container" style="display: none; flex-direction: column; gap: 1.5rem;">
+          </div>
+
         </div>
-
-        <!-- Active Tenders Feed -->
-        <div id="feed-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <div class="loader-pulse" style="margin: 2rem auto;"></div>
-        </div>
-
-        <!-- Vendor Vault (Hidden by default) -->
-        <div id="vault-container" style="display: none; flex-direction: column; gap: 1.5rem;">
-        </div>
-
-      </div>
-    </section>
+      </section>
+    </main>
 
     <!-- Modal for Submitting a Bid -->
-    <div id="submit-bid-modal" class="cmd-palette-modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 9999;">
-      <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 12px; position: relative;">
-        <button id="bid-modal-close" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <div id="submit-bid-modal" class="cmd-palette-modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 9999; position: fixed; inset: 0; padding: 1rem;">
+      <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; border-radius: 12px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <button id="bid-modal-close" type="button" aria-label="Close" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-main); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
         <div style="padding: 2rem;">
-          <h2 style="margin-top: 0; font-family: var(--font-primary); font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-main);">Submit Bid</h2>
-          <p id="modal-tender-title" style="color: var(--text-muted); font-weight: 600; margin-bottom: 1.5rem; font-size: 0.95rem;"></p>
+          <span style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-body); padding: 4px 8px; border-radius: 4px; color: var(--accent); font-weight: 600;">PLACE BID</span>
+          <h2 style="margin-top: 0.5rem; font-family: var(--font-primary); font-size: 1.5rem; margin-bottom: 0.3rem; color: var(--text-main);">Submit Technical Bid</h2>
+          <p id="modal-tender-title" style="color: var(--text-muted); font-weight: 600; margin-bottom: 1.2rem; font-size: 0.95rem; line-height: 1.4;"></p>
           
+          <!-- Tender Requirement Brief -->
+          <div id="modal-tender-desc" style="background: var(--bg-body); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; max-height: 120px; overflow-y: auto;">
+          </div>
+
           <form id="submit-bid-form" style="display: flex; flex-direction: column; gap: 1rem;">
             <input type="hidden" id="modal-tender-id">
             <div>
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Your Proposal / Specification Text</label>
-              <textarea id="bid-spec-text" required rows="6" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary);" placeholder="Detail how your product meets the tender requirements..."></textarea>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label for="bid-spec-text" style="font-weight: 600; color: var(--text-main); font-size: 0.9rem;">Your Proposal & Product Specification</label>
+                <button type="button" id="btn-autofill-spec" style="background: none; border: none; color: var(--accent); font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: underline;">
+                  ⚡ Auto-fill Sample Proposal
+                </button>
+              </div>
+              <textarea id="bid-spec-text" required rows="7" style="width: 100%; padding: 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.92rem; line-height: 1.5; resize: vertical;" placeholder="Detail how your product meets the BIS standards, grade, certification, and delivery terms..."></textarea>
             </div>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
-              <button type="submit" class="btn-primary" id="btn-submit-bid" style="padding: 0.8rem 1.5rem; width: 100%;">Submit Bid for AI Evaluation</button>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+              <button type="button" id="btn-cancel-modal" class="btn-secondary-auth" style="padding: 0.8rem 1.4rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); cursor: pointer;">Cancel</button>
+              <button type="submit" class="btn-primary" id="btn-submit-bid" style="padding: 0.8rem 1.6rem; border-radius: 8px; font-weight: 700; flex: 1;">Submit Bid for AI Evaluation</button>
             </div>
           </form>
         </div>
       </div>
     </div>
 
+    <!-- Modal for Viewing Detailed Bid in Vault -->
+    <div id="vault-detail-modal" class="cmd-palette-modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); z-index: 9999; position: fixed; inset: 0; padding: 1rem;">
+      <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; border-radius: 12px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <button id="vault-modal-close" type="button" aria-label="Close" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-main); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
+        <div id="vault-modal-body" style="padding: 2rem;">
+        </div>
+      </div>
     </div>
+
   </div>
 
   <!-- =====================================================================
-       4. REVEAL FOOTER (Fixed Sticky Under-Page Reveal)
+       4. REVEAL FOOTER
        ===================================================================== -->
   <footer class="reveal-footer" id="reveal-footer" inert aria-hidden="true">
     <div class="reveal-footer-container">
       <div class="reveal-footer-grid">
-        <!-- Col 1: Brand & Description -->
         <div class="reveal-footer-col reveal-footer-brand">
           <div class="reveal-footer-brand-title">PARAKH · STANDARDS ENGINE</div>
           <p class="reveal-footer-brand-desc">
@@ -226,44 +248,25 @@
           </p>
           <span class="reveal-footer-tag">v0.3.0 · VERIFIED PLATFORM</span>
         </div>
-
-        <!-- Col 2: Navigation -->
         <div class="reveal-footer-col">
           <div class="reveal-footer-col-title">NAVIGATION</div>
           <ul class="reveal-footer-links">
             <li><a class="reveal-footer-link" href="/">SEARCH PORTAL</a></li>
+            <li><a class="reveal-footer-link" href="/vendor">VENDOR PORTAL</a></li>
+            <li><a class="reveal-footer-link" href="/customer">CUSTOMER PORTAL</a></li>
             <li><a class="reveal-footer-link" href="/standards">CATALOGUE INDEX</a></li>
             <li><a class="reveal-footer-link" href="/analyzer">TENDER ANALYZER</a></li>
-            <li><a class="reveal-footer-link" href="/alerts">COMPLIANCE ALERTS</a></li>
-            <li><a class="reveal-footer-link" href="/assistant">AI ASSISTANT</a></li>
           </ul>
         </div>
-
-        <!-- Col 3: Sectors -->
-        <div class="reveal-footer-col">
-          <div class="reveal-footer-col-title">SECTORS</div>
-          <ul class="reveal-footer-links">
-            <li><a class="reveal-footer-link" href="/standards">CIVIL ENGINEERING</a></li>
-            <li><a class="reveal-footer-link" href="/standards">ELECTROTECHNICAL</a></li>
-            <li><a class="reveal-footer-link" href="/standards">MECHANICAL</a></li>
-            <li><a class="reveal-footer-link" href="/standards">CHEMICAL & WATER</a></li>
-            <li><a class="reveal-footer-link" href="/standards">SAFETY & TEXTILES</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 4: Documentation -->
         <div class="reveal-footer-col">
           <div class="reveal-footer-col-title">DEVELOPERS</div>
           <ul class="reveal-footer-links">
             <li><a class="reveal-footer-link" href="/docs-page">API REFERENCE</a></li>
             <li><a class="reveal-footer-link" href="/api/health">SYSTEM HEALTH</a></li>
             <li><a class="reveal-footer-link" href="/docs">SWAGGER OPENAPI</a></li>
-            <li><a class="reveal-footer-link" href="/redoc">REDOC SPECS</a></li>
           </ul>
         </div>
       </div>
-
-      <!-- Footer Bottom Bar -->
       <div class="reveal-footer-bottom">
         <span>© 2026 PARAKH · Standards Recommendation Engine</span>
         <div class="reveal-footer-bottom-links">
