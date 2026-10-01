@@ -814,8 +814,7 @@ def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
         "id": req.user_id or req.email,
         "email": req.email,
         "name": req.name or req.email.split("@")[0],
-        "role": req.role
-        "role": req.role
+        "role": req.role,
     }
     # Ensure cached in local DB
     existing = get_user_by_email(req.email)
