@@ -33,6 +33,29 @@
       else console.log(`[${type}] ${msg}`);
     }
 
+    // --- Update Bid Approval Status ---
+    async function setBidStatus(bidId, status) {
+      try {
+        const res = await fetch(`/api/bids/bids/${bidId}/status`, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: status })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Failed to update status");
+
+        const msg = status === "confirmed" 
+          ? "✅ Bid Approved! The status is now CONFIRMED in the Vendor's Vault." 
+          : "❌ Bid marked as Rejected.";
+        toast(msg, status === "confirmed" ? "success" : "info");
+        closeModal();
+        await loadTenders();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
     // --- Show / hide bid-detail modal ---
     function openModal(bid) {
       if (!modal || !modalContent) return;
@@ -44,6 +67,16 @@
       const scoreCol  = score >= 88 ? "var(--accent)" : (score >= 75 ? "#ff9800" : "#f44336");
       const fulfilled = bid.fulfilled_reqs || report.fulfilled_count || 0;
       const total     = bid.total_reqs || report.total_count || breakdown.length || 0;
+      const status    = bid.status || "pending";
+
+      let statusBadge = "";
+      if (status === "confirmed") {
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">✅ Approved & Confirmed</span>`;
+      } else if (status === "rejected") {
+        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Rejected</span>`;
+      } else {
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending Decision</span>`;
+      }
 
       let breakdownHtml = "";
       if (breakdown.length > 0) {
@@ -70,12 +103,30 @@
         `;
       }
 
+      const actionButtonsHtml = `
+        <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:1.2rem;">
+          ${status !== "confirmed" ? `
+            <button class="btn-primary btn-modal-approve" data-id="${bid.id}" style="padding:0.75rem 1.6rem; border-radius:8px; font-weight:700; background:#22c55e; border-color:#22c55e; color:#000; cursor:pointer;">
+              ✅ Approve Bid (Mark Confirmed)
+            </button>
+          ` : `
+            <span style="color:#22c55e; font-weight:700; align-self:center;">✓ This bid has been approved & confirmed</span>
+          `}
+          ${status !== "rejected" && status !== "confirmed" ? `
+            <button class="btn-secondary-auth btn-modal-reject" data-id="${bid.id}" style="padding:0.75rem 1.4rem; border-radius:8px; color:#f44336; border-color:rgba(244,67,54,0.4); cursor:pointer;">
+              ❌ Reject Bid
+            </button>
+          ` : ""}
+        </div>
+      `;
+
       modalContent.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-family:var(--font-mono);font-size:0.8rem;background:var(--bg-body);padding:4px 8px;border-radius:4px;color:var(--accent);font-weight:600;">TECHNICAL BID EVALUATION</span>
-          <span style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(bid.vendor_email || "")}</span>
+          ${statusBadge}
         </div>
-        <h2 style="margin-top:0.6rem;margin-bottom:0.4rem;font-size:1.4rem;color:var(--text-main);">Bid from <span class="highlight">${escapeHtml(bid.vendor_name || "Vendor")}</span></h2>
+        <h2 style="margin-top:0.6rem;margin-bottom:0.2rem;font-size:1.4rem;color:var(--text-main);">Bid from <span class="highlight">${escapeHtml(bid.vendor_name || "Vendor")}</span></h2>
+        <span style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(bid.vendor_email || "")}</span>
         
         <!-- Key Metrics Cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.8rem;margin:1rem 0;">
@@ -109,7 +160,20 @@
           <h4 style="font-size:0.95rem;margin-bottom:0.4rem;color:var(--text-main);text-transform:uppercase;letter-spacing:0.5px;">Vendor Specification Submission</h4>
           <div style="background:var(--bg-input);padding:1rem;border-radius:8px;border:1px solid var(--border-color);color:var(--text-muted);font-size:0.88rem;white-space:pre-wrap;max-height:160px;overflow-y:auto;line-height:1.5;">${escapeHtml(bid.spec_text || "")}</div>
         </div>
+
+        ${actionButtonsHtml}
       `;
+
+      // Wire Modal Approve / Reject buttons
+      const btnApprove = modalContent.querySelector(".btn-modal-approve");
+      if (btnApprove) {
+        btnApprove.addEventListener("click", () => setBidStatus(bid.id, "confirmed"));
+      }
+      const btnReject = modalContent.querySelector(".btn-modal-reject");
+      if (btnReject) {
+        btnReject.addEventListener("click", () => setBidStatus(bid.id, "rejected"));
+      }
+
       modal.style.display = "flex";
     }
 
@@ -236,14 +300,28 @@
 
           let bidsHtml = "";
           if (bids.length > 0) {
-            // Sort bids by compliance score descending
-            const sortedBids = [...bids].sort((a, b) => (b.compliance_score || 0) - (a.compliance_score || 0));
+            // Sort bids: confirmed first, then highest score
+            const sortedBids = [...bids].sort((a, b) => {
+              if (a.status === "confirmed" && b.status !== "confirmed") return -1;
+              if (b.status === "confirmed" && a.status !== "confirmed") return 1;
+              return (b.compliance_score || 0) - (a.compliance_score || 0);
+            });
 
             const rows = sortedBids.map((b, idx) => {
               const score = b.compliance_score || 0;
               const scoreCol = score >= 88 ? "var(--accent)" : (score >= 75 ? "#ff9800" : "#f44336");
-              const topBadge = idx === 0 
-                ? `<span style="background:var(--accent);color:#000;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:800;letter-spacing:0.5px;margin-left:8px;">★ BEST BID</span>` 
+              const isConfirmed = b.status === "confirmed";
+              const isRejected = b.status === "rejected";
+              
+              let statusLabel = `<span style="background:rgba(255,230,0,0.15); color:var(--accent); border:1px solid rgba(255,230,0,0.3); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">⏳ Pending Approval</span>`;
+              if (isConfirmed) {
+                statusLabel = `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">✅ APPROVED / CONFIRMED</span>`;
+              } else if (isRejected) {
+                statusLabel = `<span style="background:rgba(244,67,54,0.18); color:#f44336; border:1px solid rgba(244,67,54,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">❌ Rejected</span>`;
+              }
+
+              const topBadge = (idx === 0 && !isConfirmed && !isRejected)
+                ? `<span style="background:var(--accent);color:#000;padding:2px 7px;border-radius:4px;font-size:0.7rem;font-weight:800;letter-spacing:0.5px;margin-left:6px;">★ TOP AI MATCH</span>` 
                 : "";
               const enc = encodeURIComponent(JSON.stringify(b));
               const rep = b.compliance_report || {};
@@ -251,13 +329,13 @@
               const total = b.total_reqs || rep.total_count || reqs.length || 0;
 
               return `
-                <div class="bid-row" data-bid="${enc}" style="background:var(--bg-body);border:1px solid var(--border-color);padding:1.2rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;flex-wrap:wrap;gap:1rem;">
+                <div class="bid-row" data-bid="${enc}" style="background:var(--bg-body);border:${isConfirmed ? '2px solid #22c55e' : '1px solid var(--border-color)'};padding:1.2rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s;flex-wrap:wrap;gap:1rem;">
                   <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;">
                     <div>
                       <div style="font-weight:700;color:var(--text-main);font-size:1.05rem;">
                         ${escapeHtml(b.vendor_name || "Vendor")} ${topBadge}
                       </div>
-                      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(b.vendor_email || "")}</div>
+                      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(b.vendor_email || "")} &bull; ${statusLabel}</div>
                     </div>
                     <div style="display:flex;gap:1.2rem;border-left:1px solid var(--border-color);padding-left:1.2rem;font-size:0.88rem;">
                       <div>
@@ -278,9 +356,16 @@
                       </div>
                     </div>
                   </div>
-                  <button class="btn-secondary-auth" style="padding:0.5rem 1rem;font-size:0.82rem;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-card);pointer-events:none;">
-                    View Evaluation ↗
-                  </button>
+                  <div style="display:flex; gap:0.6rem; align-items:center;">
+                    ${!isConfirmed ? `
+                      <button class="btn-primary btn-quick-approve" data-id="${b.id}" style="padding:0.5rem 1rem; font-size:0.82rem; font-weight:700; background:#22c55e; border-color:#22c55e; color:#000; border-radius:6px; cursor:pointer;">
+                        Approve Bid
+                      </button>
+                    ` : ""}
+                    <button class="btn-secondary-auth" style="padding:0.5rem 0.9rem;font-size:0.82rem;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-card);pointer-events:none;">
+                      Review ↗
+                    </button>
+                  </div>
                 </div>
               `;
             }).join("");
@@ -288,7 +373,7 @@
             bidsHtml = `
               <h3 style="margin-top:1.8rem;margin-bottom:1rem;font-size:1.15rem;color:var(--text-main);border-top:1px solid var(--border-color);padding-top:1.2rem;display:flex;justify-content:space-between;align-items:center;">
                 <span>Vendor Bids Received (${bids.length})</span>
-                <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">Ranked by AI Compliance & Scope Match</span>
+                <span style="font-size:0.8rem;color:var(--text-muted);font-weight:normal;">Click any bid to review and approve/reject</span>
               </h3>
               <div style="display:flex;flex-direction:column;gap:0.8rem;">${rows}</div>
             `;
@@ -336,15 +421,25 @@
           tendersContainer.appendChild(card);
         });
 
-        // Wire up bid-row click handlers
+        // Wire up bid-row click handlers (except when clicking direct action button)
         tendersContainer.querySelectorAll(".bid-row").forEach(row => {
-          row.addEventListener("click", () => {
+          row.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-quick-approve")) return;
             try {
               const bid = JSON.parse(decodeURIComponent(row.getAttribute("data-bid")));
               openModal(bid);
             } catch (e) {
               console.error("Bid parse error:", e);
             }
+          });
+        });
+
+        // Wire quick approve buttons directly on rows
+        tendersContainer.querySelectorAll(".btn-quick-approve").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const bidId = btn.getAttribute("data-id");
+            setBidStatus(bidId, "confirmed");
           });
         });
 

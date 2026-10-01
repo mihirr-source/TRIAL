@@ -26,6 +26,10 @@ class BidSubmitRequest(BaseModel):
     declared_reqs: Optional[list[str]] = []
 
 
+class BidStatusUpdateRequest(BaseModel):
+    status: str = Field(..., pattern="^(confirmed|rejected|pending)$")
+
+
 def _is_vendor(user: dict) -> bool:
     """Determine role: explicit role field > email heuristic."""
     if user.get("role") == "vendor":
@@ -84,7 +88,6 @@ def evaluate_bid_with_ai(tender_title: str, tender_desc: str, spec_text: str, bi
 
     for req in requirements:
         req_lower = req.lower()
-        # Evaluate if spec covers keywords in this requirement
         keywords = [w for w in re.findall(r"\b\w{4,}\b", req_lower) if w not in {"with", "from", "that", "this", "have"}]
         matched = sum(1 for kw in keywords if kw in spec_lower)
         ratio = matched / max(len(keywords), 1)
@@ -110,11 +113,10 @@ def evaluate_bid_with_ai(tender_title: str, tender_desc: str, spec_text: str, bi
     total_reqs = len(requirements)
     fulfillment_ratio = fulfilled_count / max(total_reqs, 1)
 
-    # Base score on fulfillment + proposal depth + reasonable timeline
-    depth_bonus = min(len(spec_text) // 50, 15)  # up to +15 for thorough proposal
+    depth_bonus = min(len(spec_text) // 50, 15)
     timeline_score = 10 if (1 <= delivery_days <= 30) else 5
     base_score = int((fulfillment_ratio * 70) + depth_bonus + timeline_score)
-    final_score = max(55, min(final_score_jitter := (base_score + random.randint(-2, 3)), 98))
+    final_score = max(55, min(base_score + random.randint(-2, 3), 98))
 
     strengths = []
     if final_score >= 85:
@@ -186,7 +188,7 @@ def list_tenders(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
-    Customer: returns their own tenders + all bids on each.
+    Customer: returns their own tenders + all bids on each with approval status.
     Vendor:   returns all tenders + requirements checklist + flags which ones they bid on.
     """
     email = current_user["email"]
@@ -218,6 +220,32 @@ def list_tenders(
         raise HTTPException(status_code=500, detail=f"Failed to load tenders: {e}")
 
 
+@bids_router.post("/bids/{bid_id}/status")
+def update_bid_status(
+    bid_id: int,
+    req: BidStatusUpdateRequest,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Customer approves ('confirmed') or rejects ('rejected') a vendor's bid.
+    """
+    if _is_vendor(current_user):
+        raise HTTPException(status_code=403, detail="Vendors cannot update bid approval status.")
+
+    try:
+        bid = sdb.get_bid_by_id(bid_id)
+        if not bid:
+            raise HTTPException(status_code=404, detail="Bid not found.")
+
+        # Update bid status
+        sdb.update_bid_status(bid_id, req.status)
+        return {"status": "ok", "bid_id": bid_id, "new_status": req.status}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update bid status: {e}")
+
+
 # ── Vendor Endpoints ──────────────────────────────────────────────────────────
 
 @bids_router.post("/submit")
@@ -225,7 +253,7 @@ def submit_bid(
     req: BidSubmitRequest,
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    """Vendor submits a bid with price, timeline, and proposal. AI evaluates compliance."""
+    """Vendor submits a bid with price, timeline, and proposal. Initial status is 'pending'."""
     if not _is_vendor(current_user):
         raise HTTPException(status_code=403, detail="Only vendors can submit bids.")
 
@@ -264,11 +292,13 @@ def submit_bid(
             delivery_days=int(req.delivery_days or 7),
             fulfilled_reqs=eval_result["fulfilled_count"],
             total_reqs=eval_result["total_count"],
+            status="pending",
         )
         return {
             "status": "ok", 
             "bid_id": result.get("id"), 
             "score": score,
+            "bid_status": "pending",
             "fulfilled_count": eval_result["fulfilled_count"],
             "total_count": eval_result["total_count"],
             "report": eval_result
@@ -284,7 +314,7 @@ def submit_bid(
 def vendor_vault(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    """Returns all bids submitted by this vendor with tender details and AI breakdown."""
+    """Returns all bids submitted by this vendor with tender details, status, and AI breakdown."""
     email = current_user["email"]
     try:
         vault = sdb.get_vendor_vault(email)
@@ -294,6 +324,9 @@ def vendor_vault(
                     item["compliance_report"] = json.loads(item["compliance_report"])
             except Exception:
                 pass
+            # Default status to pending if empty
+            if not item.get("status"):
+                item["status"] = "pending"
         return {"vault": vault}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load vault: {e}")

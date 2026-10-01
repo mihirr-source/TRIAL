@@ -49,6 +49,7 @@ def create_tender(
         "customer_email": customer_email,
         "budget": budget or "",
         "category": category or "General Procurement",
+        "status": "active"
     }
     rows = _req("POST", "tenders", payload)
     return rows[0] if isinstance(rows, list) and rows else {}
@@ -61,6 +62,11 @@ def get_all_tenders() -> list:
 def get_tenders_by_customer(email: str) -> list:
     enc = urllib.parse.quote(email, safe="")
     return _req("GET", f"tenders?customer_email=eq.{enc}&order=id.desc") or []
+
+
+def get_tender_by_id(tender_id: int) -> dict:
+    rows = _req("GET", f"tenders?id=eq.{tender_id}") or []
+    return rows[0] if rows else {}
 
 
 # ── Bids ─────────────────────────────────────────────────────────────────────
@@ -76,6 +82,7 @@ def create_bid(
     delivery_days: int = 7,
     fulfilled_reqs: int = 0,
     total_reqs: int = 0,
+    status: str = "pending",
 ) -> dict:
     payload = {
         "tender_id": tender_id,
@@ -88,8 +95,19 @@ def create_bid(
         "delivery_days": delivery_days,
         "fulfilled_reqs": fulfilled_reqs,
         "total_reqs": total_reqs,
+        "status": status or "pending",
     }
     rows = _req("POST", "bids", payload)
+    return rows[0] if isinstance(rows, list) and rows else {}
+
+
+def get_bid_by_id(bid_id: int) -> dict:
+    rows = _req("GET", f"bids?id=eq.{bid_id}") or []
+    return rows[0] if rows else {}
+
+
+def update_bid_status(bid_id: int, status: str) -> dict:
+    rows = _req("PATCH", f"bids?id=eq.{bid_id}", {"status": status}) or []
     return rows[0] if isinstance(rows, list) and rows else {}
 
 
@@ -113,7 +131,7 @@ def get_vendor_vault(vendor_email: str) -> list:
     enc = urllib.parse.quote(vendor_email, safe="")
     rows = _req(
         "GET",
-        f"bids?vendor_email=eq.{enc}&order=id.desc&select=*,tenders(id,title,description,budget)"
+        f"bids?vendor_email=eq.{enc}&order=id.desc&select=*,tenders(id,title,description,budget,customer_email)"
     ) or []
     result = []
     for row in rows:
@@ -122,6 +140,7 @@ def get_vendor_vault(vendor_email: str) -> list:
         item["tender_title"] = nested.get("title", "Unknown Tender")
         item["tender_description"] = nested.get("description", "")
         item["tender_budget"] = nested.get("budget", "")
+        item["tender_customer_email"] = nested.get("customer_email", "")
         result.append(item)
     return result
 
@@ -133,7 +152,7 @@ def seed_demo_if_needed(customer_email: str, demo_data: list) -> None:
     try:
         existing = get_tenders_by_customer(customer_email)
         if existing:
-            return  # Already seeded for this email
+            return
         for item in demo_data:
             t_args = item["tender"]
             tender = create_tender(t_args[0], t_args[1], t_args[2])
@@ -146,7 +165,8 @@ def seed_demo_if_needed(customer_email: str, demo_data: list) -> None:
                 bid_amount=item.get("bid_amount", 125000),
                 delivery_days=item.get("delivery_days", 10),
                 fulfilled_reqs=item.get("fulfilled_reqs", 4),
-                total_reqs=item.get("total_reqs", 4)
+                total_reqs=item.get("total_reqs", 4),
+                status=item.get("status", "pending")
             )
     except Exception as e:
         print(f"[supabase_db] seed_demo_if_needed error: {e}")

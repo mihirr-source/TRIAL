@@ -99,17 +99,14 @@
         wsCriteriaCounter.textContent = "All Criteria";
       }
 
-      // Attach change listeners to update counter dynamically
       wsCriteriaList.querySelectorAll(".criteria-checkbox").forEach(cb => {
         cb.addEventListener("change", updateCriteriaCounter);
       });
 
-      // Clear/Reset input fields
       wsBidAmount.value = "";
       wsBidDelivery.value = "10";
       wsSpecText.value = "";
 
-      // Transition views
       mainPortalView.style.display = "none";
       bidWorkspaceView.style.display = "block";
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -147,7 +144,6 @@
 4. Logistics & Delivery: Guaranteed direct site delivery within 8 business days in sealed tamper-proof packaging.
 5. Warranty: Full 12-month manufacturer replacement warranty against any deviation.`;
         
-        // Re-check all criteria checkboxes
         wsCriteriaList.querySelectorAll(".criteria-checkbox").forEach(cb => cb.checked = true);
         updateCriteriaCounter();
         toast("Sample bid proposal auto-filled!", "info");
@@ -192,10 +188,10 @@
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || `Error submitting bid (${res.status})`);
 
-          toast(`Bid Placed Successfully! AI Score: ${data.score}% (${data.fulfilled_count}/${data.total_count} Criteria Met)`, "success");
+          toast(`Bid Submitted! Status: PENDING customer approval. AI Score: ${data.score}%`, "success");
           closeBidWorkspace();
           
-          // Switch to My Vault so vendor immediately sees their evaluated bid!
+          // Switch to My Vault so vendor immediately sees their pending bid
           tabVault.click();
           await updateVaultCount();
         } catch (err) {
@@ -218,6 +214,16 @@
       const breakdown = report.requirements_breakdown || [];
       const fulfilled = bid.fulfilled_reqs || report.fulfilled_count || 0;
       const total = bid.total_reqs || report.total_count || breakdown.length || 0;
+      const status = bid.status || "pending";
+
+      let statusBadge = "";
+      if (status === "confirmed") {
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem;">✅ CONFIRMED BY BUYER</span>`;
+      } else if (status === "rejected") {
+        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Not Selected</span>`;
+      } else {
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending Customer Approval</span>`;
+      }
 
       let breakdownHtml = "";
       if (breakdown.length > 0) {
@@ -247,9 +253,10 @@
       vaultModalBody.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="font-family:var(--font-mono);font-size:0.8rem;background:var(--bg-body);padding:4px 8px;border-radius:4px;color:var(--accent);font-weight:600;">BID EVALUATION REPORT</span>
-          <span style="font-size:0.85rem;color:var(--text-muted);">Tender ID: TEND-${bid.tender_id}</span>
+          ${statusBadge}
         </div>
-        <h2 style="margin-top:0.6rem;margin-bottom:0.4rem;font-size:1.4rem;color:var(--text-main);">${escapeHtml(bid.tender_title || "Tender Proposal")}</h2>
+        <h2 style="margin-top:0.6rem;margin-bottom:0.2rem;font-size:1.4rem;color:var(--text-main);">${escapeHtml(bid.tender_title || "Tender Proposal")}</h2>
+        <span style="font-size:0.85rem;color:var(--text-muted);display:block;margin-bottom:0.8rem;">Tender ID: TEND-${bid.tender_id}</span>
         
         <!-- Key Metrics Cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.8rem;margin:1rem 0;">
@@ -463,9 +470,24 @@
           const card = document.createElement("div");
           card.className = "card";
           card.style.background = "var(--bg-card)";
-          card.style.border = "1px solid var(--border-color)";
           card.style.padding = "1.8rem";
           card.style.borderRadius = "12px";
+
+          const status = b.status || "pending";
+          const isConfirmed = status === "confirmed";
+          const isRejected = status === "rejected";
+
+          // Card border and status banner based on status
+          card.style.border = isConfirmed ? "2px solid #22c55e" : (isRejected ? "1px solid rgba(244,67,54,0.4)" : "1px solid var(--border-color)");
+
+          let statusBadge = "";
+          if (isConfirmed) {
+            statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;">✅ CONFIRMED & AWARDED</span>`;
+          } else if (isRejected) {
+            statusBadge = `<span style="background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">❌ Not Selected</span>`;
+          } else {
+            statusBadge = `<span style="background: rgba(255, 230, 0, 0.18); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">⏳ PENDING CUSTOMER APPROVAL</span>`;
+          }
 
           const score = b.compliance_score || 0;
           const scoreCol = score >= 88 ? "var(--accent)" : (score >= 75 ? "#ff9800" : "#f44336");
@@ -484,7 +506,10 @@
               <div style="flex: 3; min-width: 260px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; gap: 1rem; flex-wrap: wrap;">
                   <div>
-                    <h3 style="margin: 0 0 0.2rem 0; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Tender: ${escapeHtml(b.tender_title)}</h3>
+                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.3rem;">
+                      <h3 style="margin: 0; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Tender: ${escapeHtml(b.tender_title)}</h3>
+                      ${statusBadge}
+                    </div>
                     <div style="display:flex; gap:0.8rem; font-size:0.85rem; color:var(--text-muted);">
                       <span>💰 Quote: <strong style="color:var(--text-main);">${formatINR(b.bid_amount)}</strong></span>
                       <span>⏱ Delivery: <strong style="color:var(--text-main);">${b.delivery_days || 7} Days</strong></span>
