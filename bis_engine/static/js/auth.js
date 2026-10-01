@@ -519,7 +519,7 @@
           body: JSON.stringify({ email, name, user_id: email, role: role }),
         });
         showToast("Demo login successful.", "success");
-        const isVendor = (data && data.user && data.user.role === "vendor") || email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+        const isVendor = role === "vendor";
         const targetUrl = isVendor ? "/vendor" : "/customer";
         card.style.opacity = "0.7";
         card.style.transform = "scale(0.98)";
