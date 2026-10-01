@@ -397,8 +397,20 @@
           // --- LOGIN FLOW ---
           let loginSucceeded = false;
 
-          // 1. Try Supabase Client Login
-          if (sb) {
+          // 1. Check if demo account -> Bypass Supabase completely
+          const isDemoAccount = email.toLowerCase().includes("demo") || email.toLowerCase() === "vendor1@ac-suppliers.com";
+          if (isDemoAccount) {
+            const portalVendorActive = document.getElementById("portal-vendor") && document.getElementById("portal-vendor").classList.contains("active");
+            const role = portalVendorActive || email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier") ? "vendor" : "customer";
+            const res = await fetch("/api/auth/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, name: role === "vendor" ? "Demo Vendor" : "Demo Customer", user_id: email, role }),
+            });
+            if (!res.ok) throw new Error("Demo login session failed.");
+            loginSucceeded = true;
+          } else if (sb) {
+            // Otherwise try Supabase Client Login
             try {
               const { data, error } = await sb.auth.signInWithPassword({ email, password });
               if (!error && data && data.user) {
@@ -546,19 +558,22 @@
       if (demoSpinner) demoSpinner.style.display = "inline-block";
       
       try {
-        await fetch("/api/auth/session", {
+        const res = await fetch("/api/auth/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, name, user_id: email, role: role }),
         });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Session creation failed");
+
         showToast("Demo login successful.", "success");
         const isVendor = role === "vendor";
         const targetUrl = isVendor ? "/vendor" : "/customer";
         card.style.opacity = "0.7";
         card.style.transform = "scale(0.98)";
-        setTimeout(() => location.replace(targetUrl), 350);
+        setTimeout(() => location.replace(targetUrl), 200);
       } catch (err) {
-        showToast("Demo login failed.", "error");
+        showToast(err.message || "Demo login failed.", "error");
         btn.disabled = false;
         if (demoSpinner) demoSpinner.style.display = "none";
       }

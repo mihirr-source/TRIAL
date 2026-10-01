@@ -681,39 +681,50 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
     client_ip = request.client.host if request.client else "unknown"
     rate_key = f"{client_ip}:{req.email}"
     
+    clean_email = req.email.strip().lower()
+
+    # 0. Check Demo Accounts Bypass (Always allowed without Supabase)
+    is_demo = clean_email in ("demo@example.com", "vendor1@ac-suppliers.com", "jury@demo.com") or "demo" in clean_email
+    if is_demo:
+        role = "vendor" if ("vendor" in clean_email or "supplier" in clean_email) else "customer"
+        name = "Demo Vendor" if role == "vendor" else "Demo Customer"
+        user = {"id": clean_email, "email": clean_email, "name": name, "role": role}
+        set_auth_cookie(response, user)
+        return {"status": "ok", "user": user, "message": "Demo login successful."}
+    
     _check_rate_limit(rate_key)
     
     # 1. Check Supabase Auth
     if SUPABASE_URL and SUPABASE_ANON_KEY:
-        code, resp = _supabase_request(
-            "/auth/v1/token?grant_type=password",
-            {"email": req.email, "password": req.password},
-        )
-        if code in (200, 201):
-            _clear_failed_attempts(rate_key)
-            user_obj = resp.get("user") or {}
-            meta = user_obj.get("user_metadata", {})
-            display_name = meta.get("name") or req.email.split("@")[0]
-            user_id = user_obj.get("id") or req.email
-            
-            # Save into local DB for caching
-            pwd_hash = hash_password(req.password)
-            save_user_direct(email=req.email, name=display_name, password_hash=pwd_hash)
-            
-            _seed_demo_data_if_needed(req.email)
-            
-            user = {"id": user_id, "email": req.email, "name": display_name}
-            set_auth_cookie(response, user)
-            return {"status": "ok", "user": user, "message": "Logged in successfully."}
+        try:
+            code, resp = _supabase_request(
+                "/auth/v1/token?grant_type=password",
+                {"email": req.email, "password": req.password},
+            )
+            if code in (200, 201):
+                _clear_failed_attempts(rate_key)
+                user_obj = resp.get("user") or {}
+                meta = user_obj.get("user_metadata", {})
+                display_name = meta.get("name") or req.email.split("@")[0]
+                user_id = user_obj.get("id") or req.email
+                role = "vendor" if ("vendor" in req.email.lower() or "supplier" in req.email.lower()) else "customer"
+                user = {"id": user_id, "email": req.email, "name": display_name, "role": role}
+                set_auth_cookie(response, user)
+                return {"status": "ok", "user": user, "message": "Logged in successfully."}
+        except Exception:
+            pass
 
     # 2. Check Database Login
-    user_row = get_user_by_email(req.email)
-    if user_row and verify_password(req.password, user_row["password_hash"]):
-        _clear_failed_attempts(rate_key)
-        _seed_demo_data_if_needed(req.email)
-        user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"], "role": user_row.get("role", "customer"), "role": user_row["role"]}
-        set_auth_cookie(response, user)
-        return {"status": "ok", "user": user, "message": "Logged in successfully."}
+    try:
+        user_row = get_user_by_email(req.email)
+        if user_row and verify_password(req.password, user_row["password_hash"]):
+            _clear_failed_attempts(rate_key)
+            role = "vendor" if ("vendor" in req.email.lower() or "supplier" in req.email.lower()) else "customer"
+            user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"], "role": role}
+            set_auth_cookie(response, user)
+            return {"status": "ok", "user": user, "message": "Logged in successfully."}
+    except Exception:
+        pass
         
     _record_failed_attempt(rate_key)
     raise HTTPException(
@@ -732,59 +743,20 @@ class SessionSyncRequest(BaseModel):
     email: str = Field(...)
     name: Optional[str] = None
     user_id: Optional[str] = None
-    role: Optional[str] = 'customer'
-    role: Optional[str] = 'customer'
+    role: Optional[str] = "customer"
 
-
-def _seed_demo_data_if_needed(email: str):
-    import json
-    from bis_engine import supabase_db as sdb
-    demo_data = [
-        {
-            "tender": ("Procurement of Office Cooling Units (Demo)", "We require 50 energy-efficient air conditioning units (split type). Minimum 1.5 ton capacity, copper condenser coils, ISEER rating 4.0+, R32 refrigerant.", email),
-            "bid": ("vendor1@ac-suppliers.com", "CoolTech India", "We propose our 1.5 Ton Inverter Split AC with copper condenser, R32 refrigerant, ISEER 4.2.", 95, json.dumps({"score": 95, "summary": "Strong match.", "issues": [], "strengths": ["ISEER 4.2 exceeds requirement.", "Copper condenser.", "R32 refrigerant."]}))
-        },
-        {
-            "tender": ("Supply of Monocrystalline Solar Panels (Demo)", "500kW monocrystalline solar panels, min 19% efficiency, PID resistant, IEC 61215 certified.", email),
-            "bid": ("sales@solarpower.in", "SolarPower Solutions", "540W modules, 21% efficiency, PID resistant, IEC 61215 and IEC 61730 certified, 25-year warranty.", 98, json.dumps({"score": 98, "summary": "Exceptional match.", "issues": [], "strengths": ["21% efficiency.", "PID resistant.", "IEC 61215 certified."]}))
-        },
-        {
-            "tender": ("Ergonomic Office Seating (Demo)", "200 ergonomic mesh chairs with adjustable lumbar support, 3D armrests, BIFMA certification.", email),
-            "bid": ("orders@comfortfurn.com", "Comfort Furnitures", "ErgoPro mesh chair, adjustable lumbar, 4D armrests, BIFMA certified.", 92, json.dumps({"score": 92, "summary": "Strong match.", "issues": [], "strengths": ["4D armrests exceed requirement.", "BIFMA certified."]}))
-        },
-        {
-            "tender": ("High-Performance Rack Servers (Demo)", "10x 2U rack servers, dual Intel Xeon Silver, 128GB RAM, 4x 2TB NVMe in RAID 10.", email),
-            "bid": ("bids@techsystems.co.in", "TechSystems Corp", "2U servers dual AMD EPYC, 256GB RAM, 4x 2TB NVMe. No hardware RAID.", 80, json.dumps({"score": 80, "summary": "Good but lacks hardware RAID.", "issues": ["No hardware RAID 10.", "AMD instead of Intel Xeon."], "strengths": ["256GB RAM.", "4x 2TB NVMe."]}))
-        },
-        {
-            "tender": ("Fire Safety Equipment - Extinguishers (Demo)", "50 ABC DCP fire extinguishers (4kg) and 20 CO2 (2kg). IS 15683 certification required.", email),
-            "bid": ("safety@fireguard.in", "FireGuard Security", "50 ABC DCP (4kg) and 20 CO2 (2kg) extinguishers. ISI marked, IS 15683 compliant. Includes wall brackets.", 100, json.dumps({"score": 100, "summary": "Perfect match.", "issues": [], "strengths": ["IS 15683 certified.", "Exact quantities.", "Wall brackets included."]}))
-        },
-        {
-            "tender": ("Enterprise Firewall Security Appliance (Demo)", "NGFW with min 5 Gbps threat protection, SSL inspection, dual power supplies.", email),
-            "bid": ("netsec@secureit.com", "SecureIT Networks", "NGFW-7000: 3.5 Gbps throughput, SSL inspection, single power supply.", 55, json.dumps({"score": 55, "summary": "Subpar - throughput and redundancy gaps.", "issues": ["Throughput 3.5 Gbps below 5 Gbps requirement.", "Single power supply only."], "strengths": ["NGFW functionality.", "SSL inspection."]}))
-        },
-    ]
-    sdb.seed_demo_if_needed(email, demo_data)
 
 @auth_router.post("/session")
 def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
-    """Sync authenticated Supabase user session to signed HTTP cookie."""
+    """Sync authenticated Supabase user or Demo account to signed HTTP cookie."""
+    role = req.role or ("vendor" if ("vendor" in req.email.lower() or "supplier" in req.email.lower()) else "customer")
+    name = req.name or req.email.split("@")[0]
     user = {
         "id": req.user_id or req.email,
         "email": req.email,
-        "name": req.name or req.email.split("@")[0],
-        "role": req.role,
+        "name": name,
+        "role": role,
     }
-    # Ensure cached in local DB
-    existing = get_user_by_email(req.email)
-    if not existing:
-        save_user_direct(email=req.email, name=user["name"], password_hash=hash_password("DefaultSynced123!"), role=req.role)
-    else:
-        user["role"] = existing.get("role", req.role)
-    
-    
-    _seed_demo_data_if_needed(req.email)
     
     set_auth_cookie(response, user)
     return {"status": "ok", "user": user}
