@@ -199,6 +199,14 @@
       </div>
     </section>
 
+    <!-- Modal for Bid Analysis -->
+    <div id="bid-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; border-radius: 12px; position: relative;">
+        <button id="bid-modal-close" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; z-index: 1;">&times;</button>
+        <div style="padding: 2rem;" id="bid-modal-content"></div>
+      </div>
+    </div>
+
     </div>
   </div>
 
