@@ -71,7 +71,7 @@
       wsCriteriaList.innerHTML = "";
 
       if (reqs.length > 0) {
-        reqs.forEach((r, idx) => {
+        reqs.forEach((r) => {
           const itemDiv = document.createElement("label");
           itemDiv.style.display = "flex";
           itemDiv.style.alignItems = "flex-start";
