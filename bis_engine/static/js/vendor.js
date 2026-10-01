@@ -2,6 +2,12 @@
 
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
+    // Top Views
+    const mainPortalView = document.getElementById("main-portal-view");
+    const bidWorkspaceView = document.getElementById("bid-workspace-view");
+    const btnBackToTenders = document.getElementById("btn-back-to-tenders");
+
+    // Mode Tabs
     const tabAll = document.getElementById("tab-all-tenders");
     const tabVault = document.getElementById("tab-my-vault");
     const feedContainer = document.getElementById("feed-container");
@@ -9,26 +15,27 @@
     const vaultCountBadge = document.getElementById("vault-count-badge");
     const btnRefreshFeed = document.getElementById("btn-refresh-feed");
 
-    // Submit Bid Modal Elements
-    const submitModal = document.getElementById("submit-bid-modal");
-    const submitModalClose = document.getElementById("bid-modal-close");
-    const btnCancelModal = document.getElementById("btn-cancel-modal");
-    const submitForm = document.getElementById("submit-bid-form");
-    const modalTenderTitle = document.getElementById("modal-tender-title");
-    const modalTenderBuyer = document.getElementById("modal-tender-buyer");
-    const modalTenderDesc = document.getElementById("modal-tender-desc");
-    const modalTenderReqsList = document.getElementById("modal-tender-reqs-list");
-    const modalTenderId = document.getElementById("modal-tender-id");
-    const bidAmountInput = document.getElementById("bid-amount");
-    const bidDeliveryInput = document.getElementById("bid-delivery-days");
-    const bidSpecText = document.getElementById("bid-spec-text");
-    const btnSubmit = document.getElementById("btn-submit-bid");
-    const btnAutofill = document.getElementById("btn-autofill-spec");
+    // Workspace Elements
+    const wsTenderIdBadge = document.getElementById("ws-tender-id-badge");
+    const wsTenderBuyerBadge = document.getElementById("ws-tender-buyer-badge");
+    const wsTenderTitle = document.getElementById("ws-tender-title");
+    const wsTenderDesc = document.getElementById("ws-tender-desc");
+    const wsCriteriaList = document.getElementById("ws-criteria-list");
+    const wsCriteriaCounter = document.getElementById("ws-criteria-counter");
+    const wsTenderId = document.getElementById("ws-tender-id");
+    const wsBidAmount = document.getElementById("ws-bid-amount");
+    const wsBidDelivery = document.getElementById("ws-bid-delivery");
+    const wsSpecText = document.getElementById("ws-spec-text");
+    const wsBidForm = document.getElementById("ws-bid-form");
+    const wsBtnSubmit = document.getElementById("ws-btn-submit");
+    const wsBtnAutofill = document.getElementById("ws-btn-autofill");
 
     // Vault Detail Modal Elements
     const vaultModal = document.getElementById("vault-detail-modal");
     const vaultModalClose = document.getElementById("vault-modal-close");
     const vaultModalBody = document.getElementById("vault-modal-body");
+
+    let currentTender = null;
 
     function escapeHtml(unsafe) {
       if (unsafe == null) return "";
@@ -50,39 +57,157 @@
       else console.log(`[${type}] ${msg}`);
     }
 
-    // Modal Control Functions
-    function openSubmitModal(t) {
-      if (!submitModal) return;
-      modalTenderId.value = t.id;
-      modalTenderTitle.textContent = t.title;
-      modalTenderBuyer.textContent = `Buyer: ${t.customer_email || "Customer"}`;
-      modalTenderDesc.textContent = t.description || "No detailed requirements provided.";
-      
-      const reqs = t.requirements || [];
+    // --- Switch between Main Feed and Bid Workspace Interface ---
+    function openBidWorkspace(tender) {
+      currentTender = tender;
+      wsTenderId.value = tender.id;
+      wsTenderIdBadge.textContent = `TEND-${tender.id}`;
+      wsTenderBuyerBadge.innerHTML = `Buyer: <strong>${escapeHtml(tender.customer_email || "Customer")}</strong>`;
+      wsTenderTitle.textContent = tender.title;
+      wsTenderDesc.textContent = tender.description || "No detailed requirements provided.";
+
+      // Populate interactive criteria checklist
+      const reqs = tender.requirements || [];
+      wsCriteriaList.innerHTML = "";
+
       if (reqs.length > 0) {
-        modalTenderReqsList.innerHTML = `
-          <strong style="color:var(--accent);">Detected Evaluation Criteria (${reqs.length}):</strong>
-          <ul style="margin: 0.4rem 0 0 1.2rem; padding: 0; line-height: 1.4;">
-            ${reqs.map(r => `<li>${escapeHtml(r)}</li>`).join("")}
-          </ul>
-        `;
-        modalTenderReqsList.style.display = "block";
+        reqs.forEach((r, idx) => {
+          const itemDiv = document.createElement("label");
+          itemDiv.style.display = "flex";
+          itemDiv.style.alignItems = "flex-start";
+          itemDiv.style.gap = "0.75rem";
+          itemDiv.style.padding = "0.85rem 1rem";
+          itemDiv.style.background = "var(--bg-body)";
+          itemDiv.style.border = "1px solid var(--border-color)";
+          itemDiv.style.borderRadius = "8px";
+          itemDiv.style.cursor = "pointer";
+          itemDiv.style.transition = "border-color 0.2s, background 0.2s";
+
+          itemDiv.innerHTML = `
+            <input type="checkbox" class="criteria-checkbox" data-text="${escapeHtml(r)}" checked style="margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+            <div style="flex: 1;">
+              <span style="font-size: 0.88rem; color: var(--text-main); font-weight: 600; line-height: 1.4; display: block;">${escapeHtml(r)}</span>
+              <span style="font-size: 0.78rem; color: #22c55e; margin-top: 2px; display: block;">✓ We will fulfill this requirement</span>
+            </div>
+          `;
+
+          wsCriteriaList.appendChild(itemDiv);
+        });
+        updateCriteriaCounter();
       } else {
-        modalTenderReqsList.style.display = "none";
+        wsCriteriaList.innerHTML = `<div style="color:var(--text-muted); font-size:0.88rem; padding:1rem; background:var(--bg-body); border-radius:8px;">General procurement criteria applies.</div>`;
+        wsCriteriaCounter.textContent = "All Criteria";
       }
 
-      bidAmountInput.value = "";
-      bidDeliveryInput.value = "10";
-      bidSpecText.value = "";
-      submitModal.style.display = "flex";
-      bidAmountInput.focus();
+      // Attach change listeners to update counter dynamically
+      wsCriteriaList.querySelectorAll(".criteria-checkbox").forEach(cb => {
+        cb.addEventListener("change", updateCriteriaCounter);
+      });
+
+      // Clear/Reset input fields
+      wsBidAmount.value = "";
+      wsBidDelivery.value = "10";
+      wsSpecText.value = "";
+
+      // Transition views
+      mainPortalView.style.display = "none";
+      bidWorkspaceView.style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      wsBidAmount.focus();
     }
 
-    function closeSubmitModal() {
-      if (submitModal) submitModal.style.display = "none";
-      if (submitForm) submitForm.reset();
+    function closeBidWorkspace() {
+      bidWorkspaceView.style.display = "none";
+      mainPortalView.style.display = "block";
+      currentTender = null;
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function updateCriteriaCounter() {
+      const allCb = wsCriteriaList.querySelectorAll(".criteria-checkbox");
+      if (allCb.length === 0) return;
+      const checkedCount = Array.from(allCb).filter(cb => cb.checked).length;
+      wsCriteriaCounter.textContent = `${checkedCount} of ${allCb.length} Criteria Selected`;
+      wsCriteriaCounter.style.color = checkedCount === allCb.length ? "#22c55e" : (checkedCount > 0 ? "#ff9800" : "#f44336");
+    }
+
+    if (btnBackToTenders) {
+      btnBackToTenders.addEventListener("click", closeBidWorkspace);
+    }
+
+    // Auto-fill Sample Bid
+    if (wsBtnAutofill) {
+      wsBtnAutofill.addEventListener("click", () => {
+        wsBidAmount.value = "345000";
+        wsBidDelivery.value = "8";
+        wsSpecText.value = `We are pleased to submit our formal technical proposal adhering strictly to Bureau of Indian Standards (BIS) specifications:
+1. Product Certification: Certified with valid BIS ISI Mark under Mandatory Quality Control Order (QCO).
+2. Material Grade & Specification: High-performance grade compliant with all physical, chemical, and mechanical test parameters.
+3. Quality Assurance: Complete batch laboratory test reports and official Manufacturer's Test Certificate (MTC) provided with every dispatch.
+4. Logistics & Delivery: Guaranteed direct site delivery within 8 business days in sealed tamper-proof packaging.
+5. Warranty: Full 12-month manufacturer replacement warranty against any deviation.`;
+        
+        // Re-check all criteria checkboxes
+        wsCriteriaList.querySelectorAll(".criteria-checkbox").forEach(cb => cb.checked = true);
+        updateCriteriaCounter();
+        toast("Sample bid proposal auto-filled!", "info");
+      });
+    }
+
+    // Submit Bid Form Handler
+    if (wsBidForm) {
+      wsBidForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const tenderId = parseInt(wsTenderId.value, 10);
+        const bidAmount = parseFloat(wsBidAmount.value) || 0;
+        const deliveryDays = parseInt(wsBidDelivery.value, 10) || 7;
+        const specText = wsSpecText.value.trim();
+
+        if (!tenderId || !specText) {
+          toast("Please enter your specification proposal.", "error");
+          return;
+        }
+
+        const selectedReqs = Array.from(wsCriteriaList.querySelectorAll(".criteria-checkbox:checked"))
+          .map(cb => cb.getAttribute("data-text"));
+
+        const origText = wsBtnSubmit.textContent;
+        wsBtnSubmit.disabled = true;
+        wsBtnSubmit.textContent = "Analyzing Compliance with AI...";
+
+        try {
+          const res = await fetch("/api/bids/submit", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tender_id: tenderId,
+              spec_text: specText,
+              bid_amount: bidAmount,
+              delivery_days: deliveryDays,
+              declared_reqs: selectedReqs
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || `Error submitting bid (${res.status})`);
+
+          toast(`Bid Placed Successfully! AI Score: ${data.score}% (${data.fulfilled_count}/${data.total_count} Criteria Met)`, "success");
+          closeBidWorkspace();
+          
+          // Switch to My Vault so vendor immediately sees their evaluated bid!
+          tabVault.click();
+          await updateVaultCount();
+        } catch (err) {
+          toast(err.message, "error");
+        } finally {
+          wsBtnSubmit.disabled = false;
+          wsBtnSubmit.textContent = origText;
+        }
+      });
+    }
+
+    // --- Modal for Detailed Vault View ---
     function openVaultModal(bid) {
       if (!vaultModal || !vaultModalBody) return;
       const score = bid.compliance_score || 0;
@@ -167,30 +292,10 @@
       if (vaultModal) vaultModal.style.display = "none";
     }
 
-    // Modal listeners
-    if (submitModalClose) submitModalClose.addEventListener("click", closeSubmitModal);
-    if (btnCancelModal) btnCancelModal.addEventListener("click", closeSubmitModal);
-    if (submitModal) submitModal.addEventListener("click", (e) => { if (e.target === submitModal) closeSubmitModal(); });
-
     if (vaultModalClose) vaultModalClose.addEventListener("click", closeVaultModal);
     if (vaultModal) vaultModal.addEventListener("click", (e) => { if (e.target === vaultModal) closeVaultModal(); });
 
-    // Auto-fill Sample Bid
-    if (btnAutofill) {
-      btnAutofill.addEventListener("click", () => {
-        bidAmountInput.value = "345000";
-        bidDeliveryInput.value = "8";
-        bidSpecText.value = `We are pleased to submit our formal technical proposal adhering strictly to Bureau of Indian Standards (BIS) specifications:
-1. Product Certification: Certified with valid BIS ISI Mark under Mandatory Quality Control Order (QCO).
-2. Material Grade & Specification: High-performance grade compliant with all physical, chemical, and mechanical test parameters.
-3. Quality Assurance: Complete batch laboratory test reports and official Manufacturer's Test Certificate (MTC) provided with every dispatch.
-4. Logistics & Delivery: Guaranteed direct site delivery within 8 business days in sealed tamper-proof packaging.
-5. Warranty: Full 12-month manufacturer replacement warranty against any deviation.`;
-        toast("Sample bid details and proposal auto-filled!", "info");
-      });
-    }
-
-    // Tab Switching
+    // --- Tabs Switching ---
     if (tabAll && tabVault) {
       tabAll.addEventListener("click", () => {
         tabAll.classList.add("active");
@@ -217,54 +322,7 @@
       });
     }
 
-    // Handle Form Submit
-    if (submitForm) {
-      submitForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const tenderId = parseInt(modalTenderId.value, 10);
-        const bidAmount = parseFloat(bidAmountInput.value) || 0;
-        const deliveryDays = parseInt(bidDeliveryInput.value, 10) || 7;
-        const specText = bidSpecText.value.trim();
-
-        if (!tenderId || !specText) {
-          toast("Please fill in all bid details.", "error");
-          return;
-        }
-
-        const origText = btnSubmit.textContent;
-        btnSubmit.disabled = true;
-        btnSubmit.textContent = "Analyzing Compliance with AI...";
-
-        try {
-          const res = await fetch("/api/bids/submit", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tender_id: tenderId,
-              spec_text: specText,
-              bid_amount: bidAmount,
-              delivery_days: deliveryDays
-            })
-          });
-
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.detail || `Error submitting bid (${res.status})`);
-
-          toast(`Bid Placed! AI Compliance: ${data.score}% (${data.fulfilled_count}/${data.total_count} Reqs)`, "success");
-          closeSubmitModal();
-          await loadTenders();
-          await updateVaultCount();
-        } catch (err) {
-          toast(err.message, "error");
-        } finally {
-          btnSubmit.disabled = false;
-          btnSubmit.textContent = origText;
-        }
-      });
-    }
-
-    // Load Tenders
+    // --- Load Active Tenders ---
     async function loadTenders() {
       feedContainer.innerHTML = `<div class="loader-pulse" style="margin: 3rem auto;"></div>`;
       try {
@@ -304,7 +362,7 @@
                  <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">✓ Bid Submitted</span>
                  <button class="btn-secondary-auth btn-view-vault" style="padding: 0.5rem 0.9rem; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); cursor: pointer;">View in Vault</button>
                </div>`
-            : `<button class="btn-primary btn-place-bid" data-tender='${escapeHtml(JSON.stringify(t))}' style="padding: 0.7rem 1.6rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+            : `<button class="btn-primary btn-place-bid" data-tender='${escapeHtml(JSON.stringify(t))}' style="padding: 0.75rem 1.8rem; border-radius: 8px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(255,230,0,0.25);">
                  Place Bid 🚀
                </button>`;
 
@@ -312,7 +370,7 @@
           if (reqs.length > 0) {
             reqsPreviewHtml = `
               <div style="margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.8rem;">
-                <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.3rem;">Required Criteria (${reqs.length}):</div>
+                <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.3rem;">Evaluation Criteria (${reqs.length}):</div>
                 <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
                   ${reqs.map(r => `<span style="background:var(--bg-body); border:1px solid var(--border-color); padding:3px 8px; border-radius:4px; font-size:0.8rem; color:var(--text-muted);">✓ ${escapeHtml(r)}</span>`).join("")}
                 </div>
@@ -342,12 +400,12 @@
           feedContainer.appendChild(card);
         });
 
-        // Wire Place Bid buttons
+        // Wire Place Bid buttons to open dedicated Bid Workspace Interface
         feedContainer.querySelectorAll(".btn-place-bid").forEach(btn => {
           btn.addEventListener("click", () => {
             try {
               const tenderData = JSON.parse(btn.getAttribute("data-tender"));
-              openSubmitModal(tenderData);
+              openBidWorkspace(tenderData);
             } catch (e) {
               console.error(e);
             }
@@ -369,7 +427,7 @@
       }
     }
 
-    // Load Vault
+    // --- Load Vendor Vault ---
     async function loadVault() {
       vaultContainer.innerHTML = `<div class="loader-pulse" style="margin: 3rem auto;"></div>`;
       try {

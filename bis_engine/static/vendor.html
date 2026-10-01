@@ -132,99 +132,130 @@
       <section class="hero-section" style="padding-top: 100px; min-height: 80vh; background: var(--bg-body); padding-bottom: 60px;">
         <div class="content-container">
           
-          <header style="margin-bottom: 2rem;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
-              <div>
-                <h1 class="hero-title" style="font-size: 2.4rem; text-align: left; margin: 0;">Vendor <span class="highlight">Portal</span></h1>
-                <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Browse customer tenders, submit competitive bids with price & delivery terms, and check instant AI compliance verification.</p>
+          <!-- MAIN PORTAL VIEW -->
+          <div id="main-portal-view">
+            <header style="margin-bottom: 2rem;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
+                <div>
+                  <h1 class="hero-title" style="font-size: 2.4rem; text-align: left; margin: 0;">Vendor <span class="highlight">Portal</span></h1>
+                  <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Browse customer tenders, submit competitive bids with price & fulfillment terms, and check instant AI evaluation.</p>
+                </div>
+                <button id="btn-refresh-feed" class="btn-secondary-auth" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+                  🔄 Refresh
+                </button>
               </div>
-              <button id="btn-refresh-feed" class="btn-secondary-auth" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
-                🔄 Refresh
-              </button>
+            </header>
+
+            <!-- Mode Tabs -->
+            <div class="auth-tabs portal-tabs" role="tablist" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px; display: inline-flex; border-radius: 8px; width: auto;">
+              <button class="auth-tab-btn active" id="tab-all-tenders" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">Active Tenders</button>
+              <button class="auth-tab-btn" id="tab-my-vault" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">My Bid Vault <span id="vault-count-badge" style="display:none; background:var(--accent); color:#000; padding:2px 6px; border-radius:10px; font-size:0.75rem; margin-left:6px;">0</span></button>
             </div>
-          </header>
 
-          <!-- Mode Tabs -->
-          <div class="auth-tabs portal-tabs" role="tablist" style="margin-bottom: 2rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px; display: inline-flex; border-radius: 8px; width: auto;">
-            <button class="auth-tab-btn active" id="tab-all-tenders" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">Active Tenders</button>
-            <button class="auth-tab-btn" id="tab-my-vault" type="button" role="tab" style="padding: 0.6rem 1.6rem; border-radius: 6px; font-weight:600;">My Bid Vault <span id="vault-count-badge" style="display:none; background:var(--accent); color:#000; padding:2px 6px; border-radius:10px; font-size:0.75rem; margin-left:6px;">0</span></button>
+            <!-- Active Tenders Feed -->
+            <div id="feed-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="loader-pulse" style="margin: 3rem auto;"></div>
+            </div>
+
+            <!-- Vendor Vault -->
+            <div id="vault-container" style="display: none; flex-direction: column; gap: 1.5rem;">
+            </div>
           </div>
 
-          <!-- Active Tenders Feed -->
-          <div id="feed-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <div class="loader-pulse" style="margin: 3rem auto;"></div>
-          </div>
+          <!-- DEDICATED PLACE BID WORKSPACE INTERFACE -->
+          <div id="bid-workspace-view" style="display: none;">
+            <!-- Header bar with back button -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+              <button id="btn-back-to-tenders" class="btn-secondary-auth" style="padding: 0.6rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                ← Back to Active Tenders
+              </button>
+              <div style="display: flex; gap: 0.6rem; align-items: center;">
+                <span id="ws-tender-id-badge" style="font-family: var(--font-mono); font-size: 0.82rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 6px; color: var(--accent); font-weight: 700;">TEND-000</span>
+                <span id="ws-tender-buyer-badge" style="font-size: 0.85rem; color: var(--text-muted);">Buyer: <strong>-</strong></span>
+              </div>
+            </div>
 
-          <!-- Vendor Vault -->
-          <div id="vault-container" style="display: none; flex-direction: column; gap: 1.5rem;">
+            <!-- Workspace 2-Column Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1.15fr; gap: 2rem; align-items: start;">
+              
+              <!-- Left Column: Tender Scope & Criteria to Fulfill -->
+              <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                <span style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700;">TENDER DETAILS & CRITERIA</span>
+                <h2 id="ws-tender-title" style="margin: 0.4rem 0 0.8rem 0; font-size: 1.4rem; color: var(--text-main); font-weight: 700; line-height: 1.3;">Tender Title</h2>
+                
+                <div style="background: var(--bg-body); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                  <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 700;">Full Scope of Requirements:</div>
+                  <p id="ws-tender-desc" style="color: var(--text-main); font-size: 0.92rem; line-height: 1.6; margin: 0; white-space: pre-wrap;"></p>
+                </div>
+
+                <!-- Interactive Checklist: Criteria You Can Fulfill -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                    <span style="font-size: 0.88rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Select Criteria You Fulfill:</span>
+                    <span id="ws-criteria-counter" style="font-size: 0.82rem; font-weight: 700; color: #22c55e; background: rgba(34, 197, 94, 0.15); padding: 2px 8px; border-radius: 10px;">0 Selected</span>
+                  </div>
+                  <div id="ws-criteria-list" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                    <!-- Dynamically populated criteria checkboxes -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Proposal, Price & Timeline Input -->
+              <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                  <span style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700;">YOUR COMMERCIAL & TECHNICAL BID</span>
+                  <button type="button" id="ws-btn-autofill" style="background: none; border: none; color: var(--accent); font-size: 0.82rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
+                    ⚡ Auto-Fill Sample Bid
+                  </button>
+                </div>
+
+                <form id="ws-bid-form" style="display: flex; flex-direction: column; gap: 1.3rem;">
+                  <input type="hidden" id="ws-tender-id">
+
+                  <!-- Commercial Offer Grid -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                      <label for="ws-bid-amount" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
+                        💰 Price Quote (INR ₹)
+                      </label>
+                      <input type="number" id="ws-bid-amount" required min="1" step="any" placeholder="e.g. 350000" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.95rem;">
+                      <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: block;">Total quote amount including taxes</span>
+                    </div>
+                    <div>
+                      <label for="ws-bid-delivery" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
+                        ⏱ Delivery Timeline (Days)
+                      </label>
+                      <input type="number" id="ws-bid-delivery" required min="1" max="180" placeholder="e.g. 10" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.95rem;">
+                      <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: block;">Guaranteed fulfillment timeframe</span>
+                    </div>
+                  </div>
+
+                  <!-- Technical Proposal Textarea -->
+                  <div>
+                    <label for="ws-spec-text" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
+                      📝 Technical Specification & Standard Conformity
+                    </label>
+                    <textarea id="ws-spec-text" required rows="7" style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.9rem; line-height: 1.5; resize: vertical;" placeholder="Detail your product specification, BIS standard codes, license number, testing certifications, and warranty terms..."></textarea>
+                  </div>
+
+                  <!-- Submit Action Button -->
+                  <div style="margin-top: 0.5rem;">
+                    <button type="submit" class="btn-primary" id="ws-btn-submit" style="width: 100%; padding: 0.9rem; border-radius: 8px; font-weight: 800; font-size: 1rem; cursor: pointer;">
+                      🚀 Submit Bid & Run AI Evaluation
+                    </button>
+                    <span style="font-size: 0.78rem; color: var(--text-muted); text-align: center; display: block; margin-top: 0.6rem;">
+                      AI will analyze standards conformity, requirement coverage, and price competitiveness.
+                    </span>
+                  </div>
+                </form>
+              </div>
+
+            </div>
           </div>
 
         </div>
       </section>
     </main>
-
-    <!-- Modal for Submitting a Bid -->
-    <div id="submit-bid-modal" class="cmd-palette-modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 9999; position: fixed; inset: 0; padding: 1rem;">
-      <div class="card" style="background: var(--bg-card); border: 1px solid var(--border-color); width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-radius: 12px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <button id="bid-modal-close" type="button" aria-label="Close" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-main); font-size: 1.6rem; cursor: pointer; line-height: 1;">&times;</button>
-        
-        <div style="padding: 2rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <span style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-body); padding: 4px 8px; border-radius: 4px; color: var(--accent); font-weight: 600;">SUBMIT BID PROPOSAL</span>
-            <button type="button" id="btn-autofill-spec" style="background: none; border: none; color: var(--accent); font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: underline;">
-              ⚡ Auto-fill Sample Bid
-            </button>
-          </div>
-          
-          <h2 style="margin-top: 0.3rem; font-family: var(--font-primary); font-size: 1.4rem; margin-bottom: 0.2rem; color: var(--text-main);" id="modal-tender-title"></h2>
-          <span id="modal-tender-buyer" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem; display: block;"></span>
-          
-          <!-- Tender Scope & Requirements Checklist -->
-          <div style="background: var(--bg-body); border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
-            <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 700;">Tender Requirements & Scope:</div>
-            <p id="modal-tender-desc" style="color: var(--text-main); font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.8rem 0;"></p>
-            <div id="modal-tender-reqs-list" style="border-top: 1px dashed var(--border-color); padding-top: 0.6rem; font-size: 0.85rem; color: var(--text-muted);"></div>
-          </div>
-
-          <form id="submit-bid-form" style="display: flex; flex-direction: column; gap: 1.1rem;">
-            <input type="hidden" id="modal-tender-id">
-
-            <!-- Commercial Terms Grid (Price & Delivery) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div>
-                <label for="bid-amount" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
-                  💰 Price Quote (INR ₹)
-                </label>
-                <input type="number" id="bid-amount" required min="1" step="any" placeholder="e.g. 350000" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.95rem;">
-                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: block;">Total quote amount including taxes</span>
-              </div>
-              <div>
-                <label for="bid-delivery-days" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
-                  ⏱ Delivery Timeline (Days)
-                </label>
-                <input type="number" id="bid-delivery-days" required min="1" max="180" placeholder="e.g. 10" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.95rem;">
-                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; display: block;">Guaranteed delivery from order date</span>
-              </div>
-            </div>
-
-            <!-- Technical Specification Text -->
-            <div>
-              <label for="bid-spec-text" style="display: block; font-weight: 600; color: var(--text-main); font-size: 0.88rem; margin-bottom: 0.4rem;">
-                📝 Technical Specification & Standard Compliance
-              </label>
-              <textarea id="bid-spec-text" required rows="6" style="width: 100%; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary); font-size: 0.9rem; line-height: 1.5; resize: vertical;" placeholder="Detail your product specification, BIS standard certification, ISI license, MTC testing, and warranty..."></textarea>
-            </div>
-
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.4rem;">
-              <button type="button" id="btn-cancel-modal" class="btn-secondary-auth" style="padding: 0.8rem 1.4rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); cursor: pointer;">Cancel</button>
-              <button type="submit" class="btn-primary" id="btn-submit-bid" style="padding: 0.8rem 1.6rem; border-radius: 8px; font-weight: 700; flex: 1; cursor: pointer;">
-                Submit Bid for AI Evaluation
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <!-- Modal for Viewing Detailed Bid in Vault -->
     <div id="vault-detail-modal" class="cmd-palette-modal" style="display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 9999; position: fixed; inset: 0; padding: 1rem;">
