@@ -47,8 +47,8 @@
 
         const isApp = status === "approved" || status === "confirmed";
         const msg = isApp 
-          ? "✅ Bid Approved! The status is now Approved in the Vendor's Vault." 
-          : "❌ Bid marked as Rejected.";
+          ? "Bid Approved. The status is now Approved in the Vendor's Vault." 
+          : "Bid marked as Rejected.";
         toast(msg, isApp ? "success" : "info");
         closeModal();
         await loadTenders();
@@ -74,11 +74,11 @@
 
       let statusBadge = "";
       if (isApproved) {
-        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">✅ Approved</span>`;
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">Approved</span>`;
       } else if (isRejected) {
-        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Rejected</span>`;
+        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">Rejected</span>`;
       } else {
-        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending</span>`;
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">Pending</span>`;
       }
 
       let breakdownHtml = "";
@@ -90,11 +90,11 @@
               ${breakdown.map(item => {
                 const isFulfilled = item.status === "Fulfilled";
                 const badgeCol = isFulfilled ? "#22c55e" : (item.status === "Partial" ? "#ff9800" : "#f44336");
-                const icon = isFulfilled ? "✅" : (item.status === "Partial" ? "⚠️" : "❌");
+                const icon = isFulfilled ? "✓" : (item.status === "Partial" ? "—" : "✕");
                 return `
                   <div style="background:var(--bg-body);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:1rem;">
                     <div>
-                      <div style="font-size:0.88rem;color:var(--text-main);font-weight:600;">${icon} ${escapeHtml(item.requirement)}</div>
+                      <div style="font-size:0.88rem;color:var(--text-main);font-weight:600;"><span style="color:${badgeCol};margin-right:4px;">${icon}</span> ${escapeHtml(item.requirement)}</div>
                       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(item.notes)}</div>
                     </div>
                     <span style="font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:4px;color:${badgeCol};background:rgba(255,255,255,0.05);white-space:nowrap;">${item.status}</span>
@@ -110,14 +110,14 @@
         <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:1.2rem;">
           ${!isApproved ? `
             <button class="btn-primary btn-modal-approve" data-id="${bid.id}" style="padding:0.75rem 1.6rem; border-radius:8px; font-weight:700; background:#22c55e; border-color:#22c55e; color:#000; cursor:pointer;">
-              ✅ Approve Bid
+              Approve Bid
             </button>
           ` : `
             <span style="color:#22c55e; font-weight:700; align-self:center; font-size:0.95rem;">✓ This bid has been approved</span>
           `}
           ${!isRejected && !isApproved ? `
             <button class="btn-secondary-auth btn-modal-reject" data-id="${bid.id}" style="padding:0.75rem 1.4rem; border-radius:8px; color:#f44336; border-color:rgba(244,67,54,0.4); cursor:pointer;">
-              ❌ Reject Bid
+              Reject Bid
             </button>
           ` : ""}
         </div>
@@ -277,7 +277,7 @@
         if (tenders.length === 0) {
           tendersContainer.innerHTML = `
             <div class="card" style="text-align:center;padding:4rem 2rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;">
-              <div style="font-size:2.5rem;margin-bottom:0.8rem;">📢</div>
+              <div style="font-size:1.8rem;margin-bottom:0.8rem;color:var(--text-muted);font-family:var(--font-mono);">[ TENDERS ]</div>
               <h3 style="margin:0 0 0.5rem 0;color:var(--text-main);">No Tenders Published Yet</h3>
               <p style="color:var(--text-muted);max-width:450px;margin:0 auto 1.5rem auto;font-size:0.95rem;">
                 Click <strong>+ Create Tender</strong> to post your first procurement scope. Registered vendors will be able to submit competitive bids.
@@ -319,11 +319,11 @@
               const isApproved = rawStat === "approved" || rawStat === "confirmed";
               const isRejected = rawStat === "rejected";
               
-              let statusLabel = `<span style="background:rgba(255,230,0,0.15); color:var(--accent); border:1px solid rgba(255,230,0,0.3); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">⏳ Pending</span>`;
+              let statusLabel = `<span style="background:rgba(255,230,0,0.15); color:var(--accent); border:1px solid rgba(255,230,0,0.3); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Pending</span>`;
               if (isApproved) {
-                statusLabel = `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">✅ Approved</span>`;
+                statusLabel = `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:800;">Approved</span>`;
               } else if (isRejected) {
-                statusLabel = `<span style="background:rgba(244,67,54,0.18); color:#f44336; border:1px solid rgba(244,67,54,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">❌ Rejected</span>`;
+                statusLabel = `<span style="background:rgba(244,67,54,0.18); color:#f44336; border:1px solid rgba(244,67,54,0.4); padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Rejected</span>`;
               }
 
               const topBadge = (idx === 0 && !isApproved && !isRejected)

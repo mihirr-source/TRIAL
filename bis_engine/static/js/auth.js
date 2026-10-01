@@ -130,7 +130,7 @@
 
     const isVendor = user.role === "vendor" || (user.email && (user.email.toLowerCase().includes("vendor") || user.email.toLowerCase().includes("supplier")));
     const portalUrl = isVendor ? "/vendor" : "/customer";
-    const portalTitle = isVendor ? "🚀 VENDOR PORTAL" : "👤 CUSTOMER PORTAL";
+    const portalTitle = isVendor ? "VENDOR PORTAL" : "CUSTOMER PORTAL";
     const isCurrent = location.pathname === portalUrl;
 
     const link = document.createElement("a");
@@ -403,10 +403,14 @@
 
     // Toggle Password Visibility
     if (pwdToggle && pwdInput) {
+      pwdToggle.style.fontFamily = "var(--font-mono, monospace)";
+      pwdToggle.style.fontSize = "0.75rem";
+      pwdToggle.style.fontWeight = "700";
+      pwdToggle.textContent = "SHOW";
       pwdToggle.addEventListener("click", () => {
         const isPassword = pwdInput.type === "password";
         pwdInput.type = isPassword ? "text" : "password";
-        pwdToggle.textContent = isPassword ? "🙈" : "👁️";
+        pwdToggle.textContent = isPassword ? "HIDE" : "SHOW";
         pwdToggle.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
       });
     }

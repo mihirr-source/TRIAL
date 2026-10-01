@@ -220,11 +220,11 @@
 
       let statusBadge = "";
       if (isApproved) {
-        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem;">✅ Approved</span>`;
+        statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.85rem;">Approved</span>`;
       } else if (isRejected) {
-        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">❌ Not Selected</span>`;
+        statusBadge = `<span style="background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">Not Selected</span>`;
       } else {
-        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">⏳ Pending</span>`;
+        statusBadge = `<span style="background: rgba(255, 230, 0, 0.2); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">Pending</span>`;
       }
 
       let breakdownHtml = "";
@@ -236,11 +236,11 @@
               ${breakdown.map(item => {
                 const isFulfilled = item.status === "Fulfilled";
                 const badgeCol = isFulfilled ? "#22c55e" : (item.status === "Partial" ? "#ff9800" : "#f44336");
-                const icon = isFulfilled ? "✅" : (item.status === "Partial" ? "⚠️" : "❌");
+                const icon = isFulfilled ? "✓" : (item.status === "Partial" ? "—" : "✕");
                 return `
                   <div style="background:var(--bg-body);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:1rem;">
                     <div>
-                      <div style="font-size:0.88rem;color:var(--text-main);font-weight:600;">${icon} ${escapeHtml(item.requirement)}</div>
+                      <div style="font-size:0.88rem;color:var(--text-main);font-weight:600;"><span style="color:${badgeCol};margin-right:4px;">${icon}</span> ${escapeHtml(item.requirement)}</div>
                       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">${escapeHtml(item.notes)}</div>
                     </div>
                     <span style="font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:4px;color:${badgeCol};background:rgba(255,255,255,0.05);white-space:nowrap;">${item.status}</span>
@@ -345,7 +345,7 @@
         if (tenders.length === 0) {
           feedContainer.innerHTML = `
             <div class="card" style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
-              <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📋</div>
+              <div style="font-size: 1.8rem; margin-bottom: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">[ TENDERS ]</div>
               <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">No Active Tenders Found</h3>
               <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto; font-size: 0.95rem;">
                 When customers publish new tenders, they will appear here immediately for you to place bids on.
@@ -372,7 +372,7 @@
                  <button class="btn-secondary-auth btn-view-vault" style="padding: 0.5rem 0.9rem; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); cursor: pointer;">View in Vault</button>
                </div>`
             : `<button class="btn-primary btn-place-bid" data-tender='${escapeHtml(JSON.stringify(t))}' style="padding: 0.75rem 1.8rem; border-radius: 8px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(255,230,0,0.25);">
-                 Place Bid 🚀
+                 Place Bid
                </button>`;
 
           let reqsPreviewHtml = "";
@@ -455,7 +455,7 @@
         if (vault.length === 0) {
           vaultContainer.innerHTML = `
             <div class="card" style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px;">
-              <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🔒</div>
+              <div style="font-size: 1.8rem; margin-bottom: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">[ VAULT ]</div>
               <h3 style="margin: 0 0 0.5rem 0; color: var(--text-main);">Your Bid Vault is Empty</h3>
               <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto 1.5rem auto; font-size: 0.95rem;">
                 Submit your first bid with price quote and specifications under <strong>Active Tenders</strong> to track real-time AI evaluation and win probability.
@@ -484,11 +484,11 @@
 
           let statusBadge = "";
           if (isApproved) {
-            statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;">✅ Approved</span>`;
+            statusBadge = `<span style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 0.82rem;">Approved</span>`;
           } else if (isRejected) {
-            statusBadge = `<span style="background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">❌ Not Selected</span>`;
+            statusBadge = `<span style="background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">Not Selected</span>`;
           } else {
-            statusBadge = `<span style="background: rgba(255, 230, 0, 0.18); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">⏳ Pending</span>`;
+            statusBadge = `<span style="background: rgba(255, 230, 0, 0.18); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.4); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.82rem;">Pending</span>`;
           }
 
           const score = b.compliance_score || 0;
@@ -513,8 +513,8 @@
                       ${statusBadge}
                     </div>
                     <div style="display:flex; gap:0.8rem; font-size:0.85rem; color:var(--text-muted);">
-                      <span>💰 Quote: <strong style="color:var(--text-main);">${formatINR(b.bid_amount)}</strong></span>
-                      <span>⏱ Delivery: <strong style="color:var(--text-main);">${b.delivery_days || 7} Days</strong></span>
+                      <span>Quote: <strong style="color:var(--text-main);">${formatINR(b.bid_amount)}</strong></span>
+                      <span>Delivery: <strong style="color:var(--text-main);">${b.delivery_days || 7} Days</strong></span>
                     </div>
                   </div>
                   <button class="btn-secondary-auth btn-view-analysis" data-bid="${encBid}" style="padding: 0.45rem 1rem; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body); cursor: pointer; white-space: nowrap;">
