@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PARAKH — AI-Powered Standards Recommendation Engine</title>
+  <meta name="description" content="PARAKH: Describe a product in plain language and find the right Indian Standards (BIS codes), allied normative standards, and mandatory certification alerts.">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  
+  <!-- Anti-flash inline script to apply saved theme immediately -->
+  <script>
+    (function() {
+      var saved = localStorage.getItem("bis_theme");
+      var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <!-- Google Fonts: Space Grotesk, JetBrains Mono, Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Theme & Layout Stylesheets -->
+  <link rel="stylesheet" href="/static/css/theme.css?v=parakh">
+  <link rel="stylesheet" href="/static/css/layout.css?v=parakh">
+  <link rel="stylesheet" href="/static/css/components.css?v=parakh">
+  <link rel="stylesheet" href="/static/css/animations.css?v=parakh">
+  <link rel="stylesheet" href="/static/css/footer-reveal.css?v=parakh">
+  <link rel="stylesheet" href="/static/css/styles.css?v=parakh">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- =====================================================================
+       1. NAVBAR (Clean Bar with Leftmost Hamburger Menu)
+       ===================================================================== -->
+  <header class="site-header" id="site-header">
+    <div class="header-container">
+      <!-- Left: Hamburger Menu & Brand Logo -->
+      <div class="header-left">
+        <button class="nav-drawer-toggle" id="nav-drawer-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+          ☰
+        </button>
+        <a class="brand" href="/" aria-label="PARAKH Home">
+          <span class="brand-shield" aria-hidden="true">
+            <svg class="brand-shield-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.5L4.5 5.8V12C4.5 16.6 7.7 20.8 12 22C16.3 20.8 19.5 16.6 19.5 12V5.8L12 2.5Z" fill="#141414" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              <path d="M8.5 7.5H13C14.7 7.5 16 8.8 16 10.5C16 12.2 14.7 13.5 13 13.5H8.5V17.5" stroke="var(--accent, #FFE600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15L14.2 17.2L18.2 13.2" stroke="var(--accent, #FFE600)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span data-i18n="brand">PARAKH</span>
+        </a>
+      </div>
+
+      <!-- Right: Action Controls -->
+      <div class="header-actions">
+        <!-- Command Palette Trigger Button -->
+        <button class="btn-cmd-trigger btn-cmd-palette-trigger" type="button" aria-label="Search Standards (Cmd+K)">
+          <span>SEARCH</span> <kbd>⌘K</kbd>
+        </button>
+
+        <!-- Language Switcher Dropdown -->
+        <div class="lang-dropdown-container">
+          <button class="lang-dropdown-btn" id="lang-dropdown-btn" type="button" aria-haspopup="true" aria-label="Select Language">
+            🌐 <span id="current-lang-label">EN</span> ▾
+          </button>
+          <div class="lang-dropdown-menu" id="lang-dropdown-menu" role="menu">
+            <button class="lang-option active" type="button" data-lang="en" role="menuitem">English</button>
+            <button class="lang-option" type="button" data-lang="hi" role="menuitem">हिन्दी</button>
+            <button class="lang-option" type="button" data-lang="te" role="menuitem">తెలుగు</button>
+          </div>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button class="icon-btn theme-toggle-btn" type="button" aria-label="Toggle Theme" title="Toggle Theme">
+          <svg class="theme-icon moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+
+        <!-- User Profile & Logout Action (Rightmost) -->
+        <div id="user-profile-badge" class="user-nav-wrapper" style="display:inline-flex;">
+          <div class="user-badge">
+            <span class="user-avatar" id="nav-user-avatar">👤</span>
+            <span class="user-name-text" id="nav-user-name">User</span>
+          </div>
+          <button id="btn-logout-nav" class="btn-logout" type="button" title="Logout" aria-label="Logout">
+            <span class="logout-icon" aria-hidden="true">⏻</span>
+            <span class="logout-label">LOGOUT</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slide-out Left Navigation Drawer & Backdrop (All Nav Options) -->
+  <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+  <aside class="nav-drawer" id="main-nav" aria-label="Mobile & Desktop Drawer Navigation">
+    <div class="drawer-header">
+      <a class="brand" href="/" aria-label="PARAKH Home">
+        <span class="brand-shield" aria-hidden="true">
+          <svg class="brand-shield-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.5L4.5 5.8V12C4.5 16.6 7.7 20.8 12 22C16.3 20.8 19.5 16.6 19.5 12V5.8L12 2.5Z" fill="#141414" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M8.5 7.5H13C14.7 7.5 16 8.8 16 10.5C16 12.2 14.7 13.5 13 13.5H8.5V17.5" stroke="var(--accent, #FFE600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15L14.2 17.2L18.2 13.2" stroke="var(--accent, #FFE600)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span style="font-weight:800; font-size:1.05rem;" data-i18n="brand">PARAKH</span>
+      </a>
+      <button class="drawer-close-btn" id="drawer-close-btn" type="button" aria-label="Close navigation menu">✕</button>
+    </div>
+    <div class="drawer-body">
+      <a class="nav-link" href="/" data-i18n="nav.home">SEARCH PORTAL</a>
+      <a class="nav-link" href="/standards" data-i18n="nav.standards">EXPLORE STANDARDS</a>
+      <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer">TENDER ANALYZER</a>
+      <a class="nav-link" href="/alerts" data-i18n="nav.alerts">COMPLIANCE ALERTS</a>
+      <a class="nav-link" href="/assistant" data-i18n="nav.assistant">AI ASSISTANT</a>
+      <a class="nav-link" href="/docs-page" data-i18n="nav.docs">API DOCUMENTATION</a>
+
+      <!-- Drawer Theme Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Appearance / मोड</span>
+        <button class="mobile-theme-toggle theme-toggle-btn" type="button" aria-label="Toggle Dark and Light Theme">
+          <span>☀️ / 🌙 TOGGLE THEME</span>
+        </button>
+      </div>
+
+      <!-- Drawer Language Section -->
+      <div class="mobile-nav-section">
+        <span class="mobile-section-label">Language / भाषा / భాష</span>
+        <div class="mobile-lang-pills">
+          <button type="button" class="mobile-lang-pill active" data-lang="en">EN</button>
+          <button type="button" class="mobile-lang-pill" data-lang="hi">HI</button>
+          <button type="button" class="mobile-lang-pill" data-lang="te">TE</button>
+        </div>
+      </div>
+
+      <!-- Drawer Auth Section -->
+      <div class="mobile-nav-section" id="mobile-auth-section"></div>
+    </div>
+  </aside>
+
+  <!-- Command Palette Modal (Cmd+K) -->
+  <div class="cmd-palette-modal" id="cmd-palette-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Command Palette Search">
+    <div class="cmd-palette-box">
+      <div class="cmd-palette-header">
+        <span class="mono-label" style="color:var(--accent)">>_</span>
+        <input class="cmd-palette-input" id="cmd-palette-input" type="search" placeholder="Type standard code or keyword (e.g. IS 456, cement, water pipes)..." autocomplete="off">
+        <button class="cmd-palette-close" id="cmd-palette-close" type="button">ESC</button>
+      </div>
+      <div class="cmd-palette-results" id="cmd-palette-results">
+        <div class="cmd-palette-empty">
+          <span class="mono-label">TYPE 2+ CHARACTERS TO SEARCH INDIAN STANDARDS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <!-- =====================================================================
+         2. HOMEPAGE HERO (Solid Plain Yellow + Translucent Search Panel)
+         ===================================================================== -->
+    
+    <section class="hero-section" style="padding-top: 100px; min-height: 100vh; background: var(--bg-body); padding-bottom: 50px;">
+      <div class="content-container">
+        
+        <header style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="hero-title" style="font-size: 2.5rem; text-align: left; margin: 0;">Customer <span class="highlight">Portal</span></h1>
+            <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Manage your tenders and evaluate vendor bids with AI compliance scoring.</p>
+          </div>
+          <button id="btn-new-tender" class="btn-primary" style="padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 8px;">+ Create Tender</button>
+        </header>
+
+        <!-- New Tender Form (Hidden by default) -->
+        <div id="new-tender-form-container" class="card" style="display: none; margin-bottom: 3rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem;">
+          <h2 style="margin-top: 0; font-family: var(--font-primary); font-size: 1.5rem; color: var(--text-main);">Create New Tender</h2>
+          <form id="new-tender-form" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Tender Title</label>
+              <input type="text" id="tender-title" required style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary);" placeholder="e.g. Supply of High-Performance Rack Servers">
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Detailed Requirements (Specs & Standards)</label>
+              <textarea id="tender-desc" required rows="5" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: var(--font-primary);" placeholder="Describe the specifications, standards, and requirements..."></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+              <button type="button" id="btn-cancel-tender" class="btn-secondary-auth" style="padding: 0.7rem 1.5rem;">Cancel</button>
+              <button type="submit" class="btn-primary" id="btn-submit-tender" style="padding: 0.7rem 1.5rem;">Publish Tender</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tenders List -->
+        <div id="tenders-container" style="display: flex; flex-direction: column; gap: 2rem;">
+          <div class="loader-pulse" style="margin: 2rem auto;"></div>
+        </div>
+
+      </div>
+    </section>
+    <script src="/static/js/customer.js?v=parakh"></script>
+
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       4. REVEAL FOOTER (Fixed Sticky Under-Page Reveal)
+       ===================================================================== -->
+  <footer class="reveal-footer" id="reveal-footer" inert aria-hidden="true">
+    <div class="reveal-footer-container">
+      <div class="reveal-footer-grid">
+        <!-- Col 1: Brand & Description -->
+        <div class="reveal-footer-col reveal-footer-brand">
+          <div class="reveal-footer-brand-title">PARAKH · STANDARDS ENGINE</div>
+          <p class="reveal-footer-brand-desc">
+            Official standards discovery and verification framework (PARAKH) bridging natural language procurement with Bureau of Indian Standards specifications and Quality Control Orders.
+          </p>
+          <span class="reveal-footer-tag">v0.3.0 · VERIFIED PLATFORM</span>
+        </div>
+
+        <!-- Col 2: Navigation -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">NAVIGATION</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/">SEARCH PORTAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">CATALOGUE INDEX</a></li>
+            <li><a class="reveal-footer-link" href="/analyzer">TENDER ANALYZER</a></li>
+            <li><a class="reveal-footer-link" href="/alerts">COMPLIANCE ALERTS</a></li>
+            <li><a class="reveal-footer-link" href="/assistant">AI ASSISTANT</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Sectors -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">SECTORS</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/standards">CIVIL ENGINEERING</a></li>
+            <li><a class="reveal-footer-link" href="/standards">ELECTROTECHNICAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">MECHANICAL</a></li>
+            <li><a class="reveal-footer-link" href="/standards">CHEMICAL & WATER</a></li>
+            <li><a class="reveal-footer-link" href="/standards">SAFETY & TEXTILES</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Documentation -->
+        <div class="reveal-footer-col">
+          <div class="reveal-footer-col-title">DEVELOPERS</div>
+          <ul class="reveal-footer-links">
+            <li><a class="reveal-footer-link" href="/docs-page">API REFERENCE</a></li>
+            <li><a class="reveal-footer-link" href="/api/health">SYSTEM HEALTH</a></li>
+            <li><a class="reveal-footer-link" href="/docs">SWAGGER OPENAPI</a></li>
+            <li><a class="reveal-footer-link" href="/redoc">REDOC SPECS</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="reveal-footer-bottom">
+        <span>© 2026 PARAKH · Standards Recommendation Engine</span>
+        <div class="reveal-footer-bottom-links">
+          <a class="reveal-footer-bottom-link" href="/docs-page">API</a>
+          <a class="reveal-footer-bottom-link" href="/standards">STANDARDS</a>
+          <a class="reveal-footer-bottom-link" href="/">HOME</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating AI Assistant Chatbot Button -->
+  <a href="/assistant" class="floating-assistant-btn" id="floating-assistant-btn" aria-label="Open PARAKH AI Assistant" title="Open PARAKH AI Assistant">
+    <svg class="floating-assistant-svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+    <span class="floating-assistant-label">AI ASSISTANT</span>
+    <span class="floating-assistant-badge">ASK</span>
+  </a>
+
+  <!-- Toast Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- JavaScript Modules -->
+  <script src="/static/js/theme.js?v=parakh"></script>
+  <script src="/static/js/common.js?v=parakh"></script>
+  <script src="/static/js/i18n.js?v=parakh"></script>
+  <script src="/static/js/reveal.js?v=parakh"></script>
+  <script src="/static/js/navbar.js?v=parakh"></script>
+  <script src="/static/js/auth.js?v=parakh"></script>
+  <script src="/static/js/footer-reveal.js?v=parakh"></script>
+  <script src="/static/js/home.js?v=parakh"></script>
+</body>
+</html>

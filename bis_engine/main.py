@@ -31,6 +31,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
 from bis_engine.auth import auth_router, get_current_user_optional
+from bis_engine.bids_api import bids_router
 from bis_engine.data.catalog import SECTORS, SYNC_HEALTH, all_standards, CATALOG_VERSION
 from bis_engine.engine.analyzer import TenderAnalyzer
 from bis_engine.engine.assistant import StandardsAssistant
@@ -49,10 +50,11 @@ app = FastAPI(
     version="0.3.0",
 )
 
-# Authentication router
+# Authentication & Bids routers
 app.include_router(auth_router)
+app.include_router(bids_router)
 
-PROTECTED_PAGES = {"/", "/analyzer", "/standards", "/alerts", "/assistant", "/docs-page"}
+PROTECTED_PAGES = {"/", "/analyzer", "/standards", "/alerts", "/assistant", "/docs-page", "/customer", "/vendor"}
 
 
 def _is_auth_enforced() -> bool:
@@ -266,6 +268,16 @@ def login_page(request: Request):
 @app.get("/")
 def home():
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/customer")
+def customer_page():
+    return FileResponse(STATIC_DIR / "customer.html")
+
+
+@app.get("/vendor")
+def vendor_page():
+    return FileResponse(STATIC_DIR / "vendor.html")
 
 
 @app.get("/analyzer")

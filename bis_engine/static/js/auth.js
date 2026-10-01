@@ -74,8 +74,10 @@
             name: userMeta.name || u.email.split("@")[0],
           };
           renderNavbarUser(userObj);
-          if (location.pathname === "/login") {
-            location.replace("/");
+          const isVendor = userObj.email.toLowerCase().includes("vendor") || userObj.email.toLowerCase().includes("supplier");
+          const targetUrl = isVendor ? "/vendor" : "/customer";
+          if (location.pathname === "/login" || location.pathname === "/") {
+            location.replace(targetUrl);
           }
           return;
         }
@@ -87,8 +89,10 @@
         const data = await res.json();
         if (data.authenticated && data.user) {
           renderNavbarUser(data.user);
-          if (location.pathname === "/login") {
-            location.replace("/");
+          const isVendor = data.user.email.toLowerCase().includes("vendor") || data.user.email.toLowerCase().includes("supplier");
+          const targetUrl = isVendor ? "/vendor" : "/customer";
+          if (location.pathname === "/login" || location.pathname === "/") {
+            location.replace(targetUrl);
           }
           return;
         }
@@ -419,9 +423,11 @@
           }
 
           showToast(t("auth.login_success", "Signed in successfully."), "success");
+          const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+          const targetUrl = isVendor ? "/vendor" : "/customer";
           card.style.opacity = "0.7";
           card.style.transform = "scale(0.98)";
-          setTimeout(() => location.replace("/"), 350);
+          setTimeout(() => location.replace(targetUrl), 350);
 
         } else {
           // --- REGISTER FLOW ---
@@ -460,9 +466,11 @@
           }
 
           showToast(t("auth.register_success", "Account created successfully."), "success");
+          const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+          const targetUrl = isVendor ? "/vendor" : "/customer";
           card.style.opacity = "0.7";
           card.style.transform = "scale(0.98)";
-          setTimeout(() => location.replace("/"), 350);
+          setTimeout(() => location.replace(targetUrl), 350);
         }
 
       } catch (err) {
@@ -511,9 +519,11 @@
           body: JSON.stringify({ email, name, user_id: email }),
         });
         showToast("Demo login successful.", "success");
+        const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+        const targetUrl = isVendor ? "/vendor" : "/customer";
         card.style.opacity = "0.7";
         card.style.transform = "scale(0.98)";
-        setTimeout(() => location.replace("/"), 350);
+        setTimeout(() => location.replace(targetUrl), 350);
       } catch (err) {
         showToast("Demo login failed.", "error");
         btn.disabled = false;
