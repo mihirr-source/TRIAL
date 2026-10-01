@@ -74,7 +74,7 @@
             name: userMeta.name || u.email.split("@")[0],
           };
           renderNavbarUser(userObj);
-          const isVendor = userObj.email.toLowerCase().includes("vendor") || userObj.email.toLowerCase().includes("supplier");
+          const isVendor = userObj.role === "vendor" || userObj.email.toLowerCase().includes("vendor") || userObj.email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
           if (location.pathname === "/login" || location.pathname === "/") {
             location.replace(targetUrl);
@@ -89,7 +89,7 @@
         const data = await res.json();
         if (data.authenticated && data.user) {
           renderNavbarUser(data.user);
-          const isVendor = data.user.email.toLowerCase().includes("vendor") || data.user.email.toLowerCase().includes("supplier");
+          const isVendor = data.user.role === "vendor" || data.user.email.toLowerCase().includes("vendor") || data.user.email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
           if (location.pathname === "/login" || location.pathname === "/") {
             location.replace(targetUrl);
@@ -393,7 +393,7 @@
                 await fetch("/api/auth/session", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email: email, name: displayName, user_id: data.user.id }),
+                  body: JSON.stringify({ email: email, name: displayName, user_id: data.user.id, role: document.getElementById("portal-vendor") && document.getElementById("portal-vendor").classList.contains("active") ? "vendor" : "customer" }),
                 });
                 loginSucceeded = true;
               } else if (error && (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed")) {
@@ -423,7 +423,7 @@
           }
 
           showToast(t("auth.login_success", "Signed in successfully."), "success");
-          const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+          const isVendor = (data && data.user && data.user.role === "vendor") || email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
           card.style.opacity = "0.7";
           card.style.transform = "scale(0.98)";
@@ -435,7 +435,7 @@
           const res = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, name }),
+            body: JSON.stringify({ email, password, name, role: document.getElementById("portal-vendor") && document.getElementById("portal-vendor").classList.contains("active") ? "vendor" : "customer" }),
           });
           const data = await res.json().catch(() => ({}));
 
@@ -466,7 +466,7 @@
           }
 
           showToast(t("auth.register_success", "Account created successfully."), "success");
-          const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+          const isVendor = (data && data.user && data.user.role === "vendor") || email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
           const targetUrl = isVendor ? "/vendor" : "/customer";
           card.style.opacity = "0.7";
           card.style.transform = "scale(0.98)";
@@ -507,7 +507,7 @@
     }
 
     // Demo Login Logic
-    async function doDemoLogin(email, name, btn, spinnerId) {
+    async function doDemoLogin(email, name, btn, spinnerId, role="customer") {
       btn.disabled = true;
       const demoSpinner = document.getElementById(spinnerId);
       if (demoSpinner) demoSpinner.style.display = "inline-block";
@@ -516,10 +516,10 @@
         await fetch("/api/auth/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, user_id: email }),
+          body: JSON.stringify({ email, name, user_id: email, role: role }),
         });
         showToast("Demo login successful.", "success");
-        const isVendor = email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
+        const isVendor = (data && data.user && data.user.role === "vendor") || email.toLowerCase().includes("vendor") || email.toLowerCase().includes("supplier");
         const targetUrl = isVendor ? "/vendor" : "/customer";
         card.style.opacity = "0.7";
         card.style.transform = "scale(0.98)";
@@ -532,10 +532,10 @@
     }
 
     if (demoBtnCustomer) {
-      demoBtnCustomer.addEventListener("click", () => doDemoLogin("demo@example.com", "Demo Customer", demoBtnCustomer, "demo-spinner-c"));
+      demoBtnCustomer.addEventListener("click", () => doDemoLogin("demo@example.com", "Demo Customer", demoBtnCustomer, "demo-spinner-c", "customer"));
     }
     if (demoBtnVendor) {
-      demoBtnVendor.addEventListener("click", () => doDemoLogin("vendor1@ac-suppliers.com", "Demo Vendor", demoBtnVendor, "demo-spinner-v"));
+      demoBtnVendor.addEventListener("click", () => doDemoLogin("vendor1@ac-suppliers.com", "Demo Vendor", demoBtnVendor, "demo-spinner-v", "vendor"));
     }
 
     // OTP Form Submission

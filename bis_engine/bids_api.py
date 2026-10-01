@@ -30,7 +30,7 @@ def list_tenders(current_user: dict[str, Any] = Depends(get_current_user)) -> di
     email = current_user["email"]
     
     # Very simple role check for demo purposes
-    is_vendor = "vendor" in email.lower() or "supplier" in email.lower()
+    is_vendor = current_user.get("role") == "vendor" or "vendor" in email.lower() or "supplier" in email.lower()
 
     try:
         cur = conn.cursor()

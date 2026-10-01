@@ -123,6 +123,7 @@ def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
                 email TEXT UNIQUE NOT NULL COLLATE NOCASE,
                 name TEXT NOT NULL,
                 password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'customer',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
@@ -163,6 +164,7 @@ def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
                 email TEXT UNIQUE NOT NULL COLLATE NOCASE,
                 name TEXT NOT NULL,
                 password_hash TEXT NOT NULL,
+            role TEXT DEFAULT 'customer',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
@@ -361,7 +363,7 @@ def create_user(email: str, name: str, password: Optional[str] = None, password_
         with conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)",
+                "INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)",
                 (email, name, pwd_hash),
             )
             user_id = cur.lastrowid
@@ -706,7 +708,7 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
     if user_row and verify_password(req.password, user_row["password_hash"]):
         _clear_failed_attempts(rate_key)
         _seed_demo_data_if_needed(req.email)
-        user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"]}
+        user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"], "role": user_row.get("role", "customer"), "role": user_row["role"]}
         set_auth_cookie(response, user)
         return {"status": "ok", "user": user, "message": "Logged in successfully."}
         
@@ -727,6 +729,8 @@ class SessionSyncRequest(BaseModel):
     email: str = Field(...)
     name: Optional[str] = None
     user_id: Optional[str] = None
+    role: Optional[str] = 'customer'
+    role: Optional[str] = 'customer'
 
 
 def _seed_demo_data_if_needed(email: str):
@@ -810,11 +814,16 @@ def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
         "id": req.user_id or req.email,
         "email": req.email,
         "name": req.name or req.email.split("@")[0],
+        "role": req.role
+        "role": req.role
     }
     # Ensure cached in local DB
     existing = get_user_by_email(req.email)
     if not existing:
-        save_user_direct(email=req.email, name=user["name"], password_hash=hash_password("DefaultSynced123!"))
+        save_user_direct(email=req.email, name=user["name"], password_hash=hash_password("DefaultSynced123!"), role=req.role)
+    else:
+        user["role"] = existing.get("role", req.role)
+    
     
     _seed_demo_data_if_needed(req.email)
     
