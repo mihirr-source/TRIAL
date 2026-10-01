@@ -477,30 +477,55 @@
       }
     });
 
-    // Demo Login Logic
-    const demoBtn = document.getElementById("demo-login-btn");
-    if (demoBtn) {
-      demoBtn.addEventListener("click", async () => {
-        demoBtn.disabled = true;
-        const demoSpinner = document.getElementById("demo-spinner");
-        if (demoSpinner) demoSpinner.style.display = "inline-block";
-        
-        try {
-          await fetch("/api/auth/session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "demo@example.com", name: "Demo User", user_id: "demo-123" }),
-          });
-          showToast("Demo login successful.", "success");
-          card.style.opacity = "0.7";
-          card.style.transform = "scale(0.98)";
-          setTimeout(() => location.replace("/"), 350);
-        } catch (err) {
-          showToast("Demo login failed.", "error");
-          demoBtn.disabled = false;
-          if (demoSpinner) demoSpinner.style.display = "none";
-        }
+    // Portal Tabs Logic
+    const portalCustomer = document.getElementById("portal-customer");
+    const portalVendor = document.getElementById("portal-vendor");
+    const demoBtnCustomer = document.getElementById("demo-login-customer-btn");
+    const demoBtnVendor = document.getElementById("demo-login-vendor-btn");
+
+    if (portalCustomer && portalVendor) {
+      portalCustomer.addEventListener("click", () => {
+        portalCustomer.classList.add("active");
+        portalVendor.classList.remove("active");
+        if (demoBtnCustomer) demoBtnCustomer.style.display = "flex";
+        if (demoBtnVendor) demoBtnVendor.style.display = "none";
       });
+      portalVendor.addEventListener("click", () => {
+        portalVendor.classList.add("active");
+        portalCustomer.classList.remove("active");
+        if (demoBtnCustomer) demoBtnCustomer.style.display = "none";
+        if (demoBtnVendor) demoBtnVendor.style.display = "flex";
+      });
+    }
+
+    // Demo Login Logic
+    async function doDemoLogin(email, name, btn, spinnerId) {
+      btn.disabled = true;
+      const demoSpinner = document.getElementById(spinnerId);
+      if (demoSpinner) demoSpinner.style.display = "inline-block";
+      
+      try {
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, user_id: email }),
+        });
+        showToast("Demo login successful.", "success");
+        card.style.opacity = "0.7";
+        card.style.transform = "scale(0.98)";
+        setTimeout(() => location.replace("/"), 350);
+      } catch (err) {
+        showToast("Demo login failed.", "error");
+        btn.disabled = false;
+        if (demoSpinner) demoSpinner.style.display = "none";
+      }
+    }
+
+    if (demoBtnCustomer) {
+      demoBtnCustomer.addEventListener("click", () => doDemoLogin("demo@example.com", "Demo Customer", demoBtnCustomer, "demo-spinner-c"));
+    }
+    if (demoBtnVendor) {
+      demoBtnVendor.addEventListener("click", () => doDemoLogin("vendor1@ac-suppliers.com", "Demo Vendor", demoBtnVendor, "demo-spinner-v"));
     }
 
     // OTP Form Submission

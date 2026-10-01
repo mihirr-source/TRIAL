@@ -96,6 +96,12 @@
           <p class="auth-sub" id="auth-card-sub" data-i18n="auth.login_sub">Authenticate to access your standards workspace</p>
         </div>
 
+        <!-- Portal Tabs (Customer / Vendor) -->
+        <div class="auth-tabs portal-tabs" role="tablist" style="margin-bottom: 1rem; background: var(--bg-body); border-radius: 8px; padding: 4px;">
+          <button class="auth-tab-btn active" id="portal-customer" type="button" role="tab" aria-selected="true" style="flex: 1;">Customer</button>
+          <button class="auth-tab-btn" id="portal-vendor" type="button" role="tab" aria-selected="false" style="flex: 1;">Vendor</button>
+        </div>
+
         <!-- Mode Tabs (Sign In / Register) -->
         <div class="auth-tabs" role="tablist">
           <button class="auth-tab-btn active" id="tab-login" type="button" role="tab" aria-selected="true" data-i18n="auth.tab_login">Sign In</button>
@@ -139,11 +145,17 @@
             <span aria-hidden="true">→</span>
           </button>
 
-          <!-- Demo Login Button -->
-          <button class="btn-secondary-auth" id="demo-login-btn" type="button" style="margin-top: 1rem; width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.8rem; border-radius: 8px; cursor: pointer; font-family: var(--font-primary); font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: background 0.2s;">
-            <span id="demo-spinner" class="auth-spinner" style="display: none;" aria-hidden="true"></span>
-            Demo Login
-          </button>
+          <!-- Demo Login Buttons -->
+          <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+            <button class="btn-secondary-auth" id="demo-login-customer-btn" type="button" style="flex: 1; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.8rem; border-radius: 8px; cursor: pointer; font-family: var(--font-primary); font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: background 0.2s;">
+              <span id="demo-spinner-c" class="auth-spinner" style="display: none;" aria-hidden="true"></span>
+              Demo Customer
+            </button>
+            <button class="btn-secondary-auth" id="demo-login-vendor-btn" type="button" style="display: none; flex: 1; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.8rem; border-radius: 8px; cursor: pointer; font-family: var(--font-primary); font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: background 0.2s;">
+              <span id="demo-spinner-v" class="auth-spinner" style="display: none;" aria-hidden="true"></span>
+              Demo Vendor
+            </button>
+          </div>
         </form>
 
         <!-- OTP Verification Form (Supabase Email Confirmation) -->
