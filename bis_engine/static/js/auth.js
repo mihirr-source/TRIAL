@@ -78,6 +78,10 @@
           const targetUrl = isVendor ? "/vendor" : "/customer";
           if (location.pathname === "/login" || location.pathname === "/") {
             location.replace(targetUrl);
+          } else if (location.pathname === "/vendor" && !isVendor) {
+            location.replace("/customer");
+          } else if (location.pathname === "/customer" && isVendor) {
+            location.replace("/vendor");
           }
           return;
         }
@@ -93,6 +97,10 @@
           const targetUrl = isVendor ? "/vendor" : "/customer";
           if (location.pathname === "/login" || location.pathname === "/") {
             location.replace(targetUrl);
+          } else if (location.pathname === "/vendor" && !isVendor) {
+            location.replace("/customer");
+          } else if (location.pathname === "/customer" && isVendor) {
+            location.replace("/vendor");
           }
           return;
         }
@@ -116,6 +124,10 @@
     if (user) {
       const initial = (user.name || user.email || "U").trim().charAt(0).toUpperCase();
       const displayName = user.name || user.email.split("@")[0];
+      const isVendor = user.role === "vendor" || user.email.toLowerCase().includes("vendor") || user.email.toLowerCase().includes("supplier");
+      const roleBadge = isVendor 
+        ? `<span style="background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.35); font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; margin-left:6px; letter-spacing:0.5px;">VENDOR</span>` 
+        : `<span style="background:rgba(255,230,0,0.18); color:var(--accent); border:1px solid rgba(255,230,0,0.35); font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; margin-left:6px; letter-spacing:0.5px;">CUSTOMER</span>`;
 
       // 1. Desktop Header User Badge & Distinct Logout Button
       if (actionsContainer) {
@@ -126,6 +138,7 @@
           <div class="user-badge" title="${escapeHtml(user.name || displayName)} (${escapeHtml(user.email)})">
             <span class="user-avatar">${escapeHtml(initial)}</span>
             <span class="user-name-text">${escapeHtml(displayName)}</span>
+            ${roleBadge}
           </div>
           <button id="btn-logout-nav" class="btn-logout" type="button" title="Log Out" aria-label="Log Out">
             <span class="logout-icon" aria-hidden="true">⏻</span>
@@ -491,19 +504,39 @@
     const demoBtnCustomer = document.getElementById("demo-login-customer-btn");
     const demoBtnVendor = document.getElementById("demo-login-vendor-btn");
 
+    function updatePortalUI() {
+      const isVendor = portalVendor && portalVendor.classList.contains("active");
+      const titleEl = document.getElementById("auth-card-title");
+      const subEl = document.getElementById("auth-card-sub");
+      const submitTextEl = document.getElementById("submit-text");
+
+      if (isVendor) {
+        if (titleEl) titleEl.textContent = "Vendor Portal";
+        if (subEl) subEl.textContent = "Supplier & Bidding Workspace: browse active tenders and place bids";
+        if (submitTextEl && submitTextEl.textContent.includes("Sign In")) submitTextEl.textContent = "Sign In as Vendor";
+        if (demoBtnCustomer) demoBtnCustomer.style.display = "none";
+        if (demoBtnVendor) demoBtnVendor.style.display = "flex";
+      } else {
+        if (titleEl) titleEl.textContent = "Customer Portal";
+        if (subEl) subEl.textContent = "Buyer Workspace: publish tenders and approve vendor bids";
+        if (submitTextEl && submitTextEl.textContent.includes("Sign In")) submitTextEl.textContent = "Sign In as Customer";
+        if (demoBtnCustomer) demoBtnCustomer.style.display = "flex";
+        if (demoBtnVendor) demoBtnVendor.style.display = "none";
+      }
+    }
+
     if (portalCustomer && portalVendor) {
       portalCustomer.addEventListener("click", () => {
         portalCustomer.classList.add("active");
         portalVendor.classList.remove("active");
-        if (demoBtnCustomer) demoBtnCustomer.style.display = "flex";
-        if (demoBtnVendor) demoBtnVendor.style.display = "none";
+        updatePortalUI();
       });
       portalVendor.addEventListener("click", () => {
         portalVendor.classList.add("active");
         portalCustomer.classList.remove("active");
-        if (demoBtnCustomer) demoBtnCustomer.style.display = "none";
-        if (demoBtnVendor) demoBtnVendor.style.display = "flex";
+        updatePortalUI();
       });
+      updatePortalUI();
     }
 
     // Demo Login Logic

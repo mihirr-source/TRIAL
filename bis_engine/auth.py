@@ -494,8 +494,9 @@ def get_current_user_optional(request: Request) -> Optional[dict[str, Any]]:
     user_id = payload.get("sub")
     email = payload.get("email", "")
     name = payload.get("name") or (email.split("@")[0] if email else "User")
+    role = payload.get("role") or ("vendor" if ("vendor" in email.lower() or "supplier" in email.lower()) else "customer")
     
-    return {"id": user_id, "email": email, "name": name}
+    return {"id": user_id, "email": email, "name": name, "role": role}
 
 
 def get_current_user(request: Request) -> dict[str, Any]:
@@ -510,10 +511,12 @@ def get_current_user(request: Request) -> dict[str, Any]:
 
 
 def set_auth_cookie(response: Response, user: dict[str, Any]) -> None:
+    role = user.get("role") or ("vendor" if ("vendor" in user["email"].lower() or "supplier" in user["email"].lower()) else "customer")
     token = create_signed_token({
         "sub": str(user.get("id", user.get("email", "user"))),
         "email": user["email"],
         "name": user.get("name") or user["email"].split("@")[0],
+        "role": role,
     })
     response.set_cookie(
         key=COOKIE_NAME,

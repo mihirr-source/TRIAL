@@ -105,8 +105,7 @@
     </div>
     <div class="drawer-body">
       <a class="nav-link" href="/" data-i18n="nav.home">SEARCH PORTAL</a>
-      <a class="nav-link" href="/customer">CUSTOMER PORTAL</a>
-      <a class="nav-link" href="/vendor">VENDOR PORTAL</a>
+      <a class="nav-link active" href="/customer">CUSTOMER PORTAL (BUYER)</a>
       <a class="nav-link" href="/standards" data-i18n="nav.standards">EXPLORE STANDARDS</a>
       <a class="nav-link" href="/analyzer" data-i18n="nav.analyzer">TENDER ANALYZER</a>
       <a class="nav-link" href="/alerts" data-i18n="nav.alerts">COMPLIANCE ALERTS</a>
@@ -122,8 +121,11 @@
           
           <header style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h1 class="hero-title" style="font-size: 2.4rem; text-align: left; margin: 0;">Customer <span class="highlight">Portal</span></h1>
-              <p class="hero-tagline" style="text-align: left; margin-top: 0.5rem; max-width: 600px;">Publish procurement tenders with BIS specifications, receive vendor price bids, and compare AI compliance evaluations.</p>
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.3rem;">
+                <h1 class="hero-title" style="font-size: 2.4rem; text-align: left; margin: 0;">Customer <span class="highlight">Portal</span></h1>
+                <span style="background: rgba(255, 230, 0, 0.15); color: var(--accent); border: 1px solid rgba(255, 230, 0, 0.35); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px;">BUYER INTERFACE</span>
+              </div>
+              <p class="hero-tagline" style="text-align: left; margin-top: 0.3rem; max-width: 600px;">Publish procurement tenders with BIS specifications, review incoming vendor quotes, and approve bids with automated compliance scoring.</p>
             </div>
             <div style="display:flex; gap:0.8rem; align-items:center;">
               <button id="btn-refresh-customer" class="btn-secondary-auth" style="padding: 0.75rem 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); cursor: pointer;">

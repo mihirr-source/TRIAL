@@ -271,12 +271,22 @@ def home():
 
 
 @app.get("/customer")
-def customer_page():
+def customer_page(request: Request):
+    user = get_current_user_optional(request)
+    if user:
+        is_vendor = user.get("role") == "vendor" or "vendor" in user.get("email", "").lower() or "supplier" in user.get("email", "").lower()
+        if is_vendor:
+            return RedirectResponse(url="/vendor", status_code=status.HTTP_302_FOUND)
     return FileResponse(STATIC_DIR / "customer.html")
 
 
 @app.get("/vendor")
-def vendor_page():
+def vendor_page(request: Request):
+    user = get_current_user_optional(request)
+    if user:
+        is_vendor = user.get("role") == "vendor" or "vendor" in user.get("email", "").lower() or "supplier" in user.get("email", "").lower()
+        if not is_vendor:
+            return RedirectResponse(url="/customer", status_code=status.HTTP_302_FOUND)
     return FileResponse(STATIC_DIR / "vendor.html")
 
 
