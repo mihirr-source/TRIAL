@@ -127,6 +127,29 @@ def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tenders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                description TEXT,
+                customer_email TEXT
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bids (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tender_id INTEGER,
+                vendor_email TEXT,
+                vendor_name TEXT,
+                spec_text TEXT,
+                compliance_score INTEGER,
+                compliance_report TEXT
+            )
+            """
+        )
         return conn
     except (sqlite3.OperationalError, PermissionError, OSError):
         tmp_path = Path("/tmp") / "users.db"
@@ -141,6 +164,29 @@ def get_db(db_path: Optional[Path] = None) -> sqlite3.Connection:
                 name TEXT NOT NULL,
                 password_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tenders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                description TEXT,
+                customer_email TEXT
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bids (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tender_id INTEGER,
+                vendor_email TEXT,
+                vendor_name TEXT,
+                spec_text TEXT,
+                compliance_score INTEGER,
+                compliance_report TEXT
             )
             """
         )
