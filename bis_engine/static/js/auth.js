@@ -5,8 +5,8 @@
 "use strict";
 
 (function () {
-  const SUPABASE_URL = "https://tkvmuphnvdmjfjnroquo.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_eKG4f5g9VFA0ccO2ykDzsw_WV1bcys9";
+  const SUPABASE_URL = "https://aczptmsfeueejysaajod.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_MB41QV4o2-yrVWvfIwvPeA_-VV7_YRJ";
 
   let sbClient = null;
   function getSupabase() {
@@ -476,6 +476,32 @@
         submitSpinner.style.display = "none";
       }
     });
+
+    // Demo Login Logic
+    const demoBtn = document.getElementById("demo-login-btn");
+    if (demoBtn) {
+      demoBtn.addEventListener("click", async () => {
+        demoBtn.disabled = true;
+        const demoSpinner = document.getElementById("demo-spinner");
+        if (demoSpinner) demoSpinner.style.display = "inline-block";
+        
+        try {
+          await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "demo@example.com", name: "Demo User", user_id: "demo-123" }),
+          });
+          showToast("Demo login successful.", "success");
+          card.style.opacity = "0.7";
+          card.style.transform = "scale(0.98)";
+          setTimeout(() => location.replace("/"), 350);
+        } catch (err) {
+          showToast("Demo login failed.", "error");
+          demoBtn.disabled = false;
+          if (demoSpinner) demoSpinner.style.display = "none";
+        }
+      });
+    }
 
     // OTP Form Submission
     if (otpForm) {

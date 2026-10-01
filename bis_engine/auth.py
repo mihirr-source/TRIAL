@@ -35,8 +35,8 @@ OTP_EXPIRY_SECONDS = 600  # 10 minutes
 OTP_COOLDOWN_SECONDS = 60  # 60 seconds interval between resends
 
 # Supabase Auth Configuration
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tkvmuphnvdmjfjnroquo.supabase.co").rstrip("/")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_eKG4f5g9VFA0ccO2ykDzsw_WV1bcys9")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://aczptmsfeueejysaajod.supabase.co").rstrip("/")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_MB41QV4o2-yrVWvfIwvPeA_-VV7_YRJ")
 
 # Rate limiting: max 5 failed attempts per IP/email within 300s -> lockout for 300s
 MAX_FAILED_ATTEMPTS = 5
@@ -649,6 +649,8 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
             pwd_hash = hash_password(req.password)
             save_user_direct(email=req.email, name=display_name, password_hash=pwd_hash)
             
+            _seed_demo_data_if_needed(req.email)
+            
             user = {"id": user_id, "email": req.email, "name": display_name}
             set_auth_cookie(response, user)
             return {"status": "ok", "user": user, "message": "Logged in successfully."}
@@ -657,6 +659,7 @@ def login(req: LoginRequest, request: Request, response: Response) -> dict[str, 
     user_row = get_user_by_email(req.email)
     if user_row and verify_password(req.password, user_row["password_hash"]):
         _clear_failed_attempts(rate_key)
+        _seed_demo_data_if_needed(req.email)
         user = {"id": user_row["id"], "email": user_row["email"], "name": user_row["name"]}
         set_auth_cookie(response, user)
         return {"status": "ok", "user": user, "message": "Logged in successfully."}
@@ -680,6 +683,80 @@ class SessionSyncRequest(BaseModel):
     user_id: Optional[str] = None
 
 
+def _seed_demo_data_if_needed(email: str):
+    import json
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM tenders WHERE customer_email = ?", (email,))
+        if cur.fetchone()[0] == 0:
+            demo_data = [
+                {
+                    "tender": ("Procurement of Office Cooling Units (Demo)", "We require 50 energy-efficient air conditioning units (split type) for our new office block. Must be minimum 1.5 ton capacity with copper condenser coils and ISEER rating of 4.0 or above. R32 refrigerant preferred.", email),
+                    "bid": ("vendor1@ac-suppliers.com", "CoolTech India", "We propose our 1.5 Ton Inverter Split AC. It features a 100% copper condenser, R32 refrigerant, and an ISEER rating of 4.2. Compliant with IS 1391 (Part 2) for Room Air Conditioners.", 95, json.dumps({
+                        "score": 95,
+                        "summary": "Vendor specifications strongly match the tender requirements.",
+                        "issues": [],
+                        "strengths": ["1.5 Ton capacity matches requirement.", "Copper condenser provided.", "ISEER 4.2 exceeds the 4.0 requirement.", "Uses R32 refrigerant."]
+                    }))
+                },
+                {
+                    "tender": ("Supply of Monocrystalline Solar Panels (Demo)", "Requirement for 500kW capacity monocrystalline solar panels with minimum 19% efficiency, PID resistant, and IEC 61215 certification.", email),
+                    "bid": ("sales@solarpower.in", "SolarPower Solutions", "We offer 540W monocrystalline modules with 21% efficiency, completely PID resistant. IEC 61215 and IEC 61730 certified with 25-year performance warranty.", 98, json.dumps({
+                        "score": 98,
+                        "summary": "Exceptional match with all requirements met or exceeded.",
+                        "issues": [],
+                        "strengths": ["21% efficiency exceeds 19% requirement.", "PID resistant.", "IEC 61215 certified."]
+                    }))
+                },
+                {
+                    "tender": ("Ergonomic Office Seating (Demo)", "Looking for 200 ergonomic mesh chairs with adjustable lumbar support, 3D armrests, and BIFMA certification.", email),
+                    "bid": ("orders@comfortfurn.com", "Comfort Furnitures", "Proposing our ErgoPro mesh chair. Includes adjustable lumbar, 4D armrests (exceeds 3D requirement), and is BIFMA certified.", 92, json.dumps({
+                        "score": 92,
+                        "summary": "Strong match, offering enhanced armrests over requirements.",
+                        "issues": [],
+                        "strengths": ["4D armrests exceed requirement.", "Mesh chair with adjustable lumbar.", "BIFMA certified."]
+                    }))
+                },
+                {
+                    "tender": ("High-Performance Rack Servers (Demo)", "Need 10x 2U rack servers with dual Intel Xeon Silver or equivalent, 128GB RAM, and 4x 2TB NVMe SSDs in RAID 10.", email),
+                    "bid": ("bids@techsystems.co.in", "TechSystems Corp", "Offering 2U servers with dual AMD EPYC processors, 256GB RAM, and 4x 2TB NVMe drives. No hardware RAID controller included, relying on software RAID.", 80, json.dumps({
+                        "score": 80,
+                        "summary": "Good processing power but lacks hardware RAID and uses AMD instead of Intel.",
+                        "issues": ["No hardware RAID 10 support built-in.", "Uses AMD instead of specified Intel Xeon (though equivalent)."],
+                        "strengths": ["256GB RAM exceeds 128GB requirement.", "4x 2TB NVMe SSDs included.", "2U rack form factor."]
+                    }))
+                },
+                {
+                    "tender": ("Fire Safety Equipment - Extinguishers (Demo)", "Procurement of 50 ABC dry chemical powder fire extinguishers (4kg) and 20 CO2 fire extinguishers (2kg). Must have IS 15683 certification.", email),
+                    "bid": ("safety@fireguard.in", "FireGuard Security", "Supplying 50 ABC DCP (4kg) and 20 CO2 (2kg) extinguishers. All units are ISI marked and comply with IS 15683. Includes wall mounting brackets.", 100, json.dumps({
+                        "score": 100,
+                        "summary": "Perfect match. All quantities and certifications align exactly.",
+                        "issues": [],
+                        "strengths": ["IS 15683 certified.", "Exact quantities met.", "Includes extra wall mounting brackets."]
+                    }))
+                },
+                {
+                    "tender": ("Enterprise Firewall Security Appliance (Demo)", "Next-Generation Firewall (NGFW) with minimum 5 Gbps threat protection throughput, SSL inspection, and dual power supplies.", email),
+                    "bid": ("netsec@secureit.com", "SecureIT Networks", "Proposing our NGFW-7000 model. Offers 3.5 Gbps threat protection throughput (below req), SSL inspection enabled, and single power supply.", 55, json.dumps({
+                        "score": 55,
+                        "summary": "Subpar match due to throughput limitations and lack of redundancy.",
+                        "issues": ["Throughput is 3.5 Gbps, below the 5 Gbps requirement.", "Only single power supply offered, dual required."],
+                        "strengths": ["Next-Generation Firewall (NGFW) functionality.", "SSL inspection included."]
+                    }))
+                }
+            ]
+
+            for item in demo_data:
+                cur.execute("INSERT INTO tenders (title, description, customer_email) VALUES (?, ?, ?)", item["tender"])
+                tender_id = cur.lastrowid
+                bid_data = (tender_id,) + item["bid"]
+                cur.execute("INSERT INTO bids (tender_id, vendor_email, vendor_name, spec_text, compliance_score, compliance_report) VALUES (?, ?, ?, ?, ?, ?)", bid_data)
+                
+            conn.commit()
+    finally:
+        conn.close()
+
 @auth_router.post("/session")
 def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
     """Sync authenticated Supabase user session to signed HTTP cookie."""
@@ -692,6 +769,9 @@ def sync_session(req: SessionSyncRequest, response: Response) -> dict[str, Any]:
     existing = get_user_by_email(req.email)
     if not existing:
         save_user_direct(email=req.email, name=user["name"], password_hash=hash_password("DefaultSynced123!"))
+    
+    _seed_demo_data_if_needed(req.email)
+    
     set_auth_cookie(response, user)
     return {"status": "ok", "user": user}
 
